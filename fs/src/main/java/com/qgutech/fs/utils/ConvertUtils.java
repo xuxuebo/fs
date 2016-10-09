@@ -8,7 +8,7 @@ import com.jacob.com.Dispatch;
 public class ConvertUtils {
     public static final int WORD_TO_PDF_FORMAT = 17;
     public static final int XLS_TO_PDF_FORMAT = 0;
-    private static final int PPT_TO_PDF_FORMAT = 32;
+    public static final int PPT_TO_PDF_FORMAT = 32;
     public static final int PPT_TO_PNG_FORMAT = 17;
 
     public static void wordToPdf(String inputFile, String pdfFile) {

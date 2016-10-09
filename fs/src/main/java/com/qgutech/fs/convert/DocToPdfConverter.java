@@ -3,6 +3,7 @@ package com.qgutech.fs.convert;
 
 import com.qgutech.fs.utils.ConvertUtils;
 import com.qgutech.fs.utils.FsConstants;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -21,15 +22,12 @@ public class DocToPdfConverter extends AbstractConverter {
     }
 
     @Override
-    protected File windowsConvert(String inputFilePath, String targetFileDirPath
-            , ResultProcess resultProcess) throws Exception {
+    protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         String extension = getFileExtension(inputFilePath);
-        if (FsConstants.DOC_TYPE_PDF.equals(extension)) {
-            return new File(inputFilePath);
-        }
-
         File targetFile = getTargetFile(targetFileDirPath);
-        if (FsConstants.DOC_TYPE_DOC.equals(extension)
+        if (FsConstants.DOC_TYPE_PDF.equals(extension)) {
+            FileUtils.copyFile(new File(inputFilePath), targetFile);
+        } else if (FsConstants.DOC_TYPE_DOC.equals(extension)
                 || FsConstants.DOC_TYPE_DOCX.equals(extension)
                 || FsConstants.DOC_TYPE_TXT.equals(extension)) {
             ConvertUtils.wordToPdf(inputFilePath, targetFile.getAbsolutePath());

@@ -12,53 +12,46 @@ import java.io.InputStreamReader;
 
 public abstract class AbstractConverter implements Converter {
 
-    protected String serverType = SERVER_TYPE_WINDOWS;
+    protected String serverType = SERVER_TYPE_LINUX;
     protected String convertToolPath;
     protected static final String SERVER_TYPE_WINDOWS = "windows";
     protected static final String SERVER_TYPE_LINUX = "linux";
     protected final Log LOG = LogFactory.getLog(getClass());
 
     @Override
-    public File convert(String inputFilePath, String targetFileDirPath
-            , ResultProcess resultProcess) throws Exception {
+    public File convert(String inputFilePath, String targetFileDirPath) throws Exception {
         Assert.hasText(inputFilePath, "inputFilePath is empty!");
         Assert.hasText(targetFileDirPath, "targetFileDirPath is empty!");
 
-        File input = new File(inputFilePath);
-        Assert.isTrue(input.exists(), "inputFile[absolutePath:" + inputFilePath + "] not exists!");
-        File directory = new File(targetFileDirPath);
-        if (!directory.exists()) {
-            if (!directory.mkdirs()) {
-                throw new RuntimeException("Create directory[path:" + targetFileDirPath + "] failed!");
+        File inputFile = new File(inputFilePath);
+        Assert.isTrue(inputFile.exists(), "inputFile[absolutePath:" + inputFilePath + "] not exists!");
+        File targetDir = new File(targetFileDirPath);
+        if (!targetDir.exists()) {
+            if (!targetDir.mkdirs()) {
+                throw new RuntimeException("Create targetDir[path:" + targetFileDirPath + "] failed!");
             }
         }
 
-        if (SERVER_TYPE_LINUX.equals(serverType)) {
-            return windowsConvert(inputFilePath, targetFileDirPath, resultProcess);
-        } else if (SERVER_TYPE_WINDOWS.equals(serverType)) {
-            return linuxConvert(inputFilePath, targetFileDirPath, resultProcess);
+        if (SERVER_TYPE_WINDOWS.equals(serverType)) {
+            return windowsConvert(inputFilePath, targetFileDirPath);
+        } else if (SERVER_TYPE_LINUX.equals(serverType)) {
+            return linuxConvert(inputFilePath, targetFileDirPath);
         } else {
             throw new RuntimeException("ServerType[" + serverType + "] is not supported!");
         }
     }
 
     protected String getCommand(String srcFilePath, String targetFilePath) {
-        StringBuilder builder = new StringBuilder("\"" + convertToolPath);
-        builder.append("\" -srcFile \"");
-        builder.append(srcFilePath.replace("\\", "\\\\"));
-        builder.append("\" -tarFile \"");
-        builder.append(targetFilePath.replace("\\", "\\\\"));
-        builder.append("\"");
-
-        return builder.toString();
+        return "\"" + convertToolPath + "\" -srcFile \""
+                + srcFilePath.replace("\\", "\\\\") + "\" -tarFile \""
+                + targetFilePath.replace("\\", "\\\\") + "\"";
     }
 
     protected File getTargetFile(String targetFilePath) {
         return new File(targetFilePath);
     }
 
-    protected File windowsConvert(String inputFilePath, String targetFileDirPath
-            , ResultProcess resultProcess) throws Exception {
+    protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         File targetFile = getTargetFile(targetFileDirPath);
         BufferedReader bufferReader = null;
         Process process = null;
@@ -88,9 +81,7 @@ public abstract class AbstractConverter implements Converter {
         }
 
         String result = builder.toString();
-        if (resultProcess != null) {
-            resultProcess.processResult(result);
-        } else if (result.length() > 0) {
+        if (result.length() > 0) {
             throw new RuntimeException("Execute cmd["
                     + getCommand(inputFilePath, targetFile.getAbsolutePath()) + "] failed! " + result);
         }
@@ -98,7 +89,7 @@ public abstract class AbstractConverter implements Converter {
         return targetFile;
     }
 
-    protected File linuxConvert(String inputFilePath, String targetFileDirPath, ResultProcess resultProcess) {
+    protected File linuxConvert(String inputFilePath, String targetFileDirPath) {
         throw new RuntimeException("linuxConvert is not supported!");
     }
 

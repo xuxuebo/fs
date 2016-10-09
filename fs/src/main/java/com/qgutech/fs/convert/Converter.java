@@ -5,11 +5,6 @@ import java.io.File;
 
 public interface Converter {
 
-    File convert(String inputFilePath, String targetFileDirPath
-            , ResultProcess resultProcess) throws Exception;
+    File convert(String inputFilePath, String targetFileDirPath) throws Exception;
 
-}
-
-interface ResultProcess {
-    void processResult(String result);
 }

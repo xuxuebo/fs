@@ -16,6 +16,7 @@
     <properties>
         <springframework.version>4.1.3.RELEASE</springframework.version>
         <jdk.version>1.8</jdk.version>
+        <slf4j.version>1.6.1</slf4j.version>
     </properties>
 
 </project>

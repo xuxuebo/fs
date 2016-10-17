@@ -69,11 +69,11 @@ public class PdfToImageConverter extends AbstractConverter {
         }
     }
 
-    private File superWindowsConvert(String inputFilePath, final String targetFileDirPath) throws Exception {
+    final protected File superWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         return super.windowsConvert(inputFilePath, targetFileDirPath);
     }
 
-    private List<String> splitPdf(String pdfFile) throws Exception {
+    protected List<String> splitPdf(String pdfFile) throws Exception {
         File file = new File(pdfFile);
         PDDocument pdDocument = null;
         File tempDir = null;

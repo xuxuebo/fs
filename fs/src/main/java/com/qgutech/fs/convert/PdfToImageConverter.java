@@ -1,5 +1,6 @@
 package com.qgutech.fs.convert;
 
+import com.qgutech.fs.utils.FsConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -30,13 +31,13 @@ public class PdfToImageConverter extends AbstractConverter {
             return super.windowsConvert(inputFilePath, targetFileDirPath);
         }
 
-        final Semaphore semaphore = new Semaphore(semaphoreCnt);
+        final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
         List<Future<File>> futures = new ArrayList<Future<File>>(pdfFilePathList.size());
         try {
             for (String filePath : pdfFilePathList) {
                 semaphore.acquire();
                 final String pdfFilePath = filePath;
-                futures.add(taskExecutor.submit(new Callable<File>() {
+                futures.add(getTaskExecutor().submit(new Callable<File>() {
                     @Override
                     public File call() throws Exception {
                         try {
@@ -64,7 +65,7 @@ public class PdfToImageConverter extends AbstractConverter {
 
             throw e;
         } finally {
-            FileUtils.deleteDirectory(new File(pdfFilePathList.get(0)).getParentFile());
+            FileUtils.deleteQuietly(new File(pdfFilePathList.get(0)).getParentFile());
         }
     }
 
@@ -75,41 +76,55 @@ public class PdfToImageConverter extends AbstractConverter {
     private List<String> splitPdf(String pdfFile) throws Exception {
         File file = new File(pdfFile);
         PDDocument pdDocument = null;
+        File tempDir = null;
+        List<PDDocument> pdDocuments = null;
         try {
             pdDocument = PDDocument.load(file);
             int numberOfPages = pdDocument.getNumberOfPages();
             if (numberOfPages <= getPdfSplitSize()) {
-                //pdDocument.close();
                 return Arrays.asList(pdfFile);
             }
 
-            File dir = new File(file.getParentFile(), UUID.randomUUID().toString());
-            if (!dir.exists() && !dir.mkdirs()) {
-                throw new IOException("cannot create directory[" + dir.getAbsolutePath() + "]!");
+            tempDir = new File(file.getParentFile(), UUID.randomUUID().toString());
+            if (!tempDir.mkdirs()) {
+                throw new IOException("cannot create directory[" + tempDir.getAbsolutePath() + "]!");
             }
 
             Splitter splitter = new Splitter();
             splitter.setSplitAtPage(getPdfSplitSize());
-            List<PDDocument> pdDocuments = splitter.split(pdDocument);
+            pdDocuments = splitter.split(pdDocument);
             List<String> subFiles = new ArrayList<String>(pdDocuments.size());
             for (int i = 0; i < pdDocuments.size(); i++) {
-                PDDocument document = null;
-                try {
-                    document = pdDocuments.get(i);
-                    File subPdfFile = new File(dir, i + ".pdf");
-                    subFiles.add(subPdfFile.getAbsolutePath());
-                    document.save(subPdfFile);
-                } finally {
-                    if (document != null) {
-                        document.close();
-                    }
-                }
+                PDDocument document = pdDocuments.get(i);
+                File subPdfFile = new File(tempDir, i + FsConstants.PDF_SUFFIX);
+                subFiles.add(subPdfFile.getAbsolutePath());
+                document.save(subPdfFile);
             }
 
             return subFiles;
+        } catch (Exception e) {
+            if (tempDir != null) {
+                FileUtils.deleteQuietly(tempDir);
+            }
+
+            throw e;
         } finally {
-            if (pdDocument != null) {
-                pdDocument.close();
+            if (pdDocuments != null && pdDocuments.size() > 0) {
+                for (PDDocument document : pdDocuments) {
+                    closePDDocument(document);
+                }
+            }
+
+            closePDDocument(pdDocument);
+        }
+    }
+
+    private void closePDDocument(PDDocument document) {
+        if (document != null) {
+            try {
+                document.close();
+            } catch (Exception e) {
+                //not need process
             }
         }
     }

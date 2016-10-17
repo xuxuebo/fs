@@ -10,6 +10,6 @@ public interface FsConstants {
     String DOC_TYPE_XLSX = "xlsx";
     String DOC_TYPE_TXT = "txt";
     String DOC_TYPE_PDF = "pdf";
-
+    String PDF_SUFFIX = ".pdf";
     String PDF_PREFIX = "pdfResult_";
 }

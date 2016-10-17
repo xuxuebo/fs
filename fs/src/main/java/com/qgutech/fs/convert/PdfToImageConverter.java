@@ -49,22 +49,20 @@ public class PdfToImageConverter extends AbstractConverter {
             }
 
             File targetFile = null;
-            try {
-                for (Future<File> future : futures) {
-                    File file = future.get();
-                    if (targetFile == null) {
-                        targetFile = file;
-                    }
+            for (Future<File> future : futures) {
+                File file = future.get();
+                if (targetFile == null) {
+                    targetFile = file;
                 }
-            } catch (Exception e) {
-                for (Future<File> future : futures) {
-                    future.cancel(true);
-                }
-
-                throw e;
             }
 
             return targetFile;
+        } catch (Exception e) {
+            for (Future<File> future : futures) {
+                future.cancel(true);
+            }
+
+            throw e;
         } finally {
             FileUtils.deleteDirectory(new File(pdfFilePathList.get(0)).getParentFile());
         }

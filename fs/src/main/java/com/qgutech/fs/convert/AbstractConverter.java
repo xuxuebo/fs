@@ -53,12 +53,22 @@ public abstract class AbstractConverter implements Converter {
 
     protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         File targetFile = getTargetFile(targetFileDirPath);
+        StringBuilder builder = executeCmd(inputFilePath, targetFile.getAbsolutePath());
+        String result = builder.toString();
+        if (result.length() > 0) {
+            throw new RuntimeException("Execute cmd["
+                    + getCommand(inputFilePath, targetFile.getAbsolutePath()) + "] failed! " + result);
+        }
+
+        return targetFile;
+    }
+
+    protected StringBuilder executeCmd(String inputFilePath, String targetFilePath) throws Exception {
         BufferedReader bufferReader = null;
         Process process = null;
         StringBuilder builder = new StringBuilder();
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    getCommand(inputFilePath, targetFile.getAbsolutePath()));
+            ProcessBuilder processBuilder = new ProcessBuilder(getCommand(inputFilePath, targetFilePath));
             processBuilder.redirectErrorStream(true);
             process = processBuilder.start();
             bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -80,13 +90,7 @@ public abstract class AbstractConverter implements Converter {
             }
         }
 
-        String result = builder.toString();
-        if (result.length() > 0) {
-            throw new RuntimeException("Execute cmd["
-                    + getCommand(inputFilePath, targetFile.getAbsolutePath()) + "] failed! " + result);
-        }
-
-        return targetFile;
+        return builder;
     }
 
     protected File linuxConvert(String inputFilePath, String targetFileDirPath) {

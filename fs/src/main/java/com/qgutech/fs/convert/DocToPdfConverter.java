@@ -1,6 +1,7 @@
 package com.qgutech.fs.convert;
 
 
+import com.qgutech.fs.model.DocTypeEnum;
 import com.qgutech.fs.utils.ConvertUtils;
 import com.qgutech.fs.utils.FsConstants;
 import org.apache.commons.io.FileUtils;
@@ -15,7 +16,7 @@ public class DocToPdfConverter extends AbstractConverter {
     private String getFileExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
         if (StringUtils.isEmpty(extension)) {
-            return FsConstants.DOC_TYPE_DOC;
+            return DocTypeEnum.DOC.docType();
         }
 
         return extension.toLowerCase();
@@ -25,17 +26,17 @@ public class DocToPdfConverter extends AbstractConverter {
     protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         String extension = getFileExtension(inputFilePath);
         File targetFile = getTargetFile(targetFileDirPath);
-        if (FsConstants.DOC_TYPE_PDF.equals(extension)) {
+        if (DocTypeEnum.PDF.docType().equals(extension)) {
             FileUtils.copyFile(new File(inputFilePath), targetFile);
-        } else if (FsConstants.DOC_TYPE_DOC.equals(extension)
-                || FsConstants.DOC_TYPE_DOCX.equals(extension)
-                || FsConstants.DOC_TYPE_TXT.equals(extension)) {
+        } else if (DocTypeEnum.DOC.docType().equals(extension)
+                || DocTypeEnum.DOCX.docType().equals(extension)
+                || DocTypeEnum.TXT.docType().equals(extension)) {
             ConvertUtils.wordToPdf(inputFilePath, targetFile.getAbsolutePath());
-        } else if (FsConstants.DOC_TYPE_PPT.equals(extension)
-                || FsConstants.DOC_TYPE_PPTX.equals(extension)) {
+        } else if (DocTypeEnum.PPT.docType().equals(extension)
+                || DocTypeEnum.PPTX.docType().equals(extension)) {
             ConvertUtils.excelToPdf(inputFilePath, targetFile.getAbsolutePath());
-        } else if (FsConstants.DOC_TYPE_XLS.equals(extension)
-                || FsConstants.DOC_TYPE_XLSX.equals(extension)) {
+        } else if (DocTypeEnum.XLS.docType().equals(extension)
+                || DocTypeEnum.XLSX.docType().equals(extension)) {
             ConvertUtils.pptToPdf(inputFilePath, targetFile.getAbsolutePath());
         } else {
             throw new RuntimeException("InputFile[path:" + inputFilePath
@@ -48,6 +49,6 @@ public class DocToPdfConverter extends AbstractConverter {
     @Override
     protected File getTargetFile(String targetFilePath) {
         return new File(targetFilePath, FsConstants.PDF_PREFIX
-                + UUID.randomUUID().toString().replace("-", "") + "." + FsConstants.DOC_TYPE_PDF);
+                + UUID.randomUUID().toString().replace("-", "") + FsConstants.PDF_SUFFIX);
     }
 }

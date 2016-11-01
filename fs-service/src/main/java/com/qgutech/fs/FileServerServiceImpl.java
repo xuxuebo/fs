@@ -2,11 +2,21 @@ package com.qgutech.fs;
 
 
 import com.qgutech.fs.service.FileServerService;
+import com.qgutech.fs.utils.ExecutionContext;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
 
 public class FileServerServiceImpl implements FileServerService {
+
+    protected void setExecutionContext(String corpCode, String appCode) {
+        Assert.hasText(corpCode, "CorpCode is empty!");
+        Assert.hasText(appCode, "AppCode is empty!");
+        ExecutionContext.setCorpCode(corpCode);
+        ExecutionContext.setAppCode(appCode);
+    }
+
 
     @Override
     public String getOriginFileUrl(String corpCode, String appCode, String storedFileId) {

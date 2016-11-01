@@ -3,7 +3,7 @@ package com.qgutech.fs.utils;
 /**
  * 数据库连接对象
  */
-public class DataBase {
+public class Database1 {
     /**
      * 数据库驱动类
      */
@@ -67,20 +67,35 @@ public class DataBase {
     }
 
     @Override
-    public int hashCode() {
-        return jdbcUrl == null ? 7 : jdbcUrl.hashCode();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Database1 database1 = (Database1) o;
+
+        if (driverClass != null ? !driverClass.equals(database1.driverClass) : database1.driverClass != null)
+            return false;
+        if (jdbcUrl != null ? !jdbcUrl.equals(database1.jdbcUrl) : database1.jdbcUrl != null) return false;
+        if (password != null ? !password.equals(database1.password) : database1.password != null) return false;
+        if (schema != null ? !schema.equals(database1.schema) : database1.schema != null) return false;
+        if (userName != null ? !userName.equals(database1.userName) : database1.userName != null) return false;
+
+        return true;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return obj != null && (this == obj
-                || ((obj instanceof DataBase)
-                && jdbcUrl.equalsIgnoreCase(((DataBase) obj).getJdbcUrl())));
+    public int hashCode() {
+        int result = driverClass != null ? driverClass.hashCode() : 0;
+        result = 31 * result + (jdbcUrl != null ? jdbcUrl.hashCode() : 0);
+        result = 31 * result + (userName != null ? userName.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (schema != null ? schema.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return "DataBase{" +
+        return "Database1{" +
                 "driverClass='" + driverClass + '\'' +
                 ", jdbcUrl='" + jdbcUrl + '\'' +
                 ", userName='" + userName + '\'' +

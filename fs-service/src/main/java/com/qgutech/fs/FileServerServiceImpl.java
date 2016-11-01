@@ -1,0 +1,70 @@
+package com.qgutech.fs;
+
+
+import com.qgutech.fs.service.FileServerService;
+
+import java.util.List;
+import java.util.Map;
+
+public class FileServerServiceImpl implements FileServerService {
+
+    @Override
+    public String getOriginFileUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getBatchOriginFileUrlMap(String corpCode, String appCode, List<String> storedFileIdList) {
+        return null;
+    }
+
+    @Override
+    public String getVideoCoverUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public String getHighVideoUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public String getMiddleVideoUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public String getLowVideoUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public String getOriginVideoUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public String getFileUrl(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> getBatchFileUrlMap(String corpCode, String appCode, List<String> storedFileIdList) {
+        return null;
+    }
+
+    @Override
+    public Integer getSubFileCount(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public List<Integer> getSubFileCountList(String corpCode, String appCode, String storedFileId) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Integer> getSubFileCountMap(String corpCode, String appCode, List<String> storedFileIdList) {
+        return null;
+    }
+}

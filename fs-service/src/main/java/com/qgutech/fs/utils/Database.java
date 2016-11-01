@@ -3,7 +3,7 @@ package com.qgutech.fs.utils;
 /**
  * 数据库连接对象
  */
-public class Database1 {
+public class Database {
     /**
      * 数据库驱动类
      */
@@ -71,14 +71,14 @@ public class Database1 {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Database1 database1 = (Database1) o;
+        Database database = (Database) o;
 
-        if (driverClass != null ? !driverClass.equals(database1.driverClass) : database1.driverClass != null)
+        if (driverClass != null ? !driverClass.equals(database.driverClass) : database.driverClass != null)
             return false;
-        if (jdbcUrl != null ? !jdbcUrl.equals(database1.jdbcUrl) : database1.jdbcUrl != null) return false;
-        if (password != null ? !password.equals(database1.password) : database1.password != null) return false;
-        if (schema != null ? !schema.equals(database1.schema) : database1.schema != null) return false;
-        if (userName != null ? !userName.equals(database1.userName) : database1.userName != null) return false;
+        if (jdbcUrl != null ? !jdbcUrl.equals(database.jdbcUrl) : database.jdbcUrl != null) return false;
+        if (password != null ? !password.equals(database.password) : database.password != null) return false;
+        if (schema != null ? !schema.equals(database.schema) : database.schema != null) return false;
+        if (userName != null ? !userName.equals(database.userName) : database.userName != null) return false;
 
         return true;
     }
@@ -95,7 +95,7 @@ public class Database1 {
 
     @Override
     public String toString() {
-        return "Database1{" +
+        return "Database{" +
                 "driverClass='" + driverClass + '\'' +
                 ", jdbcUrl='" + jdbcUrl + '\'' +
                 ", userName='" + userName + '\'' +

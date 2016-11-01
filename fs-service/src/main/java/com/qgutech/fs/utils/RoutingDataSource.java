@@ -24,7 +24,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
     private static final Gson gson = new Gson();
     private static final Log LOG = LogFactory.getLog(RoutingDataSource.class);
     private static final String dataSourceFileName = "dataSource.properties";
-    private static final Map<String, Database1> lookupDatabaseMap = new HashMap<String, Database1>();
+    private static final Map<String, Database> lookupDatabaseMap = new HashMap<String, Database>();
     private static final Map<String, Long> databaseKeyCntMap = new HashMap<String, Long>();
     private static final Map<DataSource, Long> waitToCloseMap = new HashMap<DataSource, Long>();
     private static final long DEFAULT_EXPIRE_TIME = 3 * 60 * 1000l;
@@ -62,12 +62,12 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
 
     @Override
     protected Object determineCurrentLookupKey() {
-        Database1 database1 = getDatabase();
-        if (database1 == null) {
+        Database database = getDatabase();
+        if (database == null) {
             return null;
         }
 
-        return createKeyFromDatabase(database1);
+        return createKeyFromDatabase(database);
     }
 
     @Override
@@ -92,24 +92,24 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
                 continue;
             }
 
-            Database1 database1 = gson.fromJson((String) value, Database1.class);
-            String keyFromDatabase = createKeyFromDatabase(database1);
+            Database database = gson.fromJson((String) value, Database.class);
+            String keyFromDatabase = createKeyFromDatabase(database);
             DataSource dataSource = this.resolvedDataSources.get(keyFromDatabase);
             Long count = databaseKeyCntMap.get(keyFromDatabase);
             if (dataSource == null && count == null) {
                 databaseKeyCntMap.put(keyFromDatabase, 1l);
-                this.resolvedDataSources.put(keyFromDatabase, toDataSource(database1));
+                this.resolvedDataSources.put(keyFromDatabase, toDataSource(database));
             } else {
                 databaseKeyCntMap.put(keyFromDatabase, ++count);
             }
 
-            lookupDatabaseMap.put((String) key, database1);
+            lookupDatabaseMap.put((String) key, database);
         }
     }
 
-    private String createKeyFromDatabase(Database1 database1) {
-        return database1.getDriverClass() + ";;" + database1.getJdbcUrl() + ";;"
-                + database1.getUserName() + ";;" + database1.getPassword();
+    private String createKeyFromDatabase(Database database) {
+        return database.getDriverClass() + ";;" + database.getJdbcUrl() + ";;"
+                + database.getUserName() + ";;" + database.getPassword();
     }
 
     private long getFileLastModifiedTime() {
@@ -171,29 +171,29 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
         return connection;
     }
 
-    private Database1 getDatabase() {
+    private Database getDatabase() {
         String appCode = ExecutionContext.getAppCode();
         String corpCode = ExecutionContext.getCorpCode();
-        Database1 database1 = lookupDatabaseMap.get(appCode + ";;" + corpCode);
-        if (database1 != null) {
-            return database1;
+        Database database = lookupDatabaseMap.get(appCode + ";;" + corpCode);
+        if (database != null) {
+            return database;
         }
 
-        database1 = lookupDatabaseMap.get("*;;" + corpCode);
-        if (database1 != null) {
-            return database1;
+        database = lookupDatabaseMap.get("*;;" + corpCode);
+        if (database != null) {
+            return database;
         }
 
         return lookupDatabaseMap.get(appCode + ";;*");
     }
 
     private void switchSchema(Connection connection) {
-        Database1 database1 = getDatabase();
-        if (database1 == null) {
+        Database database = getDatabase();
+        if (database == null) {
             return;
         }
 
-        String schema = database1.getSchema();
+        String schema = database.getSchema();
         if (schema == null || schema.trim().isEmpty()) {
             return;
         }
@@ -229,30 +229,30 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
                 continue;
             }
 
-            Database1 database1 = gson.fromJson((String) value, Database1.class);
-            Database1 oldDatabase1 = lookupDatabaseMap.get(key);
-            String keyFromDatabase = createKeyFromDatabase(database1);
-            if (oldDatabase1 == null) {
+            Database database = gson.fromJson((String) value, Database.class);
+            Database oldDatabase = lookupDatabaseMap.get(key);
+            String keyFromDatabase = createKeyFromDatabase(database);
+            if (oldDatabase == null) {
                 DataSource dataSource = this.resolvedDataSources.get(keyFromDatabase);
                 Long count = databaseKeyCntMap.get(keyFromDatabase);
                 if (dataSource == null && count == null) {
                     databaseKeyCntMap.put(keyFromDatabase, 1l);
-                    this.resolvedDataSources.put(keyFromDatabase, toDataSource(database1));
+                    this.resolvedDataSources.put(keyFromDatabase, toDataSource(database));
                 } else {
                     databaseKeyCntMap.put(keyFromDatabase, ++count);
                 }
 
-                lookupDatabaseMap.put((String) key, database1);
+                lookupDatabaseMap.put((String) key, database);
                 continue;
             }
 
-            if (database1.equals(oldDatabase1)) {
+            if (database.equals(oldDatabase)) {
                 continue;
             }
 
-            String oldKeyFromDatabase = createKeyFromDatabase(oldDatabase1);
+            String oldKeyFromDatabase = createKeyFromDatabase(oldDatabase);
             if (keyFromDatabase.equals(oldKeyFromDatabase)) {
-                lookupDatabaseMap.put((String) key, database1);
+                lookupDatabaseMap.put((String) key, database);
                 continue;
             }
 
@@ -260,7 +260,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
             Long count = databaseKeyCntMap.get(keyFromDatabase);
             if (dataSource == null && count == null) {
                 databaseKeyCntMap.put(keyFromDatabase, 1l);
-                this.resolvedDataSources.put(keyFromDatabase, toDataSource(database1));
+                this.resolvedDataSources.put(keyFromDatabase, toDataSource(database));
             } else {
                 databaseKeyCntMap.put(keyFromDatabase, ++count);
             }
@@ -274,21 +274,21 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
                 databaseKeyCntMap.put(oldKeyFromDatabase, --oldCount);
             }
 
-            lookupDatabaseMap.put((String) key, database1);
+            lookupDatabaseMap.put((String) key, database);
         }
     }
 
-    private DataSource toDataSource(Database1 database1) {
+    private DataSource toDataSource(Database database) {
         try {
             ComboPooledDataSource dataSource = new ComboPooledDataSource();
-            dataSource.setDriverClass(database1.getDriverClass());
-            dataSource.setJdbcUrl(database1.getJdbcUrl());
-            dataSource.setUser(database1.getUserName());
-            dataSource.setPassword(database1.getPassword());
+            dataSource.setDriverClass(database.getDriverClass());
+            dataSource.setJdbcUrl(database.getJdbcUrl());
+            dataSource.setUser(database.getUserName());
+            dataSource.setPassword(database.getPassword());
             return dataSource;
         } catch (Exception e) {
-            throw new RuntimeException("Create ComboPooledDataSource by Database1["
-                    + database1 + "] failed!", e);
+            throw new RuntimeException("Create ComboPooledDataSource by Database["
+                    + database + "] failed!", e);
         }
     }
 

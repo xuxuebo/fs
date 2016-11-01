@@ -1,4 +1,4 @@
-package com.qgutech.fs.model;
+package com.qgutech.fs.domain;
 
 public enum ProcessorTypeEnum {
     VID,//视频

@@ -1,6 +1,6 @@
 package com.qgutech.fs.controller;
 
-import com.qgutech.fs.model.StoredFile;
+import com.qgutech.fs.domain.StoredFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 

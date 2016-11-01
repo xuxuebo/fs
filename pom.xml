@@ -11,6 +11,7 @@
     <modules>
         <module>fs-api</module>
         <module>fs</module>
+        <module>fsm</module>
     </modules>
 
     <properties>

@@ -1,7 +1,7 @@
 package com.qgutech.fs.convert;
 
 
-import com.qgutech.fs.model.DocTypeEnum;
+import com.qgutech.fs.domain.DocTypeEnum;
 import com.qgutech.fs.utils.ConvertUtils;
 import com.qgutech.fs.utils.FsConstants;
 import org.apache.commons.io.FileUtils;

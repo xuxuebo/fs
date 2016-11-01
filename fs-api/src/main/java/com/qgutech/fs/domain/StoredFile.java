@@ -1,4 +1,4 @@
-package com.qgutech.fs.model;
+package com.qgutech.fs.domain;
 
 
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +20,7 @@ public class StoredFile {
     /**
      * 处理类型（上传时必须指定）
      *
-     * @see com.qgutech.fs.model.ProcessorTypeEnum
+     * @see com.qgutech.fs.domain.ProcessorTypeEnum
      */
     private String processor;
 
@@ -73,6 +73,11 @@ public class StoredFile {
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 视频的级别
+     */
+    private String videoLevel;
 
 
 }

@@ -26,7 +26,7 @@ public class FsRoutingDataSource extends AbstractRoutingDataSource {
     protected static final Gson gson = new Gson();
     protected static final Log LOG = LogFactory.getLog(FsRoutingDataSource.class);
     protected static final String dataSourceFileName = "dataSource.properties";
-    protected static final Map<String, DataBase> lookupDatabaseMap = new HashMap<String, DataBase>();
+    protected static final Map<String, Database> lookupDatabaseMap = new HashMap<String, Database>();
 
     @Override
     protected Object determineCurrentLookupKey() {
@@ -53,18 +53,18 @@ public class FsRoutingDataSource extends AbstractRoutingDataSource {
                 continue;
             }
 
-            DataBase dataBase = gson.fromJson((String) value, DataBase.class);
+            Database database = gson.fromJson((String) value, Database.class);
             ComboPooledDataSource dataSource = new ComboPooledDataSource();
             try {
-                dataSource.setDriverClass(dataBase.getDriverClass());
+                dataSource.setDriverClass(database.getDriverClass());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            dataSource.setJdbcUrl(dataBase.getJdbcUrl());
-            dataSource.setUser(dataBase.getUserName());
-            dataSource.setPassword(dataBase.getPassword());
-            lookupDatabaseMap.put((String) key, dataBase);
-            resolvedDataSources.put(dataBase, dataSource);
+            dataSource.setJdbcUrl(database.getJdbcUrl());
+            dataSource.setUser(database.getUserName());
+            dataSource.setPassword(database.getPassword());
+            lookupDatabaseMap.put((String) key, database);
+            resolvedDataSources.put(database, dataSource);
         }
 
         lastModifiedTime = getFileLastModifiedTime();
@@ -129,29 +129,29 @@ public class FsRoutingDataSource extends AbstractRoutingDataSource {
         return connection;
     }
 
-    private DataBase getDatabase() {
+    private Database getDatabase() {
         String appCode = ExecutionContext.getAppCode();
         String corpCode = ExecutionContext.getCorpCode();
-        DataBase dataBase = lookupDatabaseMap.get(appCode + ";;" + corpCode);
-        if (dataBase != null) {
-            return dataBase;
+        Database database = lookupDatabaseMap.get(appCode + ";;" + corpCode);
+        if (database != null) {
+            return database;
         }
 
-        dataBase = lookupDatabaseMap.get("*;;" + corpCode);
-        if (dataBase != null) {
-            return dataBase;
+        database = lookupDatabaseMap.get("*;;" + corpCode);
+        if (database != null) {
+            return database;
         }
 
         return lookupDatabaseMap.get(appCode + ";;*");
     }
 
     private void switchSchema(Connection connection) {
-        DataBase dataBase = getDatabase();
-        if (dataBase == null) {
+        Database database = getDatabase();
+        if (database == null) {
             return;
         }
 
-        String schema = dataBase.getSchema();
+        String schema = database.getSchema();
         if (schema == null || schema.trim().isEmpty()) {
             return;
         }

@@ -1,4 +1,4 @@
-package com.qgutech.fs;
+package com.qgutech.fs.service;
 
 
 import com.qgutech.fs.service.FileServerService;

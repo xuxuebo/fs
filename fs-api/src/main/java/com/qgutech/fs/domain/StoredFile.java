@@ -12,6 +12,8 @@ import java.util.Date;
 //@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "commonCache")
 public class StoredFile {
 
+    public static final String _storedFileId = "storedFileId";
+
     /**
      * 上传文件在文件系统中的主键
      */

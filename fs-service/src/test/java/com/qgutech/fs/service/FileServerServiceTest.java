@@ -11,8 +11,8 @@ public class FileServerServiceTest extends BaseServiceTest {
     private FileServerService fileServerService;
 
     @Test
-    public void test() {
-        fileServerService.getFileUrl("corpCode", "appCode", UUID.randomUUID().toString());
+    public void testGetOriginFileUrl() {
+        fileServerService.getOriginFileUrl("zhaojie", "els", "402881d6582476410158247644bf0000");
     }
 
 

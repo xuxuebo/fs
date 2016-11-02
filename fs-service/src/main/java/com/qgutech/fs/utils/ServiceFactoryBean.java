@@ -1,7 +1,6 @@
 package com.qgutech.fs.utils;
 
 
-import com.qgutech.fs.service.FileServerService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
@@ -16,6 +15,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
     private ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
     private Object service;
     private Class<?> serviceInterface;
+    private Class<?> serviceClass;
 
     @Override
     public Object getObject() throws Exception {
@@ -34,24 +34,23 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.serviceProxy = new ProxyFactory(FileServerService.class, this)
-                .getProxy(beanClassLoader);
+        this.serviceProxy = new ProxyFactory(this.serviceInterface, this)
+                .getProxy(this.beanClassLoader);
     }
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         AfterMethod afterAnnotation = null;
         BeforeMethod beforeAnnotation = null;
-        Class<?> clazz = getService().getClass();
         Object[] arguments = invocation.getArguments();
         try {
             Method method = invocation.getMethod();
-            Method actualMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
+            Method actualMethod = this.serviceClass.getMethod(method.getName(), method.getParameterTypes());
             NoBeforeMethod noBeforeMethod = actualMethod.getAnnotation(NoBeforeMethod.class);
             if (noBeforeMethod == null) {
                 beforeAnnotation = actualMethod.getAnnotation(BeforeMethod.class);
                 if (beforeAnnotation == null) {
-                    beforeAnnotation = clazz.getAnnotation(BeforeMethod.class);
+                    beforeAnnotation = this.serviceClass.getAnnotation(BeforeMethod.class);
                 }
             }
 
@@ -59,19 +58,18 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
             if (noAfterMethod == null) {
                 afterAnnotation = actualMethod.getAnnotation(AfterMethod.class);
                 if (afterAnnotation == null) {
-                    afterAnnotation = clazz.getAnnotation(AfterMethod.class);
+                    afterAnnotation = this.serviceClass.getAnnotation(AfterMethod.class);
                 }
             }
 
-            executeBeforeMethod(beforeAnnotation, clazz, arguments);
+            executeBeforeMethod(beforeAnnotation, arguments);
             return method.invoke(getService(), arguments);
         } finally {
-            executeAfterMethod(afterAnnotation, clazz, arguments);
+            executeAfterMethod(afterAnnotation, arguments);
         }
     }
 
-    private void executeBeforeMethod(BeforeMethod beforeAnnotation, Class<?> clazz
-            , Object[] arguments) throws Exception {
+    private void executeBeforeMethod(BeforeMethod beforeAnnotation, Object[] arguments) throws Exception {
         if (beforeAnnotation == null) {
             return;
         }
@@ -84,7 +82,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
         name = name.trim();
         Class<?>[] parameters = beforeAnnotation.parameters();
         if (parameters == null || parameters.length == 0) {
-            Method beforeMethod = clazz.getMethod(name);
+            Method beforeMethod = this.serviceClass.getMethod(name);
             if (beforeMethod != null) {
                 beforeMethod.invoke(getService());
             }
@@ -93,7 +91,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
 
         if (arguments != null && arguments.length != 0
                 && parameters.length <= arguments.length) {
-            Method beforeMethod = clazz.getMethod(name, parameters);
+            Method beforeMethod = this.serviceClass.getMethod(name, parameters);
             if (beforeMethod != null) {
                 Object[] args = new Object[parameters.length];
                 System.arraycopy(arguments, 0, args, 0, parameters.length);
@@ -102,8 +100,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
         }
     }
 
-    private void executeAfterMethod(AfterMethod afterAnnotation, Class<?> clazz
-            , Object[] arguments) throws Exception {
+    private void executeAfterMethod(AfterMethod afterAnnotation, Object[] arguments) throws Exception {
         if (afterAnnotation == null) {
             return;
         }
@@ -117,7 +114,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
         Class<?>[] parameters = afterAnnotation.parameters();
         Method afterMethod;
         if (parameters == null || parameters.length == 0) {
-            afterMethod = clazz.getMethod(name);
+            afterMethod = this.serviceClass.getMethod(name);
             if (afterMethod != null) {
                 afterMethod.invoke(getService());
             }
@@ -127,7 +124,7 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
 
         if (arguments != null && arguments.length != 0
                 && parameters.length <= arguments.length) {
-            afterMethod = clazz.getMethod(name, parameters);
+            afterMethod = this.serviceClass.getMethod(name, parameters);
             if (afterMethod != null) {
                 Object[] args = new Object[parameters.length];
                 System.arraycopy(arguments, 0, args, 0, parameters.length);
@@ -150,5 +147,13 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
 
     public void setServiceInterface(Class<?> serviceInterface) {
         this.serviceInterface = serviceInterface;
+    }
+
+    public Class<?> getServiceClass() {
+        return serviceClass;
+    }
+
+    public void setServiceClass(Class<?> serviceClass) {
+        this.serviceClass = serviceClass;
     }
 }

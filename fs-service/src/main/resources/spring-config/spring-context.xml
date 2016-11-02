@@ -2,13 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context.xsd
-            http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring
-            http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd
             http://www.springframework.org/schema/tx
             http://www.springframework.org/schema/tx/spring-tx.xsd">
 
@@ -27,8 +24,6 @@
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <!--<property name="entityInterceptor">
-        </property>-->
         <property name="packagesToScan">
             <list>
                 <value>com.qgutech.fs.domain</value>
@@ -45,18 +40,6 @@
                 <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
                 <prop key="hibernate.current_session_context_class">
                     org.springframework.orm.hibernate4.SpringSessionContext
-                </prop>
-                <!-- 启动查询缓存：false -->
-                <prop key="hibernate.cache.use_query_cache">${hibernate.use_query_cache}</prop>
-                <!-- 使用二级缓存：false -->
-                <prop key="hibernate.cache.use_second_level_cache">${hibernate.use_second_level_cache}</prop>
-                <!--hibernate3的配置-->
-                <!-- 二级缓存插件：org.hibernate.cache.EhCacheProvider 二级缓存类型 -->
-                <!--<prop key="hibernate.cache.provider_class">
-                    org.hibernate.cache.EhCacheProvider
-                </prop>-->
-                <prop key="hibernate.cache.region.factory_class">
-                    org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
                 </prop>
             </props>
         </property>
@@ -85,22 +68,12 @@
     <!-- 启用事务注解 -->
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
 
-
-    <ehcache:annotation-driven/>
-
-    <ehcache:config cache-manager="cacheManager">
-        <ehcache:evict-expired-elements interval="60"/>
-    </ehcache:config>
-
-    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-        <property name="configLocation" value="classpath:/ehcache.xml"/>
-    </bean>
-
     <bean id="fileServerService" class="com.qgutech.fs.utils.ServiceFactoryBean">
         <property name="serviceInterface" value="com.qgutech.fs.service.FileServerService"/>
         <property name="service">
             <bean class="com.qgutech.fs.service.FileServerServiceImpl"/>
         </property>
+        <property name="serviceClass" value="com.qgutech.fs.service.FileServerServiceImpl"/>
     </bean>
 
 </beans>

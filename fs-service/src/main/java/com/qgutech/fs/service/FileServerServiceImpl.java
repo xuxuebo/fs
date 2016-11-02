@@ -46,7 +46,7 @@ public class FileServerServiceImpl implements FileServerService {
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public String getOriginFileUrl(String corpCode, String appCode, String storedFileId) {
         Assert.hasText(storedFileId, "storedFileId is empty!");
-        return getBatchFileUrlMap(corpCode, appCode, Arrays.asList(storedFileId)).get(storedFileId);
+        return getBatchOriginFileUrlMap(corpCode, appCode, Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override

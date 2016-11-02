@@ -156,17 +156,6 @@
         </dependency>
         <!-- hibernate配置结束-->
 
-        <!-- ehcache配置开始-->
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.ehcache-spring-annotations</groupId>
-            <artifactId>ehcache-spring-annotations</artifactId>
-        </dependency>
-        <!-- ehcache配置结束-->
-
         <!-- 单元测试开始-->
         <dependency>
             <groupId>junit</groupId>

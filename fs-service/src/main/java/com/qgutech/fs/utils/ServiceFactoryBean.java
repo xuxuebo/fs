@@ -46,17 +46,18 @@ public class ServiceFactoryBean implements MethodInterceptor, InitializingBean, 
         Object[] arguments = invocation.getArguments();
         try {
             Method method = invocation.getMethod();
-            NoBeforeMethod noBeforeMethod = method.getAnnotation(NoBeforeMethod.class);
+            Method actualMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
+            NoBeforeMethod noBeforeMethod = actualMethod.getAnnotation(NoBeforeMethod.class);
             if (noBeforeMethod == null) {
-                beforeAnnotation = method.getAnnotation(BeforeMethod.class);
+                beforeAnnotation = actualMethod.getAnnotation(BeforeMethod.class);
                 if (beforeAnnotation == null) {
                     beforeAnnotation = clazz.getAnnotation(BeforeMethod.class);
                 }
             }
 
-            NoAfterMethod noAfterMethod = method.getAnnotation(NoAfterMethod.class);
+            NoAfterMethod noAfterMethod = actualMethod.getAnnotation(NoAfterMethod.class);
             if (noAfterMethod == null) {
-                afterAnnotation = method.getAnnotation(AfterMethod.class);
+                afterAnnotation = actualMethod.getAnnotation(AfterMethod.class);
                 if (afterAnnotation == null) {
                     afterAnnotation = clazz.getAnnotation(AfterMethod.class);
                 }

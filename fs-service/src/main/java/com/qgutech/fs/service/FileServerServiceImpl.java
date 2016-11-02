@@ -1,24 +1,38 @@
 package com.qgutech.fs.service;
 
 
+import com.qgutech.fs.utils.AfterMethod;
+import com.qgutech.fs.utils.BeforeMethod;
 import com.qgutech.fs.utils.ExecutionContext;
-import org.springframework.stereotype.Service;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-
-@Service("fileServerService")
+@BeforeMethod(name = "setExecutionContext", parameters = {String.class, String.class})
+@AfterMethod(name = "clearExecutionContext")
 public class FileServerServiceImpl implements FileServerService {
 
-    protected void setExecutionContext(String corpCode, String appCode) {
+    @Resource
+    private SessionFactory sessionFactory;
+
+    protected Session getSession() {
+        return sessionFactory.getCurrentSession();
+    }
+
+    public void setExecutionContext(String corpCode, String appCode) {
         Assert.hasText(corpCode, "CorpCode is empty!");
         Assert.hasText(appCode, "AppCode is empty!");
         ExecutionContext.setCorpCode(corpCode);
         ExecutionContext.setAppCode(appCode);
     }
 
+    public void clearExecutionContext() {
+        ExecutionContext.setContextMap(null);
+    }
 
     @Override
     public String getOriginFileUrl(String corpCode, String appCode, String storedFileId) {

@@ -96,4 +96,11 @@
         <property name="configLocation" value="classpath:/ehcache.xml"/>
     </bean>
 
+    <bean id="fileServerService" class="com.qgutech.fs.utils.ServiceFactoryBean">
+        <property name="serviceInterface" value="com.qgutech.fs.service.FileServerService"/>
+        <property name="service">
+            <bean class="com.qgutech.fs.service.FileServerServiceImpl"/>
+        </property>
+    </bean>
+
 </beans>

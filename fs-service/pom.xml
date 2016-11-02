@@ -165,7 +165,14 @@
             <groupId>com.googlecode.ehcache-spring-annotations</groupId>
             <artifactId>ehcache-spring-annotations</artifactId>
         </dependency>
-        <!-- ehcache配置开始-->
+        <!-- ehcache配置结束-->
+
+        <!-- 单元测试开始-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <!-- 单元测试结束-->
 
     </dependencies>
 

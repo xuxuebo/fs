@@ -1,13 +1,15 @@
 package com.qgutech.fs.service;
 
 
-import com.qgutech.fs.service.FileServerService;
 import com.qgutech.fs.utils.ExecutionContext;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
 
+
+@Service("fileServerService")
 public class FileServerServiceImpl implements FileServerService {
 
     protected void setExecutionContext(String corpCode, String appCode) {

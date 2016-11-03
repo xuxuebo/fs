@@ -127,12 +127,12 @@ public class FileServerServiceImpl implements FileServerService {
             StringBuilder builder = new StringBuilder();
             for (VideoTypeEnum typeEnum : videoTypeEnums) {
                 if (ProcessorTypeEnum.ZVID.equals(processor)) {
-                    builder.append(FsConstants.PATH_SEPARATOR).append(i);
+                    builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
                 }
 
                 String videoType = typeEnum.name();
                 builder.append(FsConstants.PATH_SEPARATOR).append(videoType.toLowerCase())
-                        .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
+                        .append(FsConstants.PATH_SEPARATOR).append(videoType.toLowerCase())
                         .append(FsConstants.DEFAULT_VIDEO_SUFFIX);
                 videoTypeUrlMap.put(videoType, sb.toString() + builder.toString());
                 builder.delete(0, builder.length());

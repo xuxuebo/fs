@@ -17,6 +17,13 @@ public class FileServerServiceTest extends BaseServiceTest {
     }
 
     @Test
+    public void testGetVideoUrls() {
+        //402881d65828efe3015828efe5e90000
+        //402881d65828f018015828f01ae40000
+        fileServerService.getVideoUrls("zhaojie", "els", "402881d65828f018015828f01ae40000");
+    }
+
+    @Test
     public void test() {
         String[] split = "a|b".split(FsConstants.VERTICAL_LINE_REGEX);
         for (String s : split) {

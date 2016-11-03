@@ -68,14 +68,6 @@
     <!-- 启用事务注解 -->
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
 
-    <bean id="fileServerService" class="com.qgutech.fs.utils.ServiceFactoryBean">
-        <property name="serviceInterface" value="com.qgutech.fs.service.FileServerService"/>
-        <property name="service">
-            <bean class="com.qgutech.fs.service.FileServerServiceImpl"/>
-        </property>
-        <property name="serviceClass" value="com.qgutech.fs.service.FileServerServiceImpl"/>
-    </bean>
-
     <bean class="com.qgutech.fs.utils.PropertiesUtils">
         <property name="serverName" value="${fs.server.name}"/>
         <property name="httpProtocol" value="${fs.http.protocol}"/>

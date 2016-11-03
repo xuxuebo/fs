@@ -5,45 +5,115 @@ import java.util.Map;
 
 public interface FileServerService {
 
-    String getOriginFileUrl(String corpCode, String appCode, String storedFileId);
-
-    Map<String, String> getBatchOriginFileUrlMap(String corpCode, String appCode
-            , List<String> storedFileIdList);
-
     /**
-     * 根据公司编号，应用编号，文件在文件系统中的主键获取清晰度（由码率和分辨率决定）和视频url映射的列表。
-     * 此方法适用于单个视频文件以及视频包：<ul>
-     * <li>如果为单个视频，则列表的长度为1，每一个列表元素为一个视频的清晰度和url的映射。</li>
-     * <li>如果为视频包，则列表的长度为视频包中的视频个数，每一个列表元素为一个视频的清晰度和url的映射，
-     * 第一个视频对应第一个列表元素。</li>
-     * </ul>
+     * 根据文件在文件系统中的主键获取源文件url（未作改动的文件）。
      *
-     * @param corpCode     公司编号
-     * @param appCode      应用编号
      * @param storedFileId 文件在文件系统中的主键
-     * @return 清晰度和视频url的映射列表。
-     * @see com.qgutech.fs.domain.VideoTypeEnum 清晰度
+     * @return 源文件url
      */
-    List<Map<String, String>> getVideoUrls(String corpCode, String appCode, String storedFileId);
+    String getOriginFileUrl(String storedFileId);
 
     /**
-     * 根据公司编号，应用编号，文件在文件系统中的主键获取清晰度（由码率和分辨率决定）和视频url的映射。
-     * <b>注意：此方法仅适用于单个视频文件。</b>
+     * 根据文件在文件系统中的主键列表获取源文件url列表（未作改动的文件）。
      *
-     * @param corpCode     公司编号
-     * @param appCode      应用编号
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 源文件url列表
+     */
+    Map<String, String> getBatchOriginFileUrlMap(List<String> storedFileIdList);
+
+    /**
+     * 根据文件在文件系统中的主键获取清晰度（由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）
+     * 和视频url映射的列表。
+     * <b>此方法适用于单个视频文件以及视频包：<ul>
+     * <li>如果为单个视频，则列表的长度为1，每一个列表元素为一个视频清晰度和视频url的映射。</li>
+     * <li>如果为视频包，则列表的长度为视频包中的视频个数，每一个列表元素为一个视频清晰度和视频url的映射，
+     * 第一个视频清晰度和视频url的映射对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 视频清晰度和视频url的映射列表。
+     */
+    List<Map<String, String>> getVideoUrls(String storedFileId);
+
+    /**
+     * 根据文件在文件系统中的主键获取视频清晰度（
+     * 由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）和视频url的映射。
+     * <b>此方法适用于单个视频文件以及视频包：<ul>
+     * <li>如果为单个视频，则为视频清晰度和视频url的映射。</li>
+     * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频清晰度和视频url的映射。</li>
+     * </ul></b>
+     *
      * @param storedFileId 文件在文件系统中的主键
      * @return 清晰度和视频url的映射
-     * @see com.qgutech.fs.domain.VideoTypeEnum 清晰度
      */
-    Map<String, String> getVideoTypeUrlMap(String corpCode, String appCode, String storedFileId);
+    Map<String, String> getVideoTypeUrlMap(String storedFileId);
 
-    Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(String corpCode
-            , String appCode, List<String> storedFileIdList);
+    /**
+     * 根据文件在文件系统中的主键列表批量获取清晰度（由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）
+     * 和视频url映射的列表。
+     * <b>此方法适用于单个视频文件以及视频包,key为文件主键，value为视频清晰度和视频url映射的列表，列表如下：
+     * <ul>
+     * <li>如果为单个视频，则列表的长度为1，每一个列表元素为一个视频清晰度和视频url映射。</li>
+     * <li>如果为视频包，则列表的长度为视频包中的视频个数，每一个列表元素为一个视频清晰度和视频url映射，
+     * 第一个视频清晰度和视频url映射对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 批量返回清晰度和视频url映射的列表。
+     */
+    Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> storedFileIdList);
 
-    List<String> getVideoCoverUrls(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键获视频封面路径的列表。
+     * <b>此方法适用于单个视频文件以及视频包：<ul>
+     * <li>如果为单个视频，则列表的长度为1，每一个列表元素为一个视频的封面路径。</li>
+     * <li>如果为视频包，则列表的长度为视频包中的视频个数，每一个列表元素为一个视频的封面路径，
+     * 第一个视频封面路径对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 视频封面路径的列表。
+     */
+    List<String> getVideoCoverUrls(String storedFileId);
 
-    String getVideoCoverUrl(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键获视频封面路径。
+     * <b>此方法适用于单个视频文件以及视频包：<ul>
+     * <li>如果为单个视频，则为视频的封面路径。</li>
+     * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频封面路径。</li>
+     * </ul></b>
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 视频封面路径。
+     */
+    String getVideoCoverUrl(String storedFileId);
+
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和视频封面路径的映射。
+     * <b>此方法适用于单个视频文件以及视频包,key为文件主键，value为视频封面路径如下：
+     * <ul>
+     * <li>如果为单个视频，则为视频的封面路径。</li>
+     * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频封面路径。</li>
+     * </ul></b>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和视频封面路径的映射
+     */
+    Map<String, String> getBatchVideoCoverUrlMap(List<String> storedFileIdList);
+
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和视频封面路径列表的映射。
+     * <b>此方法适用于单个视频文件以及视频包,key为文件主键，value为视频封面路径的列表，列表如下：
+     * <ul>
+     * <li>如果为单个视频，则列表的长度为1，每一个列表元素为一个视频的封面路径。</li>
+     * <li>如果为视频包，则列表的长度为视频包中的视频个数，每一个列表元素为一个视频的封面路径，
+     * 第一个视频封面路径对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和视频封面路径列表的映射，key为文件主键，value为视频封面路径的列表
+     */
+    Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> storedFileIdList);
 
     String getHighVideoUrl(String corpCode, String appCode, String storedFileId);
 

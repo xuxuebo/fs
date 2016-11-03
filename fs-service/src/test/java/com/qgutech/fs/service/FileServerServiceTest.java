@@ -5,7 +5,7 @@ import com.qgutech.fs.utils.FsConstants;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-import java.util.UUID;
+import java.util.Arrays;
 
 public class FileServerServiceTest extends BaseServiceTest {
     @Resource
@@ -13,15 +13,41 @@ public class FileServerServiceTest extends BaseServiceTest {
 
     @Test
     public void testGetOriginFileUrl() {
-        fileServerService.getOriginFileUrl("zhaojie", "els", "402881d6582476410158247644bf0000");
+        fileServerService.getOriginFileUrl("402881d65828f018015828f01ae40000");
     }
 
     @Test
     public void testGetVideoUrls() {
-        //402881d65828efe3015828efe5e90000
-        //402881d65828f018015828f01ae40000
-        fileServerService.getVideoUrls("zhaojie", "els", "402881d65828f018015828f01ae40000");
+        fileServerService.getVideoUrls("402881d65828f018015828f01ae40000");
     }
+
+    @Test
+    public void testGetVideoTypeUrlMap() {
+        fileServerService.getVideoTypeUrlMap("402881d65828efe3015828efe5e90000");
+    }
+
+    @Test
+    public void testGetBatchVideoUrlsMap() {
+        fileServerService.getBatchVideoUrlsMap(Arrays.asList("402881d65828efe3015828efe5e90000"
+                , "402881d65828f018015828f01ae40000"));
+    }
+
+    @Test
+    public void testGetVideoCoverUrls() {
+        fileServerService.getVideoCoverUrls("402881d65828f018015828f01ae40000");
+    }
+
+    @Test
+    public void testGetVideoCoverUrl() {
+        fileServerService.getVideoCoverUrl("402881d65828efe3015828efe5e90000");
+    }
+
+    @Test
+    public void testGetBatchVideoCoverUrlsMap() {
+        fileServerService.getBatchVideoCoverUrlsMap(Arrays.asList("402881d65828efe3015828efe5e90000"
+                , "402881d65828f018015828f01ae40000"));
+    }
+
 
     @Test
     public void test() {

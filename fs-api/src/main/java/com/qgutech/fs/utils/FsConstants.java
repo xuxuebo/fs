@@ -17,4 +17,5 @@ public interface FsConstants {
     String POINT = ".";
     String VERTICAL_LINE_REGEX = "\\|";
     String COLON = ":";
+    String VIDEO_COVER = "vc.png";
 }

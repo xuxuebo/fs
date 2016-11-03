@@ -6,63 +6,41 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.VideoTypeEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.util.*;
 
-@BeforeMethod(name = "setExecutionContext", parameters = {String.class, String.class})
-@AfterMethod(name = "clearExecutionContext")
+@Service("fileServerService")
 public class FileServerServiceImpl implements FileServerService {
 
     @Resource
-    private SessionFactory sessionFactory;
-    @Resource
     private FsFileService fsFileService;
 
-    protected Session getSession() {
-        return sessionFactory.getCurrentSession();
-    }
-
-    public void setExecutionContext(String corpCode, String appCode) {
-        Assert.hasText(corpCode, "CorpCode is empty!");
-        Assert.hasText(appCode, "AppCode is empty!");
-        ExecutionContext.setCorpCode(corpCode);
-        ExecutionContext.setAppCode(appCode);
-    }
-
-    public void clearExecutionContext() {
-        ExecutionContext.setContextMap(null);
-    }
-
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public String getOriginFileUrl(String corpCode, String appCode, String storedFileId) {
+    public String getOriginFileUrl(String storedFileId) {
         Assert.hasText(storedFileId, "storedFileId is empty!");
-        return getBatchOriginFileUrlMap(corpCode, appCode, Arrays.asList(storedFileId)).get(storedFileId);
+        return getBatchOriginFileUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public Map<String, String> getBatchOriginFileUrlMap(String corpCode, String appCode
-            , List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIds is empty!");
+    public Map<String, String> getBatchOriginFileUrlMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
         if (CollectionUtils.isEmpty(storedFileIdList)) {
             return new HashMap<String, String>(0);
         }
 
+        //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
         Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(fsFiles.size());
         StringBuilder builder = new StringBuilder();
         for (FsFile fsFile : fsFiles) {
-            //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
-            builder.append(corpCode).append(FsConstants.PATH_SEPARATOR).append(appCode)
-                    .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FILE_DIR_SRC);
+            builder.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_SRC);
             String businessDir = fsFile.getBusinessDir();
             if (StringUtils.isNotEmpty(businessDir)) {
                 builder.append(FsConstants.PATH_SEPARATOR).append(businessDir);
@@ -80,12 +58,13 @@ public class FileServerServiceImpl implements FileServerService {
                 builder.append(FsConstants.PATH_SEPARATOR).append(ProcessorTypeEnum.ZIP.name().toLowerCase());
             }
 
+            String storedFileId = fsFile.getStoredFileId();
             builder.append(FsConstants.PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
                     .append(FsConstants.PATH_SEPARATOR).append(fsFile.getBusinessId())
-                    .append(FsConstants.PATH_SEPARATOR).append(fsFile.getStoredFileId())
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
                     .append(FsConstants.POINT).append(fsFile.getSuffix());
-            batchOriginFileUrlMap.put(fsFile.getStoredFileId(), builder.toString());
+            batchOriginFileUrlMap.put(storedFileId, builder.toString());
             builder.delete(0, builder.length());
         }
 
@@ -93,21 +72,15 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<Map<String, String>> getVideoUrls(String corpCode, String appCode, String storedFileId) {
+    public List<Map<String, String>> getVideoUrls(String storedFileId) {
         Assert.hasText(storedFileId, "storedFileId is empty!");
-        FsFile fsFile = fsFileService.get(storedFileId);
-        if (fsFile == null) {
-            return new ArrayList<Map<String, String>>(0);
-        }
-
-        return getBatchVideoUrlsMap(corpCode, appCode, Arrays.asList(storedFileId)).get(storedFileId);
+        return getBatchVideoUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override
-    public Map<String, String> getVideoTypeUrlMap(String corpCode, String appCode, String storedFileId) {
+    public Map<String, String> getVideoTypeUrlMap(String storedFileId) {
         Assert.hasText(storedFileId, "storedFileId is empty!");
-        List<Map<String, String>> videoUrls = getVideoUrls(corpCode, appCode, storedFileId);
+        List<Map<String, String>> videoUrls = getVideoUrls(storedFileId);
         if (CollectionUtils.isEmpty(videoUrls)) {
             return new HashMap<String, String>(0);
         }
@@ -116,19 +89,13 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(String corpCode
-            , String appCode, List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIds is empty!");
+    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<Map<String, String>>>(0);
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(corpCode).append(FsConstants.PATH_SEPARATOR).append(appCode)
-                .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FILE_DIR_GEN)
-                .append(FsConstants.PATH_SEPARATOR).append(FsConstants.DEFAULT_VIDEO_TYPE)
-                .append(FsConstants.PATH_SEPARATOR);
         Map<String, List<Map<String, String>>> batchVideoUrlsMap =
                 new HashMap<String, List<Map<String, String>>>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
@@ -140,8 +107,14 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String dateFormat = FsUtils.formatDateToYYMM(fsFile.getCreateTime());
             String storedFileId = fsFile.getStoredFileId();
+            StringBuilder sb = new StringBuilder();
+            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.DEFAULT_VIDEO_TYPE).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
             String[] vLevels = videoLevels.split(FsConstants.VERTICAL_LINE_REGEX);
             List<Map<String, String>> videoUrls = new ArrayList<Map<String, String>>(vLevels.length);
             for (int i = 0; i < vLevels.length; i++) {
@@ -151,7 +124,6 @@ public class FileServerServiceImpl implements FileServerService {
                 videoUrls.add(videoTypeUrlMap);
                 StringBuilder builder = new StringBuilder();
                 for (VideoTypeEnum typeEnum : videoTypeEnums) {
-                    builder.append(dateFormat).append(FsConstants.PATH_SEPARATOR).append(storedFileId);
                     if (ProcessorTypeEnum.ZVID.equals(processor)) {
                         builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
                     }
@@ -165,6 +137,7 @@ public class FileServerServiceImpl implements FileServerService {
                 }
             }
 
+            sb.delete(0, sb.length());
             batchVideoUrlsMap.put(storedFileId, videoUrls);
         }
 
@@ -172,17 +145,87 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<String> getVideoCoverUrls(String corpCode, String appCode, String storedFileId) {
-        Assert.hasText(storedFileId, "storedFileId is empty!");
-        return null;
+    public List<String> getVideoCoverUrls(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchVideoCoverUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public String getVideoCoverUrl(String corpCode, String appCode, String storedFileId) {
-        Assert.hasText(storedFileId, "storedFileId is empty!");
-        return null;
+    public String getVideoCoverUrl(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        List<String> videoCoverUrls = getVideoCoverUrls(storedFileId);
+        if (CollectionUtils.isEmpty(videoCoverUrls)) {
+            return null;
+        }
+
+        return videoCoverUrls.get(0);
+    }
+
+    @Override
+    public Map<String, String> getBatchVideoCoverUrlMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
+        Map<String, List<String>> batchVideoCoverUrlsMap = getBatchVideoCoverUrlsMap(storedFileIdList);
+        if (MapUtils.isEmpty(batchVideoCoverUrlsMap)) {
+            return new HashMap<String, String>(0);
+        }
+        Map<String, String> batchVideoCoverUrlMap =
+                new HashMap<String, String>(batchVideoCoverUrlsMap.size());
+        for (Map.Entry<String, List<String>> entry : batchVideoCoverUrlsMap.entrySet()) {
+            List<String> covers = entry.getValue();
+            if (CollectionUtils.isEmpty(covers)) {
+                continue;
+            }
+
+            batchVideoCoverUrlMap.put(entry.getKey(), covers.get(0));
+        }
+
+        return batchVideoCoverUrlMap;
+    }
+
+    @Override
+    public Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, List<String>>(0);
+        }
+
+        Map<String, List<String>> batchVideoCoverUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            ProcessorTypeEnum processor = fsFile.getProcessor();
+            String videoLevels = fsFile.getVideoLevels();
+            if ((!ProcessorTypeEnum.VID.equals(processor)
+                    && !ProcessorTypeEnum.ZVID.equals(processor))
+                    || StringUtils.isEmpty(videoLevels)) {
+                continue;
+            }
+
+            String storedFileId = fsFile.getStoredFileId();
+            StringBuilder sb = new StringBuilder();
+            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.DEFAULT_VIDEO_TYPE).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+            String[] vLevels = videoLevels.split(FsConstants.VERTICAL_LINE_REGEX);
+            List<String> videoCoverUrls = new ArrayList<String>(vLevels.length);
+            for (int i = 0; i < vLevels.length; i++) {
+                StringBuilder builder = new StringBuilder();
+                if (ProcessorTypeEnum.ZVID.equals(processor)) {
+                    builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
+                }
+
+                builder.append(FsConstants.PATH_SEPARATOR).append(FsConstants.VIDEO_COVER);
+                videoCoverUrls.add(sb.toString() + builder.toString());
+                builder.delete(0, builder.length());
+            }
+
+            sb.delete(0, sb.length());
+            batchVideoCoverUrlsMap.put(storedFileId, videoCoverUrls);
+        }
+
+        return batchVideoCoverUrlsMap;
     }
 
     @Override

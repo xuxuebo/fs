@@ -16,7 +16,7 @@ import java.util.List;
 
 import static com.qgutech.fs.domain.FsFile.*;
 
-@Service("storedFileService")
+@Service("fsFileService")
 public class FsFileServiceImpl implements FsFileService {
     @Resource
     private SessionFactory sessionFactory;

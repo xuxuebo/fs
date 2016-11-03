@@ -1,6 +1,6 @@
 package com.qgutech.fs.controller;
 
-import com.qgutech.fs.domain.StoredFile;
+import com.qgutech.fs.domain.FsFile;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -9,22 +9,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class FileController {
 
     @RequestMapping("/uploadFile")
-    public String uploadFile(StoredFile storedFile) {
+    public String uploadFile(FsFile fsFile) {
         return null;
     }
 
     @RequestMapping("/getFile/*")
-    public String getFile(StoredFile storedFile) {
+    public String getFile(FsFile fsFile) {
         return null;
     }
 
     @RequestMapping("/downloadFile/*")
-    public String downloadFile(StoredFile storedFile) {
+    public String downloadFile(FsFile fsFile) {
         return null;
     }
 
     @RequestMapping("/cutImage")
-    public String cutImage(StoredFile storedFile) {
+    public String cutImage(FsFile fsFile) {
         return null;
     }
 

@@ -15,4 +15,6 @@ public interface FsConstants {
     String FILE_DIR_TMP = "tmp";
     String PATH_SEPARATOR = "/";
     String POINT = ".";
+    String VERTICAL_LINE_REGEX = "\\|";
+    String COLON = ":";
 }

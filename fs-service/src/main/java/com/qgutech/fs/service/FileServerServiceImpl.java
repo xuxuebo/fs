@@ -2,7 +2,8 @@ package com.qgutech.fs.service;
 
 
 import com.qgutech.fs.domain.ProcessorTypeEnum;
-import com.qgutech.fs.domain.StoredFile;
+import com.qgutech.fs.domain.FsFile;
+import com.qgutech.fs.domain.VideoTypeEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -13,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @BeforeMethod(name = "setExecutionContext", parameters = {String.class, String.class})
 @AfterMethod(name = "clearExecutionContext")
@@ -25,7 +23,7 @@ public class FileServerServiceImpl implements FileServerService {
     @Resource
     private SessionFactory sessionFactory;
     @Resource
-    private StoredFileService storedFileService;
+    private FsFileService fsFileService;
 
     protected Session getSession() {
         return sessionFactory.getCurrentSession();
@@ -54,23 +52,23 @@ public class FileServerServiceImpl implements FileServerService {
     public Map<String, String> getBatchOriginFileUrlMap(String corpCode, String appCode
             , List<String> storedFileIdList) {
         Assert.notEmpty(storedFileIdList, "StoredFileIds is empty!");
-        List<StoredFile> storedFiles = storedFileService.listByIds(storedFileIdList);
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
         if (CollectionUtils.isEmpty(storedFileIdList)) {
             return new HashMap<String, String>(0);
         }
 
-        Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(storedFiles.size());
+        Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(fsFiles.size());
         StringBuilder builder = new StringBuilder();
-        for (StoredFile storedFile : storedFiles) {
+        for (FsFile fsFile : fsFiles) {
             //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
             builder.append(corpCode).append(FsConstants.PATH_SEPARATOR).append(appCode)
                     .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FILE_DIR_SRC);
-            String businessDir = storedFile.getBusinessDir();
+            String businessDir = fsFile.getBusinessDir();
             if (StringUtils.isNotEmpty(businessDir)) {
                 builder.append(FsConstants.PATH_SEPARATOR).append(businessDir);
             }
 
-            ProcessorTypeEnum processor = storedFile.getProcessor();
+            ProcessorTypeEnum processor = fsFile.getProcessor();
             if (ProcessorTypeEnum.DOC.equals(processor)
                     || ProcessorTypeEnum.AUD.equals(processor)
                     || ProcessorTypeEnum.VID.equals(processor)
@@ -83,15 +81,77 @@ public class FileServerServiceImpl implements FileServerService {
             }
 
             builder.append(FsConstants.PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(storedFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFile.getBusinessId())
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFile.getStoredFileId())
-                    .append(FsConstants.POINT).append(storedFile.getSuffix());
-            batchOriginFileUrlMap.put(storedFile.getStoredFileId(), builder.toString());
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(fsFile.getBusinessId())
+                    .append(FsConstants.PATH_SEPARATOR).append(fsFile.getStoredFileId())
+                    .append(FsConstants.POINT).append(fsFile.getSuffix());
+            batchOriginFileUrlMap.put(fsFile.getStoredFileId(), builder.toString());
             builder.delete(0, builder.length());
         }
 
         return batchOriginFileUrlMap;
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public List<Map<String, String>> getVideoUrls(String corpCode, String appCode, String storedFileId) {
+        Assert.hasText(storedFileId, "storedFileId is empty!");
+        FsFile fsFile = fsFileService.get(storedFileId);
+        if (fsFile == null) {
+            return new ArrayList<Map<String, String>>(0);
+        }
+
+        ProcessorTypeEnum processor = fsFile.getProcessor();
+        String videoLevels = fsFile.getVideoLevels();
+        if ((!ProcessorTypeEnum.VID.equals(processor)
+                && !ProcessorTypeEnum.ZVID.equals(processor))
+                || StringUtils.isEmpty(videoLevels)) {
+            return new ArrayList<Map<String, String>>(0);
+        }
+
+        //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
+        StringBuilder sb = new StringBuilder();
+        sb.append(corpCode).append(FsConstants.PATH_SEPARATOR).append(appCode)
+                .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FILE_DIR_GEN)
+                .append(FsConstants.PATH_SEPARATOR)
+                .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+
+        String[] vLevels = videoLevels.split(FsConstants.VERTICAL_LINE_REGEX);
+        List<Map<String, String>> videoUrls = new ArrayList<Map<String, String>>(vLevels.length);
+        for (int i = 0; i < vLevels.length; i++) {
+            VideoTypeEnum videoTypeEnum = VideoTypeEnum.valueOf(vLevels[i]);
+            VideoTypeEnum[] videoTypeEnums = VideoTypeEnum.getVideoTypeEnums(videoTypeEnum);
+            Map<String, String> videoTypeUrlMap = new HashMap<String, String>(videoTypeEnums.length);
+            videoUrls.add(videoTypeUrlMap);
+            StringBuilder builder = new StringBuilder();
+            for (VideoTypeEnum typeEnum : videoTypeEnums) {
+                if (ProcessorTypeEnum.ZVID.equals(processor)) {
+                    builder.append(FsConstants.PATH_SEPARATOR).append(i);
+                }
+
+                String videoType = typeEnum.name();
+                builder.append(FsConstants.PATH_SEPARATOR).append(videoType.toLowerCase())
+                        .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
+                        .append(FsConstants.DEFAULT_VIDEO_SUFFIX);
+                videoTypeUrlMap.put(videoType, sb.toString() + builder.toString());
+                builder.delete(0, builder.length());
+            }
+        }
+
+        return videoUrls;
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public Map<String, String> getVideoTypeUrlMap(String corpCode, String appCode, String storedFileId) {
+        Assert.hasText(storedFileId, "storedFileId is empty!");
+        List<Map<String, String>> videoUrls = getVideoUrls(corpCode, appCode, storedFileId);
+        if (CollectionUtils.isEmpty(videoUrls)) {
+            return new HashMap<String, String>(0);
+        }
+
+        return videoUrls.get(0);
     }
 
     @Override

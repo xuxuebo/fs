@@ -8,9 +8,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "t_fs_stored_file")
-//@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "commonCache")
-public class StoredFile {
+@Table(name = "t_fs_file")
+public class FsFile {
 
     public static final String _storedFileId = "storedFileId";
 
@@ -93,19 +92,18 @@ public class StoredFile {
     private String suffix;
 
     /**
-     * 视频的级别
+     * 视频的级别，多个视频使用|分割，如H|H|L。
      *
      * @see com.qgutech.fs.domain.VideoTypeEnum
      */
-    @Column(length = 10)
-    @Enumerated(EnumType.STRING)
-    private VideoTypeEnum videoLevel;
+    @Column(length = 50)
+    private String videoLevels;
 
     /**
-     * 视频时长
+     * 视频或者音频的时长，比如00:20:20|01:10:10|00:00:50
      */
-    @Column(length = 20)
-    private String duration;
+    @Column(length = 500)
+    private String durations;
 
     /**
      * 上传的文件对象
@@ -126,6 +124,13 @@ public class StoredFile {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     private Date updateTime;
+
+    /**
+     * 文件状态
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProcessStatusEnum status;
 
     public String getStoredFileId() {
         return storedFileId;
@@ -223,20 +228,20 @@ public class StoredFile {
         this.suffix = suffix;
     }
 
-    public VideoTypeEnum getVideoLevel() {
-        return videoLevel;
+    public String getVideoLevels() {
+        return videoLevels;
     }
 
-    public void setVideoLevel(VideoTypeEnum videoLevel) {
-        this.videoLevel = videoLevel;
+    public void setVideoLevels(String videoLevels) {
+        this.videoLevels = videoLevels;
     }
 
-    public String getDuration() {
-        return duration;
+    public String getDurations() {
+        return durations;
     }
 
-    public void setDuration(String duration) {
-        this.duration = duration;
+    public void setDurations(String durations) {
+        this.durations = durations;
     }
 
     public MultipartFile getFile() {
@@ -261,5 +266,13 @@ public class StoredFile {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public ProcessStatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(ProcessStatusEnum status) {
+        this.status = status;
     }
 }

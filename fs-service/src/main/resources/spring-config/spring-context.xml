@@ -76,4 +76,9 @@
         <property name="serviceClass" value="com.qgutech.fs.service.FileServerServiceImpl"/>
     </bean>
 
+    <bean class="com.qgutech.fs.utils.PropertiesUtils">
+        <property name="serverName" value="${fs.server.name}"/>
+        <property name="httpProtocol" value="${fs.http.protocol}"/>
+    </bean>
+
 </beans>

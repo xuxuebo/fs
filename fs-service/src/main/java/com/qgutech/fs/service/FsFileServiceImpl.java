@@ -1,6 +1,6 @@
 package com.qgutech.fs.service;
 
-import com.qgutech.fs.domain.StoredFile;
+import com.qgutech.fs.domain.FsFile;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -14,10 +14,10 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
-import static com.qgutech.fs.domain.StoredFile.*;
+import static com.qgutech.fs.domain.FsFile.*;
 
 @Service("storedFileService")
-public class StoredFileServiceImpl implements StoredFileService {
+public class FsFileServiceImpl implements FsFileService {
     @Resource
     private SessionFactory sessionFactory;
 
@@ -26,30 +26,30 @@ public class StoredFileServiceImpl implements StoredFileService {
     }
 
     protected Criteria createCriteria() {
-        return getSession().createCriteria(StoredFile.class);
+        return getSession().createCriteria(FsFile.class);
     }
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public StoredFile get(String storedFileId) {
+    public FsFile get(String storedFileId) {
         Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return (StoredFile) getSession().get(StoredFile.class, storedFileId);
+        return (FsFile) getSession().get(FsFile.class, storedFileId);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<StoredFile> listByIds(List<String> storedFileIds) {
+    public List<FsFile> listByIds(List<String> storedFileIds) {
         Assert.notEmpty(storedFileIds, "StoredFileIds is empty!");
         return createCriteria().add(Restrictions.in(_storedFileId, storedFileIds)).list();
     }
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public String save(StoredFile storedFile) {
-        Assert.notNull(storedFile, "StoredFile is null!");
-        storedFile.setCreateTime(new Date());
-        storedFile.setUpdateTime(new Date());
-        return (String) getSession().save(storedFile);
+    public String save(FsFile fsFile) {
+        Assert.notNull(fsFile, "FsFile is null!");
+        fsFile.setCreateTime(new Date());
+        fsFile.setUpdateTime(new Date());
+        return (String) getSession().save(fsFile);
     }
 }

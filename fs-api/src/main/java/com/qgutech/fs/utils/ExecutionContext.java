@@ -24,6 +24,8 @@ public class ExecutionContext {
      */
     public static final String APP_CODE = "app_code";
 
+    public static final String USER_ID = "user_id";
+
     public static Map<String, String> getContextMap() {
         return threadLocal.get();
     }
@@ -59,12 +61,19 @@ public class ExecutionContext {
         put(CORP_CODE, corpCode);
     }
 
-
     public static String getAppCode() {
         return get(APP_CODE);
     }
 
     public static void setAppCode(String appCode) {
         put(APP_CODE, appCode);
+    }
+
+    public static void setUserId(String userId) {
+        put(USER_ID, userId);
+    }
+
+    public static String getUserId() {
+        return get(USER_ID);
     }
 }

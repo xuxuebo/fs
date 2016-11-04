@@ -48,6 +48,12 @@ public class FileServerServiceTest extends BaseServiceTest {
                 , "402881d65828f018015828f01ae40000"));
     }
 
+    @Test
+    public void testFetBatchAudioUrlsMap() {
+        fileServerService.getBatchAudioUrlsMap(Arrays.asList("402881d6582de20b01582de20e3a0000"
+                , "402881d6582de22e01582de2311d0000"));
+    }
+
 
     @Test
     public void test() {

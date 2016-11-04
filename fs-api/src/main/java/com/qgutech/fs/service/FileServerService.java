@@ -7,6 +7,7 @@ public interface FileServerService {
 
     /**
      * 根据文件在文件系统中的主键获取源文件url（未作改动的文件）。
+     * 此方法适用于所有类型的文件。
      *
      * @param storedFileId 文件在文件系统中的主键
      * @return 源文件url
@@ -15,6 +16,7 @@ public interface FileServerService {
 
     /**
      * 根据文件在文件系统中的主键列表获取源文件url列表（未作改动的文件）。
+     * 此方法适用于所有类型的文件。
      *
      * @param storedFileIdList 文件在文件系统中的主键列表
      * @return 源文件url列表
@@ -115,23 +117,65 @@ public interface FileServerService {
      */
     Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> storedFileIdList);
 
-    String getHighVideoUrl(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键获音频的url路径。
+     * <b>此方法适用于单个音频文件以及音频包：<ul>
+     * <li>如果为单个音频，则为音频的url路径。</li>
+     * <li>如果为音频包，则为<span style='color:red;'>第一个</span>音频的url路径。</li>
+     * </ul></b>
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 音频的url路径
+     */
+    String getAudioUrl(String storedFileId);
 
-    String getMiddleVideoUrl(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键获音频url路径的列表。
+     * <b>此方法适用于单个音频文件以及音频包：<ul>
+     * <li>如果为单个音频，则列表的长度为1，每一个列表元素为一个音频的url路径。</li>
+     * <li>如果为音频包，则列表的长度为音频包中的音频个数，每一个列表元素为一个音频的url路径，
+     * 第一个音频url路径对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 音频url路径的列表
+     */
+    List<String> getAudioUrls(String storedFileId);
 
-    String getLowVideoUrl(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和音频url路径的映射。
+     * <b>此方法适用于单个音频文件以及音频包,key为文件主键，value为音频的url路径如下：
+     * <ul>
+     * <li>如果为单个音频，则为音频的url路径。</li>
+     * <li>如果为音频包，则为<span style='color:red;'>第一个</span>音频的url路径。</li>
+     * </ul></b>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和音频url路径的映射
+     */
+    Map<String, String> getBatchAudioUrlMap(List<String> storedFileIdList);
 
-    String getOriginVideoUrl(String corpCode, String appCode, String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和音频url路径列表的映射。
+     * <b>此方法适用于单个音频文件以及音频包,key为文件主键，value为音频url路径的列表，列表如下：
+     * <ul>
+     * <li>如果为单个音频，则列表的长度为1，每一个列表元素为一个音频的url路径。</li>
+     * <li>如果为音频包，则列表的长度为音频包中的音频个数，每一个列表元素为一个音频的url路径，
+     * 第一个音频的url路径对应第一个列表元素。</li>
+     * </ul></b>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和音频url路径列表的映射，key为文件主键，value为音频url路径的列表
+     */
+    Map<String, List<String>> getBatchAudioUrlsMap(List<String> storedFileIdList);
 
-    String getFileUrl(String corpCode, String appCode, String storedFileId);
+    String getFileUrl(String storedFileId);
 
-    Map<String, String> getBatchFileUrlMap(String corpCode, String appCode
-            , List<String> storedFileIdList);
+    Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList);
 
-    Integer getSubFileCount(String corpCode, String appCode, String storedFileId);
+    Integer getSubFileCount(String storedFileId);
 
-    List<Integer> getSubFileCountList(String corpCode, String appCode, String storedFileId);
+    List<Integer> getSubFileCountList(String storedFileId);
 
-    Map<String, Integer> getSubFileCountMap(String corpCode, String appCode
-            , List<String> storedFileIdList);
+    Map<String, Integer> getSubFileCountMap(List<String> storedFileIdList);
 }

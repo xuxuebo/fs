@@ -229,47 +229,110 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public String getHighVideoUrl(String corpCode, String appCode, String storedFileId) {
+    public String getAudioUrl(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        List<String> audioUrls = getAudioUrls(storedFileId);
+        if (CollectionUtils.isEmpty(audioUrls)) {
+            return null;
+        }
+
+        return audioUrls.get(0);
+    }
+
+    @Override
+    public List<String> getAudioUrls(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchAudioUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    }
+
+    @Override
+    public Map<String, String> getBatchAudioUrlMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
+        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(storedFileIdList);
+        if (MapUtils.isEmpty(batchAudioUrlsMap)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchAudioUrlMap = new HashMap<String, String>(batchAudioUrlsMap.size());
+        for (String storedFileId : storedFileIdList) {
+            List<String> audioUrls = batchAudioUrlsMap.get(storedFileId);
+            if (CollectionUtils.isEmpty(audioUrls)) {
+                continue;
+            }
+
+            batchAudioUrlMap.put(storedFileId, audioUrls.get(0));
+        }
+
+        return batchAudioUrlMap;
+    }
+
+    @Override
+    public Map<String, List<String>> getBatchAudioUrlsMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, List<String>>(0);
+        }
+
+        Map<String, List<String>> batchAudioUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            ProcessorTypeEnum processor = fsFile.getProcessor();
+            if (!ProcessorTypeEnum.AUD.equals(processor)
+                    && !ProcessorTypeEnum.ZAUD.equals(processor)) {
+                continue;
+            }
+
+            String storedFileId = fsFile.getStoredFileId();
+            StringBuilder sb = new StringBuilder();
+            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.DEFAULT_AUDIO_TYPE).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+            Integer subFileCount = fsFile.getSubFileCount();
+            subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
+            List<String> audioUrls = new ArrayList<String>(subFileCount);
+            for (int i = 0; i < subFileCount; i++) {
+                StringBuilder builder = new StringBuilder();
+                if (ProcessorTypeEnum.ZAUD.equals(processor)) {
+                    builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
+                }
+
+                builder.append(FsConstants.PATH_SEPARATOR).append(FsConstants.DEFAULT_AUDIO_NAME);
+                audioUrls.add(sb.toString() + builder.toString());
+                builder.delete(0, builder.length());
+            }
+
+            sb.delete(0, sb.length());
+            batchAudioUrlsMap.put(storedFileId, audioUrls);
+        }
+
+        return batchAudioUrlsMap;
+    }
+
+    @Override
+    public String getFileUrl(String storedFileId) {
         return null;
     }
 
     @Override
-    public String getMiddleVideoUrl(String corpCode, String appCode, String storedFileId) {
+    public Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList) {
         return null;
     }
 
     @Override
-    public String getLowVideoUrl(String corpCode, String appCode, String storedFileId) {
+    public Integer getSubFileCount(String storedFileId) {
         return null;
     }
 
     @Override
-    public String getOriginVideoUrl(String corpCode, String appCode, String storedFileId) {
+    public List<Integer> getSubFileCountList(String storedFileId) {
         return null;
     }
 
     @Override
-    public String getFileUrl(String corpCode, String appCode, String storedFileId) {
-        return null;
-    }
-
-    @Override
-    public Map<String, String> getBatchFileUrlMap(String corpCode, String appCode, List<String> storedFileIdList) {
-        return null;
-    }
-
-    @Override
-    public Integer getSubFileCount(String corpCode, String appCode, String storedFileId) {
-        return null;
-    }
-
-    @Override
-    public List<Integer> getSubFileCountList(String corpCode, String appCode, String storedFileId) {
-        return null;
-    }
-
-    @Override
-    public Map<String, Integer> getSubFileCountMap(String corpCode, String appCode, List<String> storedFileIdList) {
+    public Map<String, Integer> getSubFileCountMap(List<String> storedFileIdList) {
         return null;
     }
 }

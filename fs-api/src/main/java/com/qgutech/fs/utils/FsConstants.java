@@ -18,4 +18,5 @@ public interface FsConstants {
     String VERTICAL_LINE_REGEX = "\\|";
     String COLON = ":";
     String VIDEO_COVER = "vc.png";
+    String DEFAULT_AUDIO_NAME = "a.mp3";
 }

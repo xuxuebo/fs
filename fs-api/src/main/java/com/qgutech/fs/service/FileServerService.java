@@ -269,9 +269,56 @@ public interface FileServerService {
      */
     Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList);
 
-    Integer getSubFileCount(String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键获取文件的子文件数量。
+     * 具体参见{@link FileServerService#getBatchSubFileCountMap(java.util.List)}
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 文件的子文件数量
+     */
+    Long getSubFileCount(String storedFileId);
 
-    List<Integer> getSubFileCountList(String storedFileId);
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和文件的子文件数量的映射。
+     * <ul>
+     * <li>如果文件为单个视频{@link com.qgutech.fs.domain.ProcessorTypeEnum#VID}
+     * ，单个音频{@link com.qgutech.fs.domain.ProcessorTypeEnum#AUD}
+     * ，单张图片{@link com.qgutech.fs.domain.ProcessorTypeEnum#IMG}
+     * ，压缩包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIP}
+     * ，不做处理的文件{@link com.qgutech.fs.domain.ProcessorTypeEnum#FILE}时，子文件数量为0。</li>
+     * <li>如果文件为单个文档{@link com.qgutech.fs.domain.ProcessorTypeEnum#DOC}时
+     * ，子文件数量为文档的页数。</li>
+     * <li>如果文件为文档包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZDOC}
+     * ，图片包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIMG}
+     * ，视频包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZVID}
+     * ，音频包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZAUD}时
+     * ，子文件数量为压缩包中的文档数。</li>
+     * </ul>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和文件的子文件数量的映射，key为文件主键，value为文件的子文件数量
+     */
+    Map<String, Long> getBatchSubFileCountMap(List<String> storedFileIdList);
 
-    Map<String, Integer> getSubFileCountMap(List<String> storedFileIdList);
+    /**
+     * 根据文件在文件系统中的主键获取文档包的每个文档的页数列表。
+     * 比如，文档包有三个文档，第一个文档100页，第二个33页，第三个67页。
+     * 则列表中的第一个元素为100，列表中的第二个元素为33，列表中的第三个元素为67。
+     * 此方法只适用于文档包。
+     *
+     * @param storedFileId 文件在文件系统中的主键列表
+     * @return 文档包的每个文档的页数列表
+     */
+    List<Long> getSubFileCounts(String storedFileId);
+
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和文档包的每个文档的页数列表的映射。
+     * 比如，文档包有三个文档，第一个文档100页，第二个33页，第三个67页。
+     * 则列表中的第一个元素为100，列表中的第二个元素为33，列表中的第三个元素为67。
+     * 此方法只适用于文档包。
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和文档包的每个文档的页数列表的映射，key为文件主键，value为文档包的每个文档的页数列表
+     */
+    Map<String, List<Long>> getBatchSubFileCountsMap(List<String> storedFileIdList);
 }

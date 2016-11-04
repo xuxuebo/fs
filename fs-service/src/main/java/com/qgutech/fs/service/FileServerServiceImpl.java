@@ -503,17 +503,70 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Integer getSubFileCount(String storedFileId) {
-        return null;
+    public Long getSubFileCount(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchSubFileCountMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override
-    public List<Integer> getSubFileCountList(String storedFileId) {
-        return null;
+    public Map<String, Long> getBatchSubFileCountMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, Long>(0);
+        }
+
+        Map<String, Long> batchSubFileCountMap = new HashMap<String, Long>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            String storedFileId = fsFile.getStoredFileId();
+            ProcessorTypeEnum processor = fsFile.getProcessor();
+            if (ProcessorTypeEnum.DOC.equals(processor)
+                    || ProcessorTypeEnum.ZDOC.equals(processor)
+                    || ProcessorTypeEnum.ZIMG.equals(processor)
+                    || ProcessorTypeEnum.ZAUD.equals(processor)
+                    || ProcessorTypeEnum.ZVID.equals(processor)) {
+                Integer subFileCount = fsFile.getSubFileCount();
+                subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
+                batchSubFileCountMap.put(storedFileId, subFileCount.longValue());
+            } else {
+                batchSubFileCountMap.put(storedFileId, 0l);
+            }
+        }
+
+        return batchSubFileCountMap;
     }
 
     @Override
-    public Map<String, Integer> getSubFileCountMap(List<String> storedFileIdList) {
-        return null;
+    public List<Long> getSubFileCounts(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchSubFileCountsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    }
+
+    @Override
+    public Map<String, List<Long>> getBatchSubFileCountsMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, List<Long>>(0);
+        }
+
+        Map<String, List<Long>> batchSubFileCountsMap = new HashMap<String, List<Long>>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            String subFileCounts = fsFile.getSubFileCounts();
+            if (!ProcessorTypeEnum.ZDOC.equals(fsFile.getProcessor())
+                    || StringUtils.isEmpty(subFileCounts)) {
+                continue;
+            }
+
+            String[] subFileCountList = subFileCounts.split(FsConstants.VERTICAL_LINE_REGEX);
+            List<Long> subCounts = new ArrayList<Long>(subFileCountList.length);
+            for (String subCount : subFileCountList) {
+                subCounts.add(Long.parseLong(subCount));
+            }
+
+            batchSubFileCountsMap.put(fsFile.getStoredFileId(), subCounts);
+        }
+
+        return batchSubFileCountsMap;
     }
 }

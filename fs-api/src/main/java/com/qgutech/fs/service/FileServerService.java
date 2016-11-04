@@ -190,10 +190,6 @@ public interface FileServerService {
      */
     String getZipUrl(String storedFileId);
 
-    String getImageUrl(String storedFileId);
-
-    Map<String, String> getBatchImageUrlMap(List<String> storedFileIdList);
-
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和压缩文件解压后的index.html页面url路径的映射。
      * 此方法只适合于压缩类型{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIP}
@@ -202,6 +198,34 @@ public interface FileServerService {
      * @return 文件主键和压缩文件解压后的index.html页面url路径的映射
      */
     Map<String, String> getBatchZipUrlMap(List<String> storedFileIdList);
+
+    /**
+     * 根据文件在文件系统中的主键获取图片的url路径。
+     * 图片的url路径具体参见{@link FileServerService#getBatchImageUrlMap(java.util.List)}
+     *
+     * @param storedFileId 文件在文件系统中的主键
+     * @return 图片url路径
+     */
+    String getImageUrl(String storedFileId);
+
+    /**
+     * 根据文件在文件系统中的主键列表获取文件主键和图片url路径的映射。
+     * key为文件主键，value为图片url路径，此方法适用于以下几类文件。
+     * <ul>
+     * <li>如果为单个文档{@link com.qgutech.fs.domain.ProcessorTypeEnum#DOC}
+     * ，则图片url为文档转化为图片集后的第一张图片的url路径。</li>
+     * <li>如果为文档包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZDOC}
+     * ，则图片url路径为文档包的第一个文档转化为图片集后的第一张图片的url路径。</li>
+     * <li>如果为单个图片{@link com.qgutech.fs.domain.ProcessorTypeEnum#IMG}
+     * ，则文件url路径为图片转化为默认类型图片（png）的url路径。</li>
+     * <li>如果为图片包{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIMG}
+     * ，则文件url路径为图片包中的第一张图片转化为默认类型图片（png）的url路径。</li>
+     * <ul/>
+     *
+     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @return 文件主键和图片url路径的映射，key为文件主键，value为图片url路径
+     */
+    Map<String, String> getBatchImageUrlMap(List<String> storedFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取文件得url路径。

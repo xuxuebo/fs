@@ -312,13 +312,194 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
+    public String getZipUrl(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchZipUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    }
+
+    @Override
+    public String getImageUrl(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchImageUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    }
+
+    @Override
+    public Map<String, String> getBatchImageUrlMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchImageUrlMap = new HashMap<String, String>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            ProcessorTypeEnum processor = fsFile.getProcessor();
+            if (!ProcessorTypeEnum.IMG.equals(processor)
+                    && !ProcessorTypeEnum.ZIMG.equals(processor)
+                    && !ProcessorTypeEnum.DOC.equals(processor)
+                    && !ProcessorTypeEnum.ZDOC.equals(processor)) {
+                continue;
+            }
+
+            String storedFileId = fsFile.getStoredFileId();
+            StringBuilder sb = new StringBuilder();
+            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_IMG).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+            if (ProcessorTypeEnum.IMG.equals(processor)) {
+                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.ORIGIN_IMAGE_NAME);
+            } else if (ProcessorTypeEnum.DOC.equals(processor)
+                    || ProcessorTypeEnum.ZIMG.equals(processor)) {
+                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
+                        .append(FsConstants.ORIGIN_IMAGE_NAME);
+            } else {
+                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
+                        .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
+                        .append(FsConstants.ORIGIN_IMAGE_NAME);
+            }
+
+            batchImageUrlMap.put(storedFileId, sb.toString());
+            sb.delete(0, sb.length());
+        }
+
+        return batchImageUrlMap;
+    }
+
+    @Override
+    public Map<String, String> getBatchZipUrlMap(List<String> storedFileIdList) {
+        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchZipUrlMap = new HashMap<String, String>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            if (!ProcessorTypeEnum.ZIP.equals(fsFile.getProcessor())) {
+                continue;
+            }
+
+            String storedFileId = fsFile.getStoredFileId();
+            StringBuilder builder = new StringBuilder();
+            builder.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsConstants.FILE_DIR_UNZIP).append(FsConstants.PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
+                    .append(FsConstants.PATH_SEPARATOR).append(FsConstants.ZIP_INDEX_FILE);
+            batchZipUrlMap.put(storedFileId, builder.toString());
+            builder.delete(0, builder.length());
+        }
+
+        return batchZipUrlMap;
+    }
+
+    @Override
     public String getFileUrl(String storedFileId) {
-        return null;
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        return getBatchFileUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
     @Override
     public Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList) {
-        return null;
+        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchFileUrlMap = new HashMap<String, String>(fsFiles.size());
+        List<String> files = new ArrayList<String>();
+        List<String> zips = new ArrayList<String>();
+        List<String> images = new ArrayList<String>();
+        List<String> videos = new ArrayList<String>();
+        List<String> audios = new ArrayList<String>();
+        for (FsFile fsFile : fsFiles) {
+            String storedFileId = fsFile.getStoredFileId();
+            switch (fsFile.getProcessor()) {
+                case FILE:
+                    files.add(storedFileId);
+                    break;
+                case ZIP:
+                    zips.add(storedFileId);
+                    break;
+                case DOC:
+                    images.add(storedFileId);
+                    break;
+                case ZDOC:
+                    images.add(storedFileId);
+                    break;
+                case IMG:
+                    images.add(storedFileId);
+                    break;
+                case ZIMG:
+                    images.add(storedFileId);
+                    break;
+                case VID:
+                    videos.add(storedFileId);
+                    break;
+                case ZVID:
+                    videos.add(storedFileId);
+                    break;
+                case AUD:
+                    audios.add(storedFileId);
+                    break;
+                case ZAUD:
+                    audios.add(storedFileId);
+                    break;
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(files)) {
+            Map<String, String> batchOriginFileUrlMap = getBatchOriginFileUrlMap(files);
+            if (MapUtils.isNotEmpty(batchOriginFileUrlMap)) {
+                batchFileUrlMap.putAll(batchOriginFileUrlMap);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(zips)) {
+            Map<String, String> batchZipUrlMap = getBatchZipUrlMap(zips);
+            if (MapUtils.isNotEmpty(batchZipUrlMap)) {
+                batchFileUrlMap.putAll(batchZipUrlMap);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(images)) {
+            Map<String, String> batchImageUrlMap = getBatchImageUrlMap(images);
+            if (MapUtils.isNotEmpty(batchImageUrlMap)) {
+                batchFileUrlMap.putAll(batchImageUrlMap);
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(videos)) {
+            Map<String, List<Map<String, String>>> batchVideoUrlsMap = getBatchVideoUrlsMap(videos);
+            if (MapUtils.isNotEmpty(batchVideoUrlsMap)) {
+                for (String video : videos) {
+                    List<Map<String, String>> videoUrls = batchVideoUrlsMap.get(video);
+                    if (CollectionUtils.isEmpty(videoUrls) || videoUrls.get(0) == null) {
+                        continue;
+                    }
+
+                    String originVideoUrl = videoUrls.get(0).get(VideoTypeEnum.O.name());
+                    if (StringUtils.isNotEmpty(originVideoUrl)) {
+                        batchFileUrlMap.put(video, originVideoUrl);
+                    }
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(audios)) {
+            Map<String, String> batchAudioUrlMap = getBatchAudioUrlMap(audios);
+            if (MapUtils.isNotEmpty(batchAudioUrlMap)) {
+                batchFileUrlMap.putAll(batchAudioUrlMap);
+            }
+        }
+
+        return batchFileUrlMap;
     }
 
     @Override

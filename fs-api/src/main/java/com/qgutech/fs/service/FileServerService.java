@@ -11,19 +11,19 @@ public interface FileServerService {
      * 根据文件在文件系统中的主键获取源文件url（未作改动的文件）。
      * 此方法适用于所有类型的文件。
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 源文件url
      */
-    String getOriginFileUrl(String storedFileId);
+    String getOriginFileUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取源文件url列表（未作改动的文件）。
      * 此方法适用于所有类型的文件。
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 源文件url列表
      */
-    Map<String, String> getBatchOriginFileUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取清晰度（由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）
@@ -35,10 +35,10 @@ public interface FileServerService {
      * 第一个视频清晰度和视频url的映射对应第一个列表元素。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 视频清晰度和视频url的映射列表。
      */
-    List<Map<String, String>> getVideoUrls(String storedFileId);
+    List<Map<String, String>> getVideoUrls(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键获取视频清晰度（
@@ -49,10 +49,10 @@ public interface FileServerService {
      * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频清晰度和视频url的映射。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 清晰度和视频url的映射
      */
-    Map<String, String> getVideoTypeUrlMap(String storedFileId);
+    Map<String, String> getVideoTypeUrlMap(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表批量获取清晰度（由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）
@@ -65,10 +65,10 @@ public interface FileServerService {
      * 第一个视频清晰度和视频url映射对应第一个列表元素。</li>
      * </ul></b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 批量返回清晰度和视频url映射的列表。
      */
-    Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> storedFileIdList);
+    Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获视频封面路径的列表。
@@ -79,10 +79,10 @@ public interface FileServerService {
      * 第一个视频封面路径对应第一个列表元素。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 视频封面路径的列表。
      */
-    List<String> getVideoCoverUrls(String storedFileId);
+    List<String> getVideoCoverUrls(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键获视频封面路径。
@@ -92,10 +92,10 @@ public interface FileServerService {
      * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频封面路径。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 视频封面路径。
      */
-    String getVideoCoverUrl(String storedFileId);
+    String getVideoCoverUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和视频封面路径的映射。
@@ -106,10 +106,10 @@ public interface FileServerService {
      * <li>如果为视频包，则为<span style='color:red;'>第一个</span>视频封面路径。</li>
      * </ul></b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和视频封面路径的映射
      */
-    Map<String, String> getBatchVideoCoverUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchVideoCoverUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和视频封面路径列表的映射。
@@ -121,10 +121,10 @@ public interface FileServerService {
      * 第一个视频封面路径对应第一个列表元素。</li>
      * </ul></b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和视频封面路径列表的映射，key为文件主键，value为视频封面路径的列表
      */
-    Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> storedFileIdList);
+    Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获音频的url路径。
@@ -134,10 +134,10 @@ public interface FileServerService {
      * <li>如果为音频包，则为<span style='color:red;'>第一个</span>音频的url路径。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 音频的url路径
      */
-    String getAudioUrl(String storedFileId);
+    String getAudioUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键获音频url路径的列表。
@@ -148,10 +148,10 @@ public interface FileServerService {
      * 第一个音频url路径对应第一个列表元素。</li>
      * </ul></b>
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 音频url路径的列表
      */
-    List<String> getAudioUrls(String storedFileId);
+    List<String> getAudioUrls(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和音频url路径的映射。
@@ -162,10 +162,10 @@ public interface FileServerService {
      * <li>如果为音频包，则为<span style='color:red;'>第一个</span>音频的url路径。</li>
      * </ul></b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和音频url路径的映射
      */
-    Map<String, String> getBatchAudioUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchAudioUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和音频url路径列表的映射。
@@ -178,37 +178,37 @@ public interface FileServerService {
      * </ul>
      * </b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和音频url路径列表的映射，key为文件主键，value为音频url路径的列表
      */
-    Map<String, List<String>> getBatchAudioUrlsMap(List<String> storedFileIdList);
+    Map<String, List<String>> getBatchAudioUrlsMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取压缩文件解压后的index.html页面的url路径。
      * 此方法只适合于压缩类型{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIP}
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 压缩文件解压后的index.html页面的url路径
      */
-    String getZipUrl(String storedFileId);
+    String getZipUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和压缩文件解压后的index.html页面url路径的映射。
      * 此方法只适合于压缩类型{@link com.qgutech.fs.domain.ProcessorTypeEnum#ZIP}
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和压缩文件解压后的index.html页面url路径的映射
      */
-    Map<String, String> getBatchZipUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取图片的url路径。
      * 图片的url路径具体参见{@link FileServerService#getBatchImageUrlMap(java.util.List)}
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 图片url路径
      */
-    String getImageUrl(String storedFileId);
+    String getImageUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和图片url路径的映射。
@@ -224,19 +224,19 @@ public interface FileServerService {
      * ，则文件url路径为图片包中的第一张图片转化为默认类型图片（png）的url路径。</li>
      * <ul/>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和图片url路径的映射，key为文件主键，value为图片url路径
      */
-    Map<String, String> getBatchImageUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchImageUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取文件得url路径。
      * 文件得url路径具体参见{@link FileServerService#getBatchFileUrlMap(java.util.List)}
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 文件url路径
      */
-    String getFileUrl(String storedFileId);
+    String getFileUrl(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和文件url路径的映射。
@@ -266,19 +266,19 @@ public interface FileServerService {
      * </ul>
      * </b>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和文件url路径的映射，key为文件主键，value为文件url路径
      */
-    Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList);
+    Map<String, String> getBatchFileUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取文件的子文件数量。
      * 具体参见{@link FileServerService#getBatchSubFileCountMap(java.util.List)}
      *
-     * @param storedFileId 文件在文件系统中的主键
+     * @param fsFileId 文件在文件系统中的主键
      * @return 文件的子文件数量
      */
-    Long getSubFileCount(String storedFileId);
+    Long getSubFileCount(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和文件的子文件数量的映射。
@@ -297,10 +297,10 @@ public interface FileServerService {
      * ，子文件数量为压缩包中的文档数。</li>
      * </ul>
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和文件的子文件数量的映射，key为文件主键，value为文件的子文件数量
      */
-    Map<String, Long> getBatchSubFileCountMap(List<String> storedFileIdList);
+    Map<String, Long> getBatchSubFileCountMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取文档包的每个文档的页数列表。
@@ -308,10 +308,10 @@ public interface FileServerService {
      * 则列表中的第一个元素为100，列表中的第二个元素为33，列表中的第三个元素为67。
      * 此方法只适用于文档包。
      *
-     * @param storedFileId 文件在文件系统中的主键列表
+     * @param fsFileId 文件在文件系统中的主键列表
      * @return 文档包的每个文档的页数列表
      */
-    List<Long> getSubFileCounts(String storedFileId);
+    List<Long> getSubFileCounts(String fsFileId);
 
     /**
      * 根据文件在文件系统中的主键列表获取文件主键和文档包的每个文档的页数列表的映射。
@@ -319,14 +319,33 @@ public interface FileServerService {
      * 则列表中的第一个元素为100，列表中的第二个元素为33，列表中的第三个元素为67。
      * 此方法只适用于文档包。
      *
-     * @param storedFileIdList 文件在文件系统中的主键列表
+     * @param fsFileIdList 文件在文件系统中的主键列表
      * @return 文件主键和文档包的每个文档的页数列表的映射，key为文件主键，value为文档包的每个文档的页数列表
      */
-    Map<String, List<Long>> getBatchSubFileCountsMap(List<String> storedFileIdList);
+    Map<String, List<Long>> getBatchSubFileCountsMap(List<String> fsFileIdList);
 
+    /**
+     * 根据公司编号获取公司可以上传文件的文档服务器（包含default公司的）列表。
+     *
+     * @param corpCode 公司编号
+     * @return 公司可以上传文件的文档服务器（包含default公司的）列表
+     */
     List<FsServer> getUploadFsServerList(String corpCode);
 
-    List<FsServer> getDownloadFsServerList(String storedFileId);
+    /**
+     * 根据文件主键获取可以下载该文件的文档服务器列表。
+     *
+     * @param fsFileId 文件在文件系统中的主键
+     * @return 可以下载该文件的文档服务器列表
+     */
+    List<FsServer> getDownloadFsServerList(String fsFileId);
 
+    /**
+     * 根据公司编号和文档服务器编号获取可以下载的文档服务器列表。
+     *
+     * @param corpCode   公司编号
+     * @param serverCode 文档服务器编号
+     * @return 可以下载的文档服务器列表
+     */
     List<FsServer> getDownloadFsServerListByServerCode(String corpCode, String serverCode);
 }

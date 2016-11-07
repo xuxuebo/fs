@@ -24,9 +24,9 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     private FsServerService fsServerService;
 
     @Override
-    public String getOriginFileUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "storedFileId is empty!");
-        return getBatchOriginFileUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public String getOriginFileUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchOriginFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     private Map<String, FsServer> getFileIdFsServerMap(List<FsFile> fsFiles) {
@@ -75,9 +75,9 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, String> getBatchOriginFileUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
         }
@@ -121,15 +121,15 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public List<Map<String, String>> getVideoUrls(String storedFileId) {
-        Assert.hasText(storedFileId, "storedFileId is empty!");
-        return getBatchVideoUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public List<Map<String, String>> getVideoUrls(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchVideoUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getVideoTypeUrlMap(String storedFileId) {
-        Assert.hasText(storedFileId, "storedFileId is empty!");
-        List<Map<String, String>> videoUrls = getVideoUrls(storedFileId);
+    public Map<String, String> getVideoTypeUrlMap(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        List<Map<String, String>> videoUrls = getVideoUrls(fsFileId);
         if (CollectionUtils.isEmpty(videoUrls)) {
             return new HashMap<String, String>(0);
         }
@@ -138,15 +138,16 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<Map<String, String>>>(0);
         }
 
         Map<String, List<Map<String, String>>> batchVideoUrlsMap =
                 new HashMap<String, List<Map<String, String>>>(fsFiles.size());
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         for (FsFile fsFile : fsFiles) {
             ProcessorTypeEnum processor = fsFile.getProcessor();
             String videoLevels = fsFile.getVideoLevels();
@@ -156,13 +157,17 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                 continue;
             }
 
-            String storedFileId = fsFile.getId();
+            String fsFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR).append(fsFile.getAppCode())
-                    .append(PATH_SEPARATOR).append(FILE_DIR_GEN).append(PATH_SEPARATOR)
-                    .append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(fsFileId);
             String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
             List<Map<String, String>> videoUrls = new ArrayList<Map<String, String>>(vLevels.length);
             for (int i = 0; i < vLevels.length; i++) {
@@ -177,31 +182,30 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                     }
 
                     String videoType = typeEnum.name();
-                    builder.append(PATH_SEPARATOR).append(videoType.toLowerCase())
-                            .append(PATH_SEPARATOR).append(videoType.toLowerCase())
-                            .append(DEFAULT_VIDEO_SUFFIX);
+                    builder.append(PATH_SEPARATOR).append(videoType.toLowerCase()).append(PATH_SEPARATOR)
+                            .append(videoType.toLowerCase()).append(DEFAULT_VIDEO_SUFFIX);
                     videoTypeUrlMap.put(videoType, sb.toString() + builder.toString());
                     builder.delete(0, builder.length());
                 }
             }
 
             sb.delete(0, sb.length());
-            batchVideoUrlsMap.put(storedFileId, videoUrls);
+            batchVideoUrlsMap.put(fsFileId, videoUrls);
         }
 
         return batchVideoUrlsMap;
     }
 
     @Override
-    public List<String> getVideoCoverUrls(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchVideoCoverUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public List<String> getVideoCoverUrls(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchVideoCoverUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public String getVideoCoverUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        List<String> videoCoverUrls = getVideoCoverUrls(storedFileId);
+    public String getVideoCoverUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        List<String> videoCoverUrls = getVideoCoverUrls(fsFileId);
         if (CollectionUtils.isEmpty(videoCoverUrls)) {
             return null;
         }
@@ -210,9 +214,9 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, String> getBatchVideoCoverUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        Map<String, List<String>> batchVideoCoverUrlsMap = getBatchVideoCoverUrlsMap(storedFileIdList);
+    public Map<String, String> getBatchVideoCoverUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Map<String, List<String>> batchVideoCoverUrlsMap = getBatchVideoCoverUrlsMap(fsFileIdList);
         if (MapUtils.isEmpty(batchVideoCoverUrlsMap)) {
             return new HashMap<String, String>(0);
         }
@@ -231,13 +235,14 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<String>>(0);
         }
 
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         Map<String, List<String>> batchVideoCoverUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
             ProcessorTypeEnum processor = fsFile.getProcessor();
@@ -248,14 +253,17 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                 continue;
             }
 
-            String storedFileId = fsFile.getId();
+            String fsFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
-                    .append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(fsFileId);
             String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
             List<String> videoCoverUrls = new ArrayList<String>(vLevels.length);
             for (int i = 0; i < vLevels.length; i++) {
@@ -270,16 +278,16 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             }
 
             sb.delete(0, sb.length());
-            batchVideoCoverUrlsMap.put(storedFileId, videoCoverUrls);
+            batchVideoCoverUrlsMap.put(fsFileId, videoCoverUrls);
         }
 
         return batchVideoCoverUrlsMap;
     }
 
     @Override
-    public String getAudioUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        List<String> audioUrls = getAudioUrls(storedFileId);
+    public String getAudioUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        List<String> audioUrls = getAudioUrls(fsFileId);
         if (CollectionUtils.isEmpty(audioUrls)) {
             return null;
         }
@@ -288,21 +296,21 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public List<String> getAudioUrls(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchAudioUrlsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public List<String> getAudioUrls(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchAudioUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchAudioUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
-        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(storedFileIdList);
+    public Map<String, String> getBatchAudioUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(fsFileIdList);
         if (MapUtils.isEmpty(batchAudioUrlsMap)) {
             return new HashMap<String, String>(0);
         }
 
         Map<String, String> batchAudioUrlMap = new HashMap<String, String>(batchAudioUrlsMap.size());
-        for (String storedFileId : storedFileIdList) {
+        for (String storedFileId : fsFileIdList) {
             List<String> audioUrls = batchAudioUrlsMap.get(storedFileId);
             if (CollectionUtils.isEmpty(audioUrls)) {
                 continue;
@@ -315,13 +323,14 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, List<String>> getBatchAudioUrlsMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, List<String>> getBatchAudioUrlsMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<String>>(0);
         }
 
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         Map<String, List<String>> batchAudioUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
             ProcessorTypeEnum processor = fsFile.getProcessor();
@@ -330,14 +339,17 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                 continue;
             }
 
-            String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
-                    .append(DEFAULT_AUDIO_TYPE).append(PATH_SEPARATOR)
+            String fsFileId = fsFile.getId();
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(DEFAULT_AUDIO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(fsFileId);
             Integer subFileCount = fsFile.getSubFileCount();
             subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
             List<String> audioUrls = new ArrayList<String>(subFileCount);
@@ -353,32 +365,33 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             }
 
             sb.delete(0, sb.length());
-            batchAudioUrlsMap.put(storedFileId, audioUrls);
+            batchAudioUrlsMap.put(fsFileId, audioUrls);
         }
 
         return batchAudioUrlsMap;
     }
 
     @Override
-    public String getZipUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchZipUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public String getZipUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchZipUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public String getImageUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchImageUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public String getImageUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchImageUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchImageUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, String> getBatchImageUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
         }
 
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         Map<String, String> batchImageUrlMap = new HashMap<String, String>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
             ProcessorTypeEnum processor = fsFile.getProcessor();
@@ -389,14 +402,17 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                 continue;
             }
 
-            String storedFileId = fsFile.getId();
+            String fsFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_IMG).append(PATH_SEPARATOR)
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(FILE_DIR_IMG).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(fsFileId);
             if (ProcessorTypeEnum.IMG.equals(processor)) {
                 sb.append(PATH_SEPARATOR).append(ORIGIN_IMAGE_NAME);
             } else if (ProcessorTypeEnum.DOC.equals(processor)
@@ -407,7 +423,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                         .append(FIRST).append(ORIGIN_IMAGE_NAME);
             }
 
-            batchImageUrlMap.put(storedFileId, sb.toString());
+            batchImageUrlMap.put(fsFileId, sb.toString());
             sb.delete(0, sb.length());
         }
 
@@ -415,29 +431,32 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, String> getBatchZipUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
         }
 
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         Map<String, String> batchZipUrlMap = new HashMap<String, String>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
             if (!ProcessorTypeEnum.ZIP.equals(fsFile.getProcessor())) {
                 continue;
             }
 
-            String storedFileId = fsFile.getId();
+            String fsFileId = fsFile.getId();
             StringBuilder builder = new StringBuilder();
-            builder.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
-                    .append(FILE_DIR_UNZIP).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(storedFileId)
-                    .append(PATH_SEPARATOR).append(ZIP_INDEX_FILE);
-            batchZipUrlMap.put(storedFileId, builder.toString());
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(FILE_DIR_UNZIP).append(PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime())).append(PATH_SEPARATOR)
+                    .append(fsFileId).append(PATH_SEPARATOR).append(ZIP_INDEX_FILE);
+            batchZipUrlMap.put(fsFileId, builder.toString());
             builder.delete(0, builder.length());
         }
 
@@ -445,15 +464,15 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public String getFileUrl(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchFileUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public String getFileUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchFileUrlMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "storedFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, String> getBatchFileUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
         }
@@ -549,15 +568,15 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Long getSubFileCount(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchSubFileCountMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public Long getSubFileCount(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchSubFileCountMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, Long> getBatchSubFileCountMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, Long> getBatchSubFileCountMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, Long>(0);
         }
@@ -583,15 +602,15 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public List<Long> getSubFileCounts(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        return getBatchSubFileCountsMap(Arrays.asList(storedFileId)).get(storedFileId);
+    public List<Long> getSubFileCounts(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchSubFileCountsMap(Arrays.asList(fsFileId)).get(fsFileId);
     }
 
     @Override
-    public Map<String, List<Long>> getBatchSubFileCountsMap(List<String> storedFileIdList) {
-        Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
+    public Map<String, List<Long>> getBatchSubFileCountsMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<Long>>(0);
         }
@@ -623,9 +642,9 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public List<FsServer> getDownloadFsServerList(String storedFileId) {
-        Assert.hasText(storedFileId, "StoredFileId is empty!");
-        FsFile fsFile = fsFileService.get(storedFileId, FsFile._id, FsFile._serverCode, FsFile._corpCode);
+    public List<FsServer> getDownloadFsServerList(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        FsFile fsFile = fsFileService.get(fsFileId, FsFile._id, FsFile._serverCode, FsFile._corpCode);
         if (fsFile == null) {
             return new ArrayList<FsServer>(0);
         }

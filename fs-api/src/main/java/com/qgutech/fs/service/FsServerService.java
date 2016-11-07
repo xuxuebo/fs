@@ -5,6 +5,7 @@ import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.service.base.BaseService;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FsServerService extends BaseService<FsServer> {
 
@@ -12,4 +13,5 @@ public interface FsServerService extends BaseService<FsServer> {
 
     List<FsServer> getDownloadFsServerListByServerCode(String corpCode, String serverCode);
 
+    List<FsServer> getDownloadFsServerList(Set<String> corpCodes, Set<String> serverCodes);
 }

@@ -3,9 +3,7 @@ package com.qgutech.fs.domain;
 
 import com.qgutech.fs.domain.base.BaseEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "t_fs_server")
@@ -61,6 +59,15 @@ public class FsServer extends BaseEntity {
     @Column(length = 200)
     private String secret;
 
+    /**
+     * 文档服务器的校验级别默认校验过期时间，文档服务器的秘钥和登录session。
+     *
+     * @see com.qgutech.fs.domain.SignLevelEnum
+     */
+    @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
+    private SignLevelEnum signLevel;
+
     public String getSecret() {
         return secret;
     }
@@ -115,5 +122,13 @@ public class FsServer extends BaseEntity {
 
     public void setDownload(Boolean download) {
         this.download = download;
+    }
+
+    public SignLevelEnum getSignLevel() {
+        return signLevel;
+    }
+
+    public void setSignLevel(SignLevelEnum signLevel) {
+        this.signLevel = signLevel;
     }
 }

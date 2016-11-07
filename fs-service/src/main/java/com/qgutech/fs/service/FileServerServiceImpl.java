@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service("fileServerService")
-public class FileServerServiceImpl implements FileServerService {
+public class FileServerServiceImpl implements FileServerService, FsConstants {
 
     @Resource
     private FsFileService fsFileService;
@@ -29,36 +29,73 @@ public class FileServerServiceImpl implements FileServerService {
         return getBatchOriginFileUrlMap(Arrays.asList(storedFileId)).get(storedFileId);
     }
 
+    private Map<String, FsServer> getFileIdFsServerMap(List<FsFile> fsFiles) {
+        Set<String> corpCodes = new HashSet<String>();
+        Set<String> serverCodes = new HashSet<String>();
+        for (FsFile fsFile : fsFiles) {
+            corpCodes.add(fsFile.getCorpCode());
+            serverCodes.add(fsFile.getServerCode());
+        }
+
+        List<FsServer> serverList = fsServerService.getDownloadFsServerList(corpCodes, serverCodes);
+        if (CollectionUtils.isEmpty(serverList)) {
+            return new HashMap<String, FsServer>(0);
+        }
+
+        Map<String, List<FsServer>> corpServerCodeFsServersMap = new HashMap<String, List<FsServer>>();
+        for (FsServer fsServer : serverList) {
+            String corpCode = fsServer.getCorpCode();
+            String serverCode = fsServer.getServerCode();
+            String corpServerCodeKey = corpCode + VERTICAL_LINE + serverCode;
+            List<FsServer> fsServers = corpServerCodeFsServersMap.get(corpServerCodeKey);
+            if (fsServers == null) {
+                fsServers = new ArrayList<FsServer>();
+                corpServerCodeFsServersMap.put(corpServerCodeKey, fsServers);
+            }
+
+            fsServers.add(fsServer);
+        }
+
+        Map<String, FsServer> fileIdFsServerMap = new HashMap<String, FsServer>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            String corpCode = fsFile.getCorpCode();
+            String serverCode = fsFile.getServerCode();
+            String corpServerCodeKey = corpCode + VERTICAL_LINE + serverCode;
+            List<FsServer> fsServers = corpServerCodeFsServersMap.get(corpServerCodeKey);
+            if (CollectionUtils.isEmpty(fsServers)) {
+                fsServers = corpServerCodeFsServersMap.get(DEFAULT_CORP_CODE + VERTICAL_LINE + serverCode);
+            }
+
+            Assert.notEmpty(fsServers, "Both default and " + corpCode +
+                    " hasn't server[serverCode:" + serverCode + "]!");
+            fileIdFsServerMap.put(fsFile.getId(), fsServers.get((int) (Math.random() * fsServers.size())));
+        }
+
+        return fileIdFsServerMap;
+    }
+
     @Override
     public Map<String, String> getBatchOriginFileUrlMap(List<String> storedFileIdList) {
         Assert.notEmpty(storedFileIdList, "StoredFileIdList is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
-        if (CollectionUtils.isEmpty(storedFileIdList)) {
+        if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
         }
 
-        Map<String, List<String>> corpServerCodesMap = new HashMap<String, List<String>>();
-        for (FsFile fsFile : fsFiles) {
-            String corpCode = fsFile.getCorpCode();
-            List<String> serverCodes = corpServerCodesMap.get(corpCode);
-            if (serverCodes == null) {
-                serverCodes = new ArrayList<String>();
-                corpServerCodesMap.put(corpCode, serverCodes);
-            }
-
-            serverCodes.add(fsFile.getServerCode());
-        }
-
-        //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(fsFiles.size());
         StringBuilder builder = new StringBuilder();
         for (FsFile fsFile : fsFiles) {
-            builder.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_SRC);
+            String fsFileId = fsFile.getId();
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
+                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
+                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_SRC);
             String businessDir = fsFile.getBusinessDir();
             if (StringUtils.isNotEmpty(businessDir)) {
-                builder.append(FsConstants.PATH_SEPARATOR).append(businessDir);
+                builder.append(PATH_SEPARATOR).append(businessDir);
             }
 
             ProcessorTypeEnum processor = fsFile.getProcessor();
@@ -68,18 +105,15 @@ public class FileServerServiceImpl implements FileServerService {
                     || ProcessorTypeEnum.IMG.equals(processor)
                     || ProcessorTypeEnum.FILE.equals(processor)
                     || ProcessorTypeEnum.ZIP.equals(processor)) {
-                builder.append(FsConstants.PATH_SEPARATOR).append(processor.name().toLowerCase());
+                builder.append(PATH_SEPARATOR).append(processor.name().toLowerCase());
             } else {
-                builder.append(FsConstants.PATH_SEPARATOR).append(ProcessorTypeEnum.ZIP.name().toLowerCase());
+                builder.append(PATH_SEPARATOR).append(ProcessorTypeEnum.ZIP.name().toLowerCase());
             }
 
-            String storedFileId = fsFile.getId();
-            builder.append(FsConstants.PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(fsFile.getBusinessId())
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
-                    .append(FsConstants.POINT).append(fsFile.getSuffix());
-            batchOriginFileUrlMap.put(storedFileId, builder.toString());
+            builder.append(PATH_SEPARATOR).append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(PATH_SEPARATOR).append(fsFile.getBusinessId())
+                    .append(PATH_SEPARATOR).append(fsFileId).append(POINT).append(fsFile.getSuffix());
+            batchOriginFileUrlMap.put(fsFileId, builder.toString());
             builder.delete(0, builder.length());
         }
 
@@ -124,13 +158,12 @@ public class FileServerServiceImpl implements FileServerService {
 
             String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.DEFAULT_VIDEO_TYPE).append(FsConstants.PATH_SEPARATOR)
+            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR).append(fsFile.getAppCode())
+                    .append(PATH_SEPARATOR).append(FILE_DIR_GEN).append(PATH_SEPARATOR)
+                    .append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
-            String[] vLevels = videoLevels.split(FsConstants.VERTICAL_LINE_REGEX);
+                    .append(PATH_SEPARATOR).append(storedFileId);
+            String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
             List<Map<String, String>> videoUrls = new ArrayList<Map<String, String>>(vLevels.length);
             for (int i = 0; i < vLevels.length; i++) {
                 VideoTypeEnum videoTypeEnum = VideoTypeEnum.valueOf(vLevels[i]);
@@ -140,13 +173,13 @@ public class FileServerServiceImpl implements FileServerService {
                 StringBuilder builder = new StringBuilder();
                 for (VideoTypeEnum typeEnum : videoTypeEnums) {
                     if (ProcessorTypeEnum.ZVID.equals(processor)) {
-                        builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
+                        builder.append(PATH_SEPARATOR).append(i + 1);
                     }
 
                     String videoType = typeEnum.name();
-                    builder.append(FsConstants.PATH_SEPARATOR).append(videoType.toLowerCase())
-                            .append(FsConstants.PATH_SEPARATOR).append(videoType.toLowerCase())
-                            .append(FsConstants.DEFAULT_VIDEO_SUFFIX);
+                    builder.append(PATH_SEPARATOR).append(videoType.toLowerCase())
+                            .append(PATH_SEPARATOR).append(videoType.toLowerCase())
+                            .append(DEFAULT_VIDEO_SUFFIX);
                     videoTypeUrlMap.put(videoType, sb.toString() + builder.toString());
                     builder.delete(0, builder.length());
                 }
@@ -217,21 +250,21 @@ public class FileServerServiceImpl implements FileServerService {
 
             String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.DEFAULT_VIDEO_TYPE).append(FsConstants.PATH_SEPARATOR)
+            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
+                    .append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
-            String[] vLevels = videoLevels.split(FsConstants.VERTICAL_LINE_REGEX);
+                    .append(PATH_SEPARATOR).append(storedFileId);
+            String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
             List<String> videoCoverUrls = new ArrayList<String>(vLevels.length);
             for (int i = 0; i < vLevels.length; i++) {
                 StringBuilder builder = new StringBuilder();
                 if (ProcessorTypeEnum.ZVID.equals(processor)) {
-                    builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
+                    builder.append(PATH_SEPARATOR).append(i + 1);
                 }
 
-                builder.append(FsConstants.PATH_SEPARATOR).append(FsConstants.VIDEO_COVER);
+                builder.append(PATH_SEPARATOR).append(VIDEO_COVER);
                 videoCoverUrls.add(sb.toString() + builder.toString());
                 builder.delete(0, builder.length());
             }
@@ -299,22 +332,22 @@ public class FileServerServiceImpl implements FileServerService {
 
             String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.DEFAULT_AUDIO_TYPE).append(FsConstants.PATH_SEPARATOR)
+            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
+                    .append(DEFAULT_AUDIO_TYPE).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(storedFileId);
             Integer subFileCount = fsFile.getSubFileCount();
             subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
             List<String> audioUrls = new ArrayList<String>(subFileCount);
             for (int i = 0; i < subFileCount; i++) {
                 StringBuilder builder = new StringBuilder();
                 if (ProcessorTypeEnum.ZAUD.equals(processor)) {
-                    builder.append(FsConstants.PATH_SEPARATOR).append(i + 1);
+                    builder.append(PATH_SEPARATOR).append(i + 1);
                 }
 
-                builder.append(FsConstants.PATH_SEPARATOR).append(FsConstants.DEFAULT_AUDIO_NAME);
+                builder.append(PATH_SEPARATOR).append(DEFAULT_AUDIO_NAME);
                 audioUrls.add(sb.toString() + builder.toString());
                 builder.delete(0, builder.length());
             }
@@ -358,22 +391,20 @@ public class FileServerServiceImpl implements FileServerService {
 
             String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
-            sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_IMG).append(FsConstants.PATH_SEPARATOR)
+            sb.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_IMG).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId);
+                    .append(PATH_SEPARATOR).append(storedFileId);
             if (ProcessorTypeEnum.IMG.equals(processor)) {
-                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.ORIGIN_IMAGE_NAME);
+                sb.append(PATH_SEPARATOR).append(ORIGIN_IMAGE_NAME);
             } else if (ProcessorTypeEnum.DOC.equals(processor)
                     || ProcessorTypeEnum.ZIMG.equals(processor)) {
-                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
-                        .append(FsConstants.ORIGIN_IMAGE_NAME);
+                sb.append(PATH_SEPARATOR).append(FIRST).append(ORIGIN_IMAGE_NAME);
             } else {
-                sb.append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
-                        .append(FsConstants.PATH_SEPARATOR).append(FsConstants.FIRST)
-                        .append(FsConstants.ORIGIN_IMAGE_NAME);
+                sb.append(PATH_SEPARATOR).append(FIRST).append(PATH_SEPARATOR)
+                        .append(FIRST).append(ORIGIN_IMAGE_NAME);
             }
 
             batchImageUrlMap.put(storedFileId, sb.toString());
@@ -399,13 +430,13 @@ public class FileServerServiceImpl implements FileServerService {
 
             String storedFileId = fsFile.getId();
             StringBuilder builder = new StringBuilder();
-            builder.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_GEN).append(FsConstants.PATH_SEPARATOR)
-                    .append(FsConstants.FILE_DIR_UNZIP).append(FsConstants.PATH_SEPARATOR)
+            builder.append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_GEN).append(PATH_SEPARATOR)
+                    .append(FILE_DIR_UNZIP).append(PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(FsConstants.PATH_SEPARATOR).append(storedFileId)
-                    .append(FsConstants.PATH_SEPARATOR).append(FsConstants.ZIP_INDEX_FILE);
+                    .append(PATH_SEPARATOR).append(storedFileId)
+                    .append(PATH_SEPARATOR).append(ZIP_INDEX_FILE);
             batchZipUrlMap.put(storedFileId, builder.toString());
             builder.delete(0, builder.length());
         }
@@ -573,7 +604,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String[] subFileCountList = subFileCounts.split(FsConstants.VERTICAL_LINE_REGEX);
+            String[] subFileCountList = subFileCounts.split(VERTICAL_LINE_REGEX);
             List<Long> subCounts = new ArrayList<Long>(subFileCountList.length);
             for (String subCount : subFileCountList) {
                 subCounts.add(Long.parseLong(subCount));

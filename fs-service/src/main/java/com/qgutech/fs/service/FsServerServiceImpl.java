@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.qgutech.fs.domain.FsServer.*;
 
@@ -35,5 +36,17 @@ public class FsServerServiceImpl extends BaseServiceImpl<FsServer> implements Fs
                 .add(Restrictions.in(_corpCode, new String[]{FsConstants.DEFAULT_CORP_CODE, corpCode}))
                 .add(Restrictions.eq(_download, true))
                 .add(Restrictions.eq(_serverCode, serverCode)));
+    }
+
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
+    public List<FsServer> getDownloadFsServerList(Set<String> corpCodes, Set<String> serverCodes) {
+        Assert.notEmpty(corpCodes, "CorpCodes is empty!");
+        Assert.notEmpty(serverCodes, "ServerCodes is empty!");
+        corpCodes.add(FsConstants.DEFAULT_CORP_CODE);
+        return listByCriterion(Restrictions.conjunction()
+                .add(Restrictions.in(_corpCode, corpCodes))
+                .add(Restrictions.eq(_download, true))
+                .add(Restrictions.in(_serverCode, serverCodes)));
     }
 }

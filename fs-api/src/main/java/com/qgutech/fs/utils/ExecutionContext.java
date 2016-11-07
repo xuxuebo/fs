@@ -26,6 +26,8 @@ public class ExecutionContext {
 
     public static final String USER_ID = "user_id";
 
+    public static final String SESSION = "session";
+
     public static Map<String, String> getContextMap() {
         return threadLocal.get();
     }
@@ -75,5 +77,13 @@ public class ExecutionContext {
 
     public static String getUserId() {
         return get(USER_ID);
+    }
+
+    public static void setSession(String session) {
+        put(SESSION, session);
+    }
+
+    public static String getSession() {
+        return get(SESSION);
     }
 }

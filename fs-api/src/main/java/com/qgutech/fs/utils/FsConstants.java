@@ -18,12 +18,13 @@ public interface FsConstants {
     String PATH_SEPARATOR = "/";
     String POINT = ".";
     String VERTICAL_LINE_REGEX = "\\|";
-    String COLON = ":";
+    String VERTICAL_LINE = "|";
+    String HTTP_COLON = "://";
     String VIDEO_COVER = "vc.png";
     String ORIGIN_IMAGE_NAME = "o.png";
     String FIRST = "1";
     String DEFAULT_AUDIO_NAME = "a.mp3";
     String ZIP_INDEX_FILE = "index.html";
-
+    String UNDERLINE = "_";
     String DEFAULT_CORP_CODE = "default";
 }

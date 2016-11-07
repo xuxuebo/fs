@@ -28,6 +28,7 @@ public class FsFileServiceTest extends BaseServiceTest {
         fsFile.setProcessor(ProcessorTypeEnum.DOC);
         fsFile.setStoredFileName("wodezuguo.doc");
         fsFile.setSubFileCount(10);
+        fsFile.setServerCode("0000");
         fsFile.setSuffix("doc");
 
         fsFileService.save(fsFile);
@@ -48,6 +49,7 @@ public class FsFileServiceTest extends BaseServiceTest {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setVideoLevels(VideoTypeEnum.H.name());
         fsFile.setDurations("00:10:10");
+        fsFile.setServerCode("0000");
         fsFileService.save(fsFile);
     }
 
@@ -68,7 +70,7 @@ public class FsFileServiceTest extends BaseServiceTest {
         fsFile.setVideoLevels(VideoTypeEnum.H.name() + "|" + VideoTypeEnum.L.name()
                 + "|" + VideoTypeEnum.M.name());
         fsFile.setDurations("00:10:10|00:10:10|00:10:10");
-
+        fsFile.setServerCode("0000");
         fsFileService.save(fsFile);
     }
 
@@ -87,6 +89,7 @@ public class FsFileServiceTest extends BaseServiceTest {
         fsFile.setSuffix("mp3");
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setDurations("00:10:10");
+        fsFile.setServerCode("0000");
         fsFileService.save(fsFile);
     }
 
@@ -106,6 +109,7 @@ public class FsFileServiceTest extends BaseServiceTest {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setSubFileCount(3);
         fsFile.setDurations("00:10:10|00:10:10|00:10:10");
+        fsFile.setServerCode("0000");
         fsFileService.save(fsFile);
     }
 

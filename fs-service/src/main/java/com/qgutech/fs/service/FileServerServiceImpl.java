@@ -1,6 +1,7 @@
 package com.qgutech.fs.service;
 
 
+import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.VideoTypeEnum;
@@ -19,6 +20,8 @@ public class FileServerServiceImpl implements FileServerService {
 
     @Resource
     private FsFileService fsFileService;
+    @Resource
+    private FsServerService fsServerService;
 
     @Override
     public String getOriginFileUrl(String storedFileId) {
@@ -32,6 +35,18 @@ public class FileServerServiceImpl implements FileServerService {
         List<FsFile> fsFiles = fsFileService.listByIds(storedFileIdList);
         if (CollectionUtils.isEmpty(storedFileIdList)) {
             return new HashMap<String, String>(0);
+        }
+
+        Map<String, List<String>> corpServerCodesMap = new HashMap<String, List<String>>();
+        for (FsFile fsFile : fsFiles) {
+            String corpCode = fsFile.getCorpCode();
+            List<String> serverCodes = corpServerCodesMap.get(corpCode);
+            if (serverCodes == null) {
+                serverCodes = new ArrayList<String>();
+                corpServerCodesMap.put(corpCode, serverCodes);
+            }
+
+            serverCodes.add(fsFile.getServerCode());
         }
 
         //todo 获取服务器地址，权限验证字符串 http://hf.21tb.com/fs/权限验证字符串/corpCode/appCode/src/
@@ -58,7 +73,7 @@ public class FileServerServiceImpl implements FileServerService {
                 builder.append(FsConstants.PATH_SEPARATOR).append(ProcessorTypeEnum.ZIP.name().toLowerCase());
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             builder.append(FsConstants.PATH_SEPARATOR)
                     .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
                     .append(FsConstants.PATH_SEPARATOR).append(fsFile.getBusinessId())
@@ -107,7 +122,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
             sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
@@ -200,7 +215,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
             sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
@@ -282,7 +297,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
             sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
@@ -341,7 +356,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             StringBuilder sb = new StringBuilder();
             sb.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
@@ -382,7 +397,7 @@ public class FileServerServiceImpl implements FileServerService {
                 continue;
             }
 
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             StringBuilder builder = new StringBuilder();
             builder.append(fsFile.getCorpCode()).append(FsConstants.PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(FsConstants.PATH_SEPARATOR)
@@ -419,7 +434,7 @@ public class FileServerServiceImpl implements FileServerService {
         List<String> videos = new ArrayList<String>();
         List<String> audios = new ArrayList<String>();
         for (FsFile fsFile : fsFiles) {
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             switch (fsFile.getProcessor()) {
                 case FILE:
                     files.add(storedFileId);
@@ -518,7 +533,7 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, Long> batchSubFileCountMap = new HashMap<String, Long>(fsFiles.size());
         for (FsFile fsFile : fsFiles) {
-            String storedFileId = fsFile.getStoredFileId();
+            String storedFileId = fsFile.getId();
             ProcessorTypeEnum processor = fsFile.getProcessor();
             if (ProcessorTypeEnum.DOC.equals(processor)
                     || ProcessorTypeEnum.ZDOC.equals(processor)
@@ -564,9 +579,33 @@ public class FileServerServiceImpl implements FileServerService {
                 subCounts.add(Long.parseLong(subCount));
             }
 
-            batchSubFileCountsMap.put(fsFile.getStoredFileId(), subCounts);
+            batchSubFileCountsMap.put(fsFile.getId(), subCounts);
         }
 
         return batchSubFileCountsMap;
+    }
+
+    @Override
+    public List<FsServer> getUploadFsServerList(String corpCode) {
+        Assert.hasText(corpCode, "CorpCode is empty!");
+        return fsServerService.getUploadFsServerList(corpCode);
+    }
+
+    @Override
+    public List<FsServer> getDownloadFsServerList(String storedFileId) {
+        Assert.hasText(storedFileId, "StoredFileId is empty!");
+        FsFile fsFile = fsFileService.get(storedFileId, FsFile._id, FsFile._serverCode, FsFile._corpCode);
+        if (fsFile == null) {
+            return new ArrayList<FsServer>(0);
+        }
+
+        return getDownloadFsServerListByServerCode(fsFile.getCorpCode(), fsFile.getServerCode());
+    }
+
+    @Override
+    public List<FsServer> getDownloadFsServerListByServerCode(String corpCode, String serverCode) {
+        Assert.hasText(corpCode, "CorpCode is empty!");
+        Assert.hasText(serverCode, "ServerCode is empty!");
+        return fsServerService.getDownloadFsServerListByServerCode(corpCode, serverCode);
     }
 }

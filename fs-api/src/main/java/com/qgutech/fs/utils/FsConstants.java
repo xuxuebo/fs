@@ -24,4 +24,6 @@ public interface FsConstants {
     String FIRST = "1";
     String DEFAULT_AUDIO_NAME = "a.mp3";
     String ZIP_INDEX_FILE = "index.html";
+
+    String DEFAULT_CORP_CODE = "default";
 }

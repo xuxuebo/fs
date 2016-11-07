@@ -6,9 +6,6 @@ import java.util.Map.Entry;
 
 /**
  * 这个类用于帮助开发人员快速的构建hql语句和传递查询参数
- *
- * @author ELF@TEAM
- * @since 2016年2月25日 10:41:32
  */
 public class HqlBuilder {
 

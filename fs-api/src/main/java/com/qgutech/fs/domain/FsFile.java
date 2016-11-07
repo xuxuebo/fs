@@ -1,26 +1,16 @@
 package com.qgutech.fs.domain;
 
 
-import org.hibernate.annotations.GenericGenerator;
+import com.qgutech.fs.domain.base.BaseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "t_fs_file")
-public class FsFile {
+public class FsFile extends BaseEntity {
 
-    public static final String _storedFileId = "storedFileId";
-
-    /**
-     * 上传文件在文件系统中的主键
-     */
-    @Id
-    @Column(nullable = false, length = 32)
-    @GeneratedValue(generator = "uuidGenerator")
-    @GenericGenerator(name = "uuidGenerator", strategy = "uuid")
-    private String storedFileId;
+    public static final String _serverCode = "serverCode";
 
     /**
      * 上传文件的文件名（源文件名称）
@@ -42,12 +32,6 @@ public class FsFile {
      */
     @Column(nullable = false, length = 50)
     private String appCode;
-
-    /**
-     * 公司编号（上传时必须指定）
-     */
-    @Column(nullable = false, length = 50)
-    private String corpCode;
 
     /**
      * 子文件数
@@ -112,33 +96,14 @@ public class FsFile {
     private MultipartFile file;
 
     /**
-     * 创建时间
-     */
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false, updatable = false)
-    private Date createTime;
-
-    /**
-     * 最后更新时间
-     */
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
-    private Date updateTime;
-
-    /**
      * 文件状态
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ProcessStatusEnum status;
 
-    public String getStoredFileId() {
-        return storedFileId;
-    }
-
-    public void setStoredFileId(String storedFileId) {
-        this.storedFileId = storedFileId;
-    }
+    @Column(nullable = false, length = 20)
+    private String serverCode;
 
     public String getStoredFileName() {
         return storedFileName;
@@ -162,14 +127,6 @@ public class FsFile {
 
     public void setAppCode(String appCode) {
         this.appCode = appCode;
-    }
-
-    public String getCorpCode() {
-        return corpCode;
-    }
-
-    public void setCorpCode(String corpCode) {
-        this.corpCode = corpCode;
     }
 
     public Integer getSubFileCount() {
@@ -252,27 +209,19 @@ public class FsFile {
         this.file = file;
     }
 
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
     public ProcessStatusEnum getStatus() {
         return status;
     }
 
     public void setStatus(ProcessStatusEnum status) {
         this.status = status;
+    }
+
+    public String getServerCode() {
+        return serverCode;
+    }
+
+    public void setServerCode(String serverCode) {
+        this.serverCode = serverCode;
     }
 }

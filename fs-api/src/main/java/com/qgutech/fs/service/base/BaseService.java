@@ -510,12 +510,12 @@ public interface BaseService<T extends BaseEntity> {
      * @param models 实体集合
      * @return 保存成功的主键
      */
-    List<String> batchSave(List<T> models);
+    List<String> save(List<T> models);
 
     /**
      * 批量保存或更新实体
      *
      * @param models 实体集合
      */
-    void batchSaveOrUpdate(List<T> models);
+    void saveOrUpdate(List<T> models);
 }

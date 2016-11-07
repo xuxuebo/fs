@@ -1,5 +1,7 @@
 package com.qgutech.fs.service;
 
+import com.qgutech.fs.domain.FsServer;
+
 import java.util.List;
 import java.util.Map;
 
@@ -321,4 +323,10 @@ public interface FileServerService {
      * @return 文件主键和文档包的每个文档的页数列表的映射，key为文件主键，value为文档包的每个文档的页数列表
      */
     Map<String, List<Long>> getBatchSubFileCountsMap(List<String> storedFileIdList);
+
+    List<FsServer> getUploadFsServerList(String corpCode);
+
+    List<FsServer> getDownloadFsServerList(String storedFileId);
+
+    List<FsServer> getDownloadFsServerListByServerCode(String corpCode, String serverCode);
 }

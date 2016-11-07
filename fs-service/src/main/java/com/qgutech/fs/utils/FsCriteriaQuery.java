@@ -8,15 +8,15 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.type.Type;
 
-public class ScCriteriaQuery implements CriteriaQuery {
+public class FsCriteriaQuery implements CriteriaQuery {
 
     private CriteriaQuery criteriaQuery;
 
-    public ScCriteriaQuery() {
+    public FsCriteriaQuery() {
 
     }
 
-    public ScCriteriaQuery(CriteriaQuery criteriaQuery) {
+    public FsCriteriaQuery(CriteriaQuery criteriaQuery) {
         this.criteriaQuery = criteriaQuery;
     }
 

@@ -2,8 +2,6 @@ package com.qgutech.fs.service.base;
 
 import com.qgutech.fs.domain.base.BaseEntity;
 import com.qgutech.fs.utils.*;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,7 +14,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.loader.criteria.CriteriaQueryTranslator;
-import org.hibernate.metadata.ClassMetadata;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -39,7 +36,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
 
     protected final Class<T> modelClass;
 
-    private static final int BATCH_SIZE = 1000;
+    protected static final int BATCH_SIZE = 1000;
 
     @Resource
     SessionFactory sessionFactory;
@@ -73,12 +70,13 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
     public String save(T model) {
         Assert.notNull(model, "model is null!");
         String modelId = model.getId();
+        Session session = getSession();
         if (StringUtils.isBlank(modelId)) {
-            return (String) getSession().save(model);
+            return (String) session.save(model);
         }
 
-        getSession().update(model);
-        getSession().flush();
+        session.update(model);
+        session.flush();
         return modelId;
     }
 
@@ -121,7 +119,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
     public void update(List<T> models, String... fields) {
         Assert.notEmpty(models, "models is empty!");
         if (fields == null || fields.length == 0) {
-            batchSaveOrUpdate(models);
+            saveOrUpdate(models);
             return;
         }
 
@@ -841,48 +839,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public int delete(List<String> modelIds) {
         Assert.notEmpty(modelIds, "modelIds is empty!");
-        ClassMetadata classMetadata = sessionFactory.getClassMetadata(modelClass);
-        String idPropertyName = classMetadata.getIdentifierPropertyName();
-        HqlBuilder builder = new HqlBuilder();
-        builder.append("delete from " + getEntityName());
-        builder.append("where " + idPropertyName + " in (:modelIds)");
-        builder.addParameter("modelIds", modelIds);
-        Query query = getSession().createQuery(builder.getSql());
-        setParameter(builder, query);
-        return query.executeUpdate();
-    }
-
-    private void setParameter(HqlBuilder hqlBuilder, Query query) {
-        List<Object> parameterList = hqlBuilder.getParameterList();
-        if (CollectionUtils.isNotEmpty(parameterList)) {
-            for (int i = 0; i < parameterList.size(); i++) {
-                Object obj = parameterList.get(i);
-                query.setParameter(i, obj);
-            }
-        }
-
-        Map<String, Object> parameterMap = hqlBuilder.getParameterMap();
-        if (MapUtils.isNotEmpty(parameterMap)) {
-            for (Map.Entry<String, Object> entry : parameterMap.entrySet()) {
-                String placeHolder = entry.getKey();
-                Object paramValue = entry.getValue();
-                if (paramValue instanceof Collection) {
-                    query.setParameterList(placeHolder, (Collection) paramValue);
-                } else {
-                    query.setParameter(placeHolder, paramValue);
-                }
-            }
-        }
-
-        Integer firstRecordIndex = hqlBuilder.getFirstRecordIndex();
-        if (firstRecordIndex != null && firstRecordIndex >= 0) {
-            query.setFirstResult(firstRecordIndex);
-        }
-
-        Integer maxRecordNum = hqlBuilder.getMaxRecordNum();
-        if (maxRecordNum != null && maxRecordNum > 0) {
-            query.setMaxResults(maxRecordNum);
-        }
+        return delete(Restrictions.in(_id, modelIds));
     }
 
     @Override
@@ -899,12 +856,12 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
 
     @Override
     @Transactional(readOnly = false, isolation = Isolation.READ_COMMITTED)
-    public List<String> batchSave(List<T> models) {
+    public List<String> save(List<T> models) {
         Assert.notEmpty(models, "Models is empty!");
         List<String> modelIds = new ArrayList<String>(models.size());
         Session session = getSession();
         for (int i = 0; i < models.size(); i++) {
-            Object model = models.get(i);
+            T model = models.get(i);
             String modelId = (String) session.save(model);
             modelIds.add(modelId);
             if (i % 100 == 0) {
@@ -918,11 +875,11 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
 
     @Override
     @Transactional(readOnly = false, isolation = Isolation.READ_COMMITTED)
-    public void batchSaveOrUpdate(List<T> models) {
+    public void saveOrUpdate(List<T> models) {
         Assert.notEmpty(models, "Models is empty!");
         Session session = getSession();
         for (int i = 0; i < models.size(); i++) {
-            Object model = models.get(i);
+            T model = models.get(i);
             session.saveOrUpdate(model);
             if (i % 100 == 0) {
                 session.flush();
@@ -995,8 +952,9 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
     }
 
     private int executeUpdate(HqlBuilder builder) {
-        getSession().flush();
-        Query query = getSession().createQuery(builder.toString());
+        Session session = getSession();
+        session.flush();
+        Query query = session.createQuery(builder.toString());
         List<Object> parameterList = builder.getParameterList();
         for (int i = 0; i < parameterList.size(); i++) {
             query.setParameter(i, parameterList.get(i));
@@ -1018,7 +976,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
         }
 
         int execute = query.executeUpdate();
-        getSession().clear();
+        session.clear();
         return execute;
     }
 
@@ -1096,7 +1054,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T>, Ba
         CriteriaQueryTranslator translator = new CriteriaQueryTranslator(
                 (SessionFactoryImplementor) sessionFactory,
                 (CriteriaImpl) criteria, getFullEntityName(), CriteriaQueryTranslator.ROOT_SQL_ALIAS);
-        CriteriaQuery criteriaQuery = new ScCriteriaQuery(translator);
+        CriteriaQuery criteriaQuery = new FsCriteriaQuery(translator);
         String sqlString = criterion.toSqlString(criteria, criteriaQuery)
                 .replace(CriteriaQueryTranslator.ROOT_SQL_ALIAS + _point, StringUtils.EMPTY);
         builder.append(sqlString);

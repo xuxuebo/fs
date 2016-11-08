@@ -2,9 +2,11 @@ package com.qgutech.fs.domain;
 
 
 import com.qgutech.fs.domain.base.BaseEntity;
+import com.qgutech.fs.utils.ReflectUtil;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import java.lang.reflect.Field;
 
 @Entity
 @Table(name = "t_fs_file")
@@ -90,12 +92,6 @@ public class FsFile extends BaseEntity {
     private String durations;
 
     /**
-     * 上传的文件对象
-     */
-    @Transient
-    private MultipartFile file;
-
-    /**
      * 文件状态
      */
     @Enumerated(EnumType.STRING)
@@ -104,6 +100,30 @@ public class FsFile extends BaseEntity {
 
     @Column(nullable = false, length = 20)
     private String serverCode;
+
+    /**
+     * 上传的文件对象
+     */
+    @Transient
+    private MultipartFile file;
+
+    /**
+     * fs和fs-service通信时的时间戳
+     */
+    @Transient
+    private Long timestamp;
+
+    /**
+     * fs和fs-service通信时的签名
+     */
+    @Transient
+    private String sign;
+
+    /**
+     * fs和fs-service通信时的fs的域名或者ip（对外提供服务的域名）
+     */
+    @Transient
+    private String serverHost;
 
     public String getStoredFileName() {
         return storedFileName;
@@ -223,5 +243,70 @@ public class FsFile extends BaseEntity {
 
     public void setServerCode(String serverCode) {
         this.serverCode = serverCode;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+    }
+
+    public void merge(FsFile fsFile) {
+        if (fsFile == null) {
+            return;
+        }
+
+        Field[] fields = getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getAnnotation(Column.class) == null) {
+                continue;
+            }
+
+            Object fieldValue = ReflectUtil.getFieldValue(field, fsFile);
+            if (fieldValue == null) {
+                continue;
+            }
+
+            ReflectUtil.setFieldValue(field, this, fieldValue);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "FsFile{" +
+                "storedFileName='" + storedFileName + '\'' +
+                ", processor=" + processor +
+                ", appCode='" + appCode + '\'' +
+                ", subFileCount=" + subFileCount +
+                ", subFileCounts='" + subFileCounts + '\'' +
+                ", fileSize=" + fileSize +
+                ", businessId='" + businessId + '\'' +
+                ", businessCode='" + businessCode + '\'' +
+                ", businessDir='" + businessDir + '\'' +
+                ", suffix='" + suffix + '\'' +
+                ", videoLevels='" + videoLevels + '\'' +
+                ", durations='" + durations + '\'' +
+                ", file=" + file +
+                ", status=" + status +
+                ", serverCode='" + serverCode + '\'' +
+                '}';
     }
 }

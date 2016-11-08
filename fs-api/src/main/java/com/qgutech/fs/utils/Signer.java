@@ -12,6 +12,22 @@ public class Signer {
     private static char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6',
             '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
+    public static String sign(String serverHost, String secret, long timestamp) {
+        return md5(md5(secret + FsConstants.VERTICAL_LINE + serverHost)
+                + FsConstants.VERTICAL_LINE
+                + md5(secret + FsConstants.VERTICAL_LINE + timestamp)
+                + FsConstants.VERTICAL_LINE + secret);
+    }
+
+    public static String sign(String fsFileId, String serverHost, String secret, long timestamp) {
+        return md5(md5(secret + FsConstants.VERTICAL_LINE + fsFileId)
+                + FsConstants.VERTICAL_LINE
+                + md5(secret + FsConstants.VERTICAL_LINE + serverHost)
+                + FsConstants.VERTICAL_LINE
+                + md5(secret + FsConstants.VERTICAL_LINE + timestamp)
+                + FsConstants.VERTICAL_LINE + secret);
+    }
+
     public static String sign(FsServer fsServer, FsFile fsFile, String session) {
         Assert.notNull(fsServer, "FsServer is null!");
         Assert.notNull(fsFile, "FsFile is null!");
@@ -30,7 +46,7 @@ public class Signer {
                         + FsConstants.VERTICAL_LINE + fsFile.getAppCode()
                         + FsConstants.VERTICAL_LINE + fsFile.getId()
                         + FsConstants.VERTICAL_LINE + fsServer.getSecret();
-                return signLevel.name() + FsConstants.PATH_SEPARATOR + Signer.md5(signingText);
+                return signLevel.name() + FsConstants.PATH_SEPARATOR + md5(signingText);
             case stt:
                 timestamp = System.currentTimeMillis();
                 timestamp = timestamp / 1800000 * 1800000 + 280000;
@@ -43,7 +59,7 @@ public class Signer {
                         + FsConstants.VERTICAL_LINE + fsFile.getId()
                         + FsConstants.VERTICAL_LINE + fsServer.getSecret();
                 return signLevel.name() + FsConstants.PATH_SEPARATOR
-                        + Signer.md5(signingText) + FsConstants.UNDERLINE + timestamp;
+                        + md5(signingText) + FsConstants.UNDERLINE + timestamp;
             case sn:
                 Assert.hasText(session, "Session is empty!");
                 return signLevel.name() + FsConstants.PATH_SEPARATOR + session;
@@ -61,7 +77,7 @@ public class Signer {
                         + FsConstants.VERTICAL_LINE + fsFile.getId()
                         + FsConstants.VERTICAL_LINE + fsServer.getSecret();
                 return signLevel.name() + FsConstants.PATH_SEPARATOR
-                        + Signer.md5(signingText) + FsConstants.UNDERLINE + timestamp
+                        + md5(signingText) + FsConstants.UNDERLINE + timestamp
                         + FsConstants.UNDERLINE + session;
             default:
                 throw new RuntimeException("SignLevel[" + signLevel + "] is invalid!");

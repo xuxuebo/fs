@@ -27,4 +27,7 @@ public interface FsConstants {
     String ZIP_INDEX_FILE = "index.html";
     String UNDERLINE = "_";
     String DEFAULT_CORP_CODE = "default";
+
+    String RESPONSE_RESULT_ERROR = "error";
+    String RESPONSE_RESULT_SUCCESS = "success";
 }

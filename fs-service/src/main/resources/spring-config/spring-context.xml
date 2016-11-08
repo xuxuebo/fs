@@ -72,8 +72,9 @@
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
 
     <bean class="com.qgutech.fs.utils.PropertiesUtils">
-        <property name="serverName" value="${fs.server.name}"/>
-        <property name="httpProtocol" value="${fs.http.protocol}"/>
+        <property name="serverName" value="${fs.serverName}"/>
+        <property name="httpProtocol" value="${fs.httpProtocol}"/>
+        <property name="maxWaitForRequest" value="${fs.maxWaitForRequest}"/>
     </bean>
 
 </beans>

@@ -15,4 +15,21 @@
     <context:component-scan base-package="com.qgutech.fs">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
+
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="maxPoolSize" value="${fs.taskExecutor.maxPoolSize}"/>
+        <property name="queueCapacity" value="${fs.taskExecutor.queueCapacity}"/>
+        <property name="corePoolSize" value="${fs.taskExecutor.corePoolSize}"/>
+    </bean>
+
+    <bean class="com.qgutech.fs.utils.PropertiesUtils">
+        <property name="serverCode" value="${fs.serverCode}"/>
+        <property name="serverSecret" value="${fs.serverSecret}"/>
+        <property name="urlExpireTime" value="${fs.urlExpireTime}"/>
+        <property name="signLevel" value="${fs.signLevel}"/>
+        <property name="serverHost" value="${fs.serverHost}"/>
+        <property name="saveFileUrl" value="${fs.saveFileUrl}"/>
+        <property name="updateFileUrl" value="${fs.updateFileUrl}"/>
+    </bean>
+
 </beans>

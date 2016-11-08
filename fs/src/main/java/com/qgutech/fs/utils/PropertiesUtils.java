@@ -4,7 +4,7 @@ package com.qgutech.fs.utils;
 public class PropertiesUtils {
     private static String serverCode;
     private static String serverSecret;
-    private static String urlExpireTime;
+    private static long urlExpireTime;
     private static String signLevel;
     private static String serverHost;
     private static String saveFileUrl;
@@ -34,11 +34,11 @@ public class PropertiesUtils {
         PropertiesUtils.serverSecret = serverSecret;
     }
 
-    public static String getUrlExpireTime() {
+    public static long getUrlExpireTime() {
         return urlExpireTime;
     }
 
-    public void setUrlExpireTime(String urlExpireTime) {
+    public void setUrlExpireTime(long urlExpireTime) {
         PropertiesUtils.urlExpireTime = urlExpireTime;
     }
 

@@ -74,7 +74,7 @@ public class FileServerController {
             }
 
             String newSign = Signer.sign(serverHost, fsServer.getSecret(), timestamp);
-            if (sign.equals(newSign)) {
+            if (!sign.equals(newSign)) {
                 writer.print(FsConstants.RESPONSE_RESULT_ERROR);
                 return;
             }
@@ -137,7 +137,7 @@ public class FileServerController {
             }
 
             String newSign = Signer.sign(fsFileId, serverHost, fsServer.getSecret(), timestamp);
-            if (sign.equals(newSign)) {
+            if (!sign.equals(newSign)) {
                 writer.print(FsConstants.RESPONSE_RESULT_ERROR);
                 return;
             }

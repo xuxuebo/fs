@@ -213,7 +213,7 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected String getGenFilePath(FsFile fsFile) {
-        return null;
+        throw new UnsupportedOperationException("This method should be override by ths subClass!");
     }
 
     @Override

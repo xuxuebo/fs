@@ -81,8 +81,7 @@ public class ImageProcessor extends AbstractProcessor {
                 FsUtils.executeErrorCommand(command);
             }
 
-            fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-            saveFile(fsFile);
+            afterProcess(fsFile);
         } catch (Exception e) {
             deleteFile(genFilePath);
             fsFile.setStatus(ProcessStatusEnum.FAILED);
@@ -91,5 +90,11 @@ public class ImageProcessor extends AbstractProcessor {
         } finally {
             deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
         }
+    }
+
+    @Override
+    public void afterProcess(FsFile fsFile) throws Exception {
+        fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+        saveFile(fsFile);
     }
 }

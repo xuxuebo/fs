@@ -14,6 +14,9 @@ public class PropertiesUtils {
     private static boolean download;
     private static boolean convert;
     private static String fileStoreDir;
+    private static String imageType;
+    private static String videoType;
+    private static String audioType;
 
     public static String getServerCode() {
         return serverCode;
@@ -109,5 +112,29 @@ public class PropertiesUtils {
 
     public void setDeleteFileUrl(String deleteFileUrl) {
         PropertiesUtils.deleteFileUrl = deleteFileUrl;
+    }
+
+    public static String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        PropertiesUtils.imageType = imageType;
+    }
+
+    public static String getVideoType() {
+        return videoType;
+    }
+
+    public void setVideoType(String videoType) {
+        PropertiesUtils.videoType = videoType;
+    }
+
+    public static String getAudioType() {
+        return audioType;
+    }
+
+    public void setAudioType(String audioType) {
+        PropertiesUtils.audioType = audioType;
     }
 }

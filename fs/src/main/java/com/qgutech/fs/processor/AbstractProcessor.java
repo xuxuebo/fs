@@ -92,7 +92,7 @@ public abstract class AbstractProcessor implements Processor {
         }
     }
 
-    protected boolean validateParams(FsFile fsFile) throws Exception {
+    protected final boolean validateParams(FsFile fsFile) throws Exception {
         if (fsFile == null) {
             return false;
         }
@@ -122,7 +122,7 @@ public abstract class AbstractProcessor implements Processor {
             return false;
         }
 
-        fsFile.setSuffix(extension);
+        fsFile.setSuffix(extension.toLowerCase());
         fsFile.setFileSize(file.getSize());
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
@@ -130,7 +130,7 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected void saveTmpFile(FsFile fsFile) throws Exception {
+    protected final void saveTmpFile(FsFile fsFile) throws Exception {
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
@@ -160,7 +160,7 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected String deleteFsFile(String fsFileId) {
+    protected final String deleteFsFile(String fsFileId) {
         if (StringUtils.isEmpty(fsFileId)) {
             return null;
         }
@@ -177,7 +177,7 @@ public abstract class AbstractProcessor implements Processor {
         return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
     }
 
-    protected String saveFile(FsFile fsFile) {
+    protected final String saveFile(FsFile fsFile) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
         fsFile.setSign(Signer.sign(PropertiesUtils.getServerHost()
@@ -185,7 +185,7 @@ public abstract class AbstractProcessor implements Processor {
         return HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
     }
 
-    protected String updateFile(FsFile fsFile) {
+    protected final String updateFile(FsFile fsFile) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
         fsFile.setSign(Signer.sign(fsFile.getId(), PropertiesUtils.getServerHost()
@@ -210,6 +210,10 @@ public abstract class AbstractProcessor implements Processor {
                 .append(FsConstants.POINT).append(fsFile.getSuffix());
 
         return builder.toString();
+    }
+
+    protected String getGenFilePath(FsFile fsFile) {
+        return null;
     }
 
     @Override

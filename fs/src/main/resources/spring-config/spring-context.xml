@@ -35,6 +35,9 @@
         <property name="download" value="${fs.download}"/>
         <property name="convert" value="${fs.convert}"/>
         <property name="fileStoreDir" value="${fs.fileStoreDir}"/>
+        <property name="imageType" value="${fs.imageType}"/>
+        <property name="videoType" value="${fs.videoType}"/>
+        <property name="audioType" value="${fs.audioType}"/>
     </bean>
 
     <!-- jedis连接池 -->

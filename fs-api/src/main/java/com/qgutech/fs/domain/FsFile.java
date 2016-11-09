@@ -147,6 +147,12 @@ public class FsFile extends BaseEntity {
     @Transient
     private String serverHost;
 
+    /**
+     * 用于临时保存文件的路径
+     */
+    @Transient
+    private String tmpFilePath;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -291,6 +297,14 @@ public class FsFile extends BaseEntity {
         this.serverHost = serverHost;
     }
 
+    public String getTmpFilePath() {
+        return tmpFilePath;
+    }
+
+    public void setTmpFilePath(String tmpFilePath) {
+        this.tmpFilePath = tmpFilePath;
+    }
+
     @Override
     public String toString() {
         return "FsFile{" +
@@ -335,7 +349,7 @@ public class FsFile extends BaseEntity {
         }
     }
 
-    public boolean uploadValidate() {
+    public boolean validateUpload() {
         return processor != null && StringUtils.isNotEmpty(appCode)
                 && StringUtils.isNotEmpty(businessId) && StringUtils.isNotEmpty(getCorpCode());
     }

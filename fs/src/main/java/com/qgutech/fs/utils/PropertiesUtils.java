@@ -9,6 +9,7 @@ public class PropertiesUtils {
     private static String serverHost;
     private static String saveFileUrl;
     private static String updateFileUrl;
+    private static String deleteFileUrl;
     private static boolean upload;
     private static boolean download;
     private static boolean convert;
@@ -100,5 +101,13 @@ public class PropertiesUtils {
 
     public void setFileStoreDir(String fileStoreDir) {
         PropertiesUtils.fileStoreDir = fileStoreDir;
+    }
+
+    public static String getDeleteFileUrl() {
+        return deleteFileUrl;
+    }
+
+    public void setDeleteFileUrl(String deleteFileUrl) {
+        PropertiesUtils.deleteFileUrl = deleteFileUrl;
     }
 }

@@ -29,11 +29,30 @@
         <property name="signLevel" value="${fs.signLevel}"/>
         <property name="serverHost" value="${fs.serverHost}"/>
         <property name="saveFileUrl" value="${fs.saveFileUrl}"/>
+        <property name="deleteFileUrl" value="${fs.deleteFileUrl}"/>
         <property name="updateFileUrl" value="${fs.updateFileUrl}"/>
         <property name="upload" value="${fs.upload}"/>
         <property name="download" value="${fs.download}"/>
         <property name="convert" value="${fs.convert}"/>
         <property name="fileStoreDir" value="${fs.fileStoreDir}"/>
+    </bean>
+
+    <!-- jedis连接池 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!--<property name="maxTotal" value="20"/>-->
+        <property name="maxIdle" value="${jedis.maxIdle}"/>
+        <property name="maxWaitMillis" value="${jedis.maxWaitMillis}"/>
+        <property name="testOnBorrow" value="true"/>
+    </bean>
+
+    <bean name="fsRedis" class="com.qgutech.fs.utils.FsRedis" lazy-init="false">
+        <property name="commonJedis">
+            <bean class="com.qgutech.fs.utils.RedisFactoryBean">
+                <constructor-arg index="0" ref="jedisPoolConfig"/>
+                <constructor-arg index="1" value="${commonRedisUrl}"/>
+                <constructor-arg index="2" value="${commonRedisPort}"/>
+            </bean>
+        </property>
     </bean>
 
 </beans>

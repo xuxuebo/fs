@@ -40,5 +40,17 @@ public enum ProcessorTypeEnum {
     /**
      * 压缩文件，里面的都是文档，做文档处理
      */
-    ZDOC
+    ZDOC;
+
+    public static String toDirectory(ProcessorTypeEnum processorTypeEnum) {
+        if (VID.equals(processorTypeEnum)
+                || AUD.equals(processorTypeEnum)
+                || DOC.equals(processorTypeEnum)
+                || IMG.equals(processorTypeEnum)
+                || FILE.equals(processorTypeEnum)) {
+            return processorTypeEnum.name().toLowerCase();
+        }
+
+        return ZIP.name().toLowerCase();
+    }
 }

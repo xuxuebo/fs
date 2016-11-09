@@ -95,6 +95,6 @@ public class ImageProcessor extends AbstractProcessor {
     @Override
     public void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        saveFile(fsFile);
+        saveFsFile(fsFile);
     }
 }

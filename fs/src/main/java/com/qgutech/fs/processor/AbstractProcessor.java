@@ -51,7 +51,7 @@ public abstract class AbstractProcessor implements Processor {
             }
 
             fsFile.setStatus(ProcessStatusEnum.PROCESSING);
-            fsFileId = saveFile(fsFile);
+            fsFileId = saveFsFile(fsFile);
             fsFile.setId(fsFileId);
             inputStream = new FileInputStream(tmpFilePath);
             originFilePath = getOriginFilePath(fsFile);
@@ -177,7 +177,7 @@ public abstract class AbstractProcessor implements Processor {
         return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
     }
 
-    protected final String saveFile(FsFile fsFile) {
+    protected final String saveFsFile(FsFile fsFile) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
         fsFile.setSign(Signer.sign(PropertiesUtils.getServerHost()
@@ -185,7 +185,7 @@ public abstract class AbstractProcessor implements Processor {
         return HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
     }
 
-    protected final String updateFile(FsFile fsFile) {
+    protected final String updateFsFile(FsFile fsFile) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
         fsFile.setSign(Signer.sign(fsFile.getId(), PropertiesUtils.getServerHost()
@@ -224,6 +224,6 @@ public abstract class AbstractProcessor implements Processor {
     @Override
     public void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        updateFile(fsFile);
+        updateFsFile(fsFile);
     }
 }

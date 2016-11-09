@@ -67,7 +67,7 @@ public class ImageProcessor extends AbstractProcessor {
                 int w = value.getW();
                 int h = value.getH();
                 commands.add("ffmpeg");
-                commands.add("i");
+                commands.add("-i");
                 commands.add(tmpFilePath);
                 if (w > 0 && h > 0) {
                     if (w > width) {

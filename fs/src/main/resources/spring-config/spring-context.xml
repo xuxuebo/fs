@@ -30,6 +30,10 @@
         <property name="serverHost" value="${fs.serverHost}"/>
         <property name="saveFileUrl" value="${fs.saveFileUrl}"/>
         <property name="updateFileUrl" value="${fs.updateFileUrl}"/>
+        <property name="upload" value="${fs.upload}"/>
+        <property name="download" value="${fs.download}"/>
+        <property name="convert" value="${fs.convert}"/>
+        <property name="fileStoreDir" value="${fs.fileStoreDir}"/>
     </bean>
 
 </beans>

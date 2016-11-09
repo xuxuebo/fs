@@ -9,6 +9,10 @@ public class PropertiesUtils {
     private static String serverHost;
     private static String saveFileUrl;
     private static String updateFileUrl;
+    private static boolean upload;
+    private static boolean download;
+    private static boolean convert;
+    private static String fileStoreDir;
 
     public static String getServerCode() {
         return serverCode;
@@ -64,5 +68,37 @@ public class PropertiesUtils {
 
     public void setSaveFileUrl(String saveFileUrl) {
         PropertiesUtils.saveFileUrl = saveFileUrl;
+    }
+
+    public static boolean isUpload() {
+        return upload;
+    }
+
+    public void setUpload(boolean upload) {
+        PropertiesUtils.upload = upload;
+    }
+
+    public static boolean isDownload() {
+        return download;
+    }
+
+    public void setDownload(boolean download) {
+        PropertiesUtils.download = download;
+    }
+
+    public static boolean isConvert() {
+        return convert;
+    }
+
+    public void setConvert(boolean convert) {
+        PropertiesUtils.convert = convert;
+    }
+
+    public static String getFileStoreDir() {
+        return fileStoreDir;
+    }
+
+    public void setFileStoreDir(String fileStoreDir) {
+        PropertiesUtils.fileStoreDir = fileStoreDir;
     }
 }

@@ -3,17 +3,36 @@ package com.qgutech.fs.domain;
 
 import com.qgutech.fs.domain.base.BaseEntity;
 import com.qgutech.fs.utils.ReflectUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "t_fs_file")
 public class FsFile extends BaseEntity {
 
+    public static final String _storedFileName = "storedFileName";
+    public static final String _processor = "processor";
+    public static final String _appCode = "appCode";
+    public static final String _subFileCount = "subFileCount";
+    public static final String _subFileCounts = "subFileCounts";
+    public static final String _fileSize = "fileSize";
+    public static final String _businessId = "businessId";
+    public static final String _businessCode = "businessCode";
+    public static final String _businessDir = "businessDir";
+    public static final String _suffix = "suffix";
+    public static final String _videoLevels = "videoLevels";
+    public static final String _durations = "durations";
+    public static final String _status = "status";
     public static final String _serverCode = "serverCode";
-
+    public static final String _timestamp = "timestamp";
+    public static final String _sign = "sign";
+    public static final String _serverHost = "serverHost";
+    public static final String _file = "file";
     /**
      * 上传文件的文件名（源文件名称）
      */
@@ -98,6 +117,9 @@ public class FsFile extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ProcessStatusEnum status;
 
+    /**
+     * 文档上传的文档服务器所在的集群编号
+     */
     @Column(nullable = false, length = 20)
     private String serverCode;
 
@@ -269,6 +291,30 @@ public class FsFile extends BaseEntity {
         this.serverHost = serverHost;
     }
 
+    @Override
+    public String toString() {
+        return "FsFile{" +
+                "storedFileName='" + storedFileName + '\'' +
+                ", processor=" + processor +
+                ", appCode='" + appCode + '\'' +
+                ", subFileCount=" + subFileCount +
+                ", subFileCounts='" + subFileCounts + '\'' +
+                ", fileSize=" + fileSize +
+                ", businessId='" + businessId + '\'' +
+                ", businessCode='" + businessCode + '\'' +
+                ", businessDir='" + businessDir + '\'' +
+                ", suffix='" + suffix + '\'' +
+                ", videoLevels='" + videoLevels + '\'' +
+                ", durations='" + durations + '\'' +
+                ", status=" + status +
+                ", serverCode='" + serverCode + '\'' +
+                ", file=" + file +
+                ", timestamp=" + timestamp +
+                ", sign='" + sign + '\'' +
+                ", serverHost='" + serverHost + '\'' +
+                '}';
+    }
+
     public void merge(FsFile fsFile) {
         if (fsFile == null) {
             return;
@@ -289,24 +335,37 @@ public class FsFile extends BaseEntity {
         }
     }
 
-    @Override
-    public String toString() {
-        return "FsFile{" +
-                "storedFileName='" + storedFileName + '\'' +
-                ", processor=" + processor +
-                ", appCode='" + appCode + '\'' +
-                ", subFileCount=" + subFileCount +
-                ", subFileCounts='" + subFileCounts + '\'' +
-                ", fileSize=" + fileSize +
-                ", businessId='" + businessId + '\'' +
-                ", businessCode='" + businessCode + '\'' +
-                ", businessDir='" + businessDir + '\'' +
-                ", suffix='" + suffix + '\'' +
-                ", videoLevels='" + videoLevels + '\'' +
-                ", durations='" + durations + '\'' +
-                ", file=" + file +
-                ", status=" + status +
-                ", serverCode='" + serverCode + '\'' +
-                '}';
+    public boolean uploadValidate() {
+        return processor != null && StringUtils.isNotEmpty(appCode)
+                && StringUtils.isNotEmpty(businessId) && StringUtils.isNotEmpty(getCorpCode());
+    }
+
+    public Map<String, String> toMap() {
+        Map<String, String> resultMap = new HashMap<String, String>();
+        if (StringUtils.isNotEmpty(getId())) {
+            resultMap.put(_id, getId());
+        }
+
+        if (StringUtils.isNotEmpty(getCorpCode())) {
+            resultMap.put(_corpCode, getCorpCode());
+        }
+
+        Field[] fields = getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getAnnotation(Column.class) == null
+                    && field.getAnnotation(Transient.class) == null
+                    || field.getName().equals(_file)) {
+                continue;
+            }
+
+            Object fieldValue = ReflectUtil.getFieldValue(field, this);
+            if (fieldValue == null) {
+                continue;
+            }
+
+            resultMap.put(field.getName(), fieldValue.toString());
+        }
+
+        return resultMap;
     }
 }

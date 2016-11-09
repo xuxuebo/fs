@@ -28,14 +28,23 @@ public class FsUtils {
         return UUID.randomUUID().toString().replace("_", "");
     }
 
-    public static String executeCommand(String command) throws Exception {
+    public static String toString(String[] array) {
+        Assert.notEmpty(array, "Array is empty!");
+        StringBuilder builder = new StringBuilder();
+        for (String command : array) {
+            builder.append(command).append(" ");
+        }
+
+        return builder.toString();
+    }
+
+    public static String executeErrorCommand(String command) throws Exception {
         Assert.hasText(command, "Command is empty!");
         BufferedReader bufferReader = null;
-        Process process = null;
         StringBuilder builder = new StringBuilder();
+        Process process = Runtime.getRuntime().exec(command);
         try {
-            process = Runtime.getRuntime().exec(command);
-            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            bufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             String line;
             while ((line = bufferReader.readLine()) != null) {
                 LOG.info(line.trim());
@@ -57,14 +66,15 @@ public class FsUtils {
         return builder.toString();
     }
 
-    public static String executeErrorCommand(String command) throws Exception {
-        Assert.hasText(command, "Command is empty!");
+    public static String executeCommand(String[] commands) throws Exception {
+        Assert.notEmpty(commands, "Commands is empty!");
         BufferedReader bufferReader = null;
-        Process process = null;
         StringBuilder builder = new StringBuilder();
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
         try {
-            process = Runtime.getRuntime().exec(command);
-            bufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = bufferReader.readLine()) != null) {
                 LOG.info(line.trim());
@@ -88,8 +98,7 @@ public class FsUtils {
 
     public static String getImageResolution(String filePath) throws Exception {
         Assert.hasText(filePath, "filePath is empty!");
-        String command = "ffmpeg -i " + filePath;
-        String result = executeErrorCommand(command);
+        String result = executeCommand(new String[]{"ffmpeg", "-i", filePath});
         if (StringUtils.isEmpty(result)) {
             throw new RuntimeException("File[" + filePath + "] not exist or is not an image!");
         }
@@ -100,5 +109,9 @@ public class FsUtils {
         } else {
             throw new RuntimeException("File[" + filePath + "] not exist or is not an image!");
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println(getImageResolution("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\2.png"));
     }
 }

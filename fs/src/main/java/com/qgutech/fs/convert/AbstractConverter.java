@@ -1,14 +1,12 @@
 package com.qgutech.fs.convert;
 
 
-import org.apache.commons.io.IOUtils;
+import com.qgutech.fs.utils.FsUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 
 public abstract class AbstractConverter implements Converter {
 
@@ -41,10 +39,10 @@ public abstract class AbstractConverter implements Converter {
         }
     }
 
-    protected String getCommand(String srcFilePath, String targetFilePath) {
-        return "\"" + convertToolPath + "\" -srcFile \""
-                + srcFilePath.replace("\\", "\\\\") + "\" -tarFile \""
-                + targetFilePath.replace("\\", "\\\\") + "\"";
+    protected String[] getCommands(String srcFilePath, String targetFilePath) {
+        return new String[]{convertToolPath, "-srcFile"
+                , srcFilePath.replace("\\", "\\\\"), "-tarFile"
+                , targetFilePath.replace("\\", "\\\\")};
     }
 
     protected File getTargetFile(String targetFilePath) {
@@ -53,44 +51,13 @@ public abstract class AbstractConverter implements Converter {
 
     protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         File targetFile = getTargetFile(targetFileDirPath);
-        StringBuilder builder = executeCmd(inputFilePath, targetFile.getAbsolutePath());
-        String result = builder.toString();
+        String[] commands = getCommands(inputFilePath, targetFile.getAbsolutePath());
+        String result = FsUtils.executeCommand(commands);
         if (result.length() > 0) {
-            throw new RuntimeException("Execute cmd["
-                    + getCommand(inputFilePath, targetFile.getAbsolutePath()) + "] failed! " + result);
+            throw new RuntimeException("Execute command[" + FsUtils.toString(commands) + "] failed! " + result);
         }
 
         return targetFile;
-    }
-
-    protected StringBuilder executeCmd(String inputFilePath, String targetFilePath) throws Exception {
-        BufferedReader bufferReader = null;
-        Process process = null;
-        StringBuilder builder = new StringBuilder();
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(getCommand(inputFilePath, targetFilePath));
-            processBuilder.redirectErrorStream(true);
-            process = processBuilder.start();
-            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = bufferReader.readLine()) != null) {
-                LOG.info(line.trim());
-                if (builder.length() > 0) {
-                    builder.append("\r\n");
-                }
-
-                builder.append(line.trim());
-            }
-
-            process.waitFor();
-        } finally {
-            IOUtils.closeQuietly(bufferReader);
-            if (process != null) {
-                process.destroy();
-            }
-        }
-
-        return builder;
     }
 
     protected File linuxConvert(String inputFilePath, String targetFileDirPath) {

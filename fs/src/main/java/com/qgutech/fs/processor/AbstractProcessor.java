@@ -154,7 +154,11 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected String unZip(FsFile fsFile) {
+    protected String decompress(String compressFilePath,String decompress) {
+        return null;
+    }
+
+    protected String compress(FsFile fsFile) {
         return null;
     }
 

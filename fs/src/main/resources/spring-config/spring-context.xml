@@ -38,6 +38,7 @@
         <property name="imageType" value="${fs.imageType}"/>
         <property name="videoType" value="${fs.videoType}"/>
         <property name="audioType" value="${fs.audioType}"/>
+        <property name="zipType" value="${fs.zipType}"/>
     </bean>
 
     <!-- jedis连接池 -->

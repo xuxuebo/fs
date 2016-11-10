@@ -108,6 +108,7 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+
         <!-- 工具配置结束-->
 
         <!-- 文档转化配置开始-->

@@ -17,6 +17,7 @@ public class PropertiesUtils {
     private static String imageType;
     private static String videoType;
     private static String audioType;
+    private static String zipType;
 
     public static String getServerCode() {
         return serverCode;
@@ -136,5 +137,13 @@ public class PropertiesUtils {
 
     public void setAudioType(String audioType) {
         PropertiesUtils.audioType = audioType;
+    }
+
+    public static String getZipType() {
+        return zipType;
+    }
+
+    public void setZipType(String zipType) {
+        PropertiesUtils.zipType = zipType;
     }
 }

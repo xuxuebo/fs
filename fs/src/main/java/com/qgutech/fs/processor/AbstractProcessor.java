@@ -1,6 +1,7 @@
 package com.qgutech.fs.processor;
 
 
+import com.google.gson.Gson;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
@@ -20,7 +21,11 @@ import java.util.Map;
 
 public abstract class AbstractProcessor implements Processor {
 
+    protected static final int MAX_EXECUTE_CNT = 10;
+    protected static final int DEFAULT_WAIT_TIME = 1000;
+
     protected final Log LOG = LogFactory.getLog(getClass());
+    protected final Gson gson = new Gson();
 
     @Override
     public FsFile beforeProcess(FsFile fsFile) throws Exception {
@@ -59,7 +64,7 @@ public abstract class AbstractProcessor implements Processor {
             IOUtils.copy(inputStream, outputStream);
 
             if (needAsync(fsFile)) {
-                submitToRedis(fsFile);
+                submit(fsFile, 0);
             } else {
                 process(fsFile);
             }
@@ -126,6 +131,7 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setFileSize(file.getSize());
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
+        fsFile.setCreateTime(new Date());
 
         return true;
     }
@@ -150,6 +156,27 @@ public abstract class AbstractProcessor implements Processor {
 
     protected String unZip(FsFile fsFile) {
         return null;
+    }
+
+    protected boolean submit(FsFile fsFile, int count) {
+        try {
+            submitToRedis(fsFile);
+        } catch (Exception e) {
+            try {
+                Thread.sleep(DEFAULT_WAIT_TIME);
+            } catch (Exception ex) {
+                //NP
+            }
+
+            if (count < MAX_EXECUTE_CNT) {
+                submit(fsFile, ++count);
+            } else {
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected void submitToRedis(FsFile fsFile) {
@@ -204,7 +231,7 @@ public abstract class AbstractProcessor implements Processor {
         }
 
         builder.append(File.separator).append(ProcessorTypeEnum.toDirectory(fsFile.getProcessor()))
-                .append(File.separator).append(FsUtils.formatDateToYYMM(new Date()))
+                .append(File.separator).append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
                 .append(File.separator).append(fsFile.getBusinessId())
                 .append(File.separator).append(fsFile.getId())
                 .append(FsConstants.POINT).append(fsFile.getSuffix());

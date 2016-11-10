@@ -364,6 +364,10 @@ public class FsFile extends BaseEntity {
             resultMap.put(_corpCode, getCorpCode());
         }
 
+        if (getCreateTime() != null) {
+            resultMap.put(_createTime, getCreateTime().toString());
+        }
+
         Field[] fields = getClass().getDeclaredFields();
         for (Field field : fields) {
             if (field.getAnnotation(Column.class) == null

@@ -12,7 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class ImageProcessor extends AbstractProcessor {
@@ -44,7 +43,7 @@ public class ImageProcessor extends AbstractProcessor {
                 + File.separator + fsFile.getAppCode()
                 + File.separator + FsConstants.FILE_DIR_GEN
                 + File.separator + FsConstants.FILE_DIR_IMG
-                + File.separator + FsUtils.formatDateToYYMM(new Date())
+                + File.separator + FsUtils.formatDateToYYMM(fsFile.getCreateTime())
                 + File.separator + fsFile.getId();
     }
 

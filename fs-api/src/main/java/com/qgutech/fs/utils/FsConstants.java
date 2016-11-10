@@ -31,4 +31,8 @@ public interface FsConstants {
 
     String RESPONSE_RESULT_ERROR = "error";
     String RESPONSE_RESULT_SUCCESS = "success";
+
+    String COMPRESS_FILE_SUFFIX_ZIP = "zip";
+    String COMPRESS_FILE_SUFFIX_7Z = "7z";
+    String COMPRESS_FILE_SUFFIX_RAR = "rar";
 }

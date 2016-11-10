@@ -1,10 +1,14 @@
 package com.qgutech.fs.utils;
 
 
+import com.github.junrar.Archive;
+import com.github.junrar.rarfile.FileHeader;
 import com.qgutech.fs.domain.FsFile;
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -135,16 +139,29 @@ public class FsUtils {
             throw new RuntimeException("Creating directory[" + decompressDirPath + "] failed!");
         }
 
+        String extension = FilenameUtils.getExtension(compressFile.getName());
+        if (FsConstants.COMPRESS_FILE_SUFFIX_ZIP.equalsIgnoreCase(extension)) {
+            unZip(compressFilePath, decompressDirPath);
+        } else if (FsConstants.COMPRESS_FILE_SUFFIX_7Z.equalsIgnoreCase(extension)) {
+            unSevenZ(compressFilePath, decompressDirPath);
+        } else if (FsConstants.COMPRESS_FILE_SUFFIX_RAR.equalsIgnoreCase(extension)) {
+            unRar(compressFilePath, decompressDirPath);
+        } else {
+            throw new RuntimeException("extension[" + extension + "] is not support decompression!");
+        }
 
-        InputStream is = null;
-        ArArchiveInputStream ais = null;
+    }
+
+    private static void unRar(String compressFilePath, String decompressDirPath) throws Exception {
+        Archive archive = null;
         try {
-            is = new FileInputStream(compressFile);
-            ais = new ArArchiveInputStream(is);
-            ArchiveEntry archiveEntry;
-            while ((archiveEntry = ais.getNextEntry()) != null) {
-                if (archiveEntry.isDirectory()) {
-                    File entryDirFile = new File(decompressDir, archiveEntry.getName());
+            archive = new Archive(new File(compressFilePath));
+            FileHeader fh;
+            while ((fh = archive.nextFileHeader()) != null) {
+                String fileName = fh.getFileNameW().isEmpty() ?
+                        fh.getFileNameString() : fh.getFileNameW();
+                if (fh.isDirectory()) {
+                    File entryDirFile = new File(decompressDirPath, fileName);
                     if (!entryDirFile.exists() && !entryDirFile.mkdirs()) {
                         throw new IOException("Creating directory["
                                 + entryDirFile.getAbsolutePath() + "] failed!");
@@ -155,54 +172,44 @@ public class FsUtils {
 
                 OutputStream outputStream = null;
                 try {
-                    File entryFile = new File(decompressDir, archiveEntry.getName());
+                    File entryFile = new File(decompressDirPath, fileName);
+                    File parentFile = entryFile.getParentFile();
+                    if (!parentFile.exists() && !parentFile.mkdirs()) {
+                        throw new IOException("Creating directory["
+                                + parentFile.getAbsolutePath() + "] failed!");
+                    }
+
                     if (!entryFile.exists() && !entryFile.createNewFile()) {
                         throw new IOException("Creating file[" + entryFile.getAbsolutePath() + "] failed!");
                     }
 
                     outputStream = new FileOutputStream(entryFile);
-                    IOUtils.copy(ais, outputStream);
+                    archive.extractFile(fh, outputStream);
                 } finally {
                     IOUtils.closeQuietly(outputStream);
                 }
             }
         } finally {
-            IOUtils.closeQuietly(is);
-            IOUtils.closeQuietly(ais);
+            if (archive != null) {
+                try {
+                    archive.close();
+                } catch (Exception e) {
+                    //np
+                }
+            }
         }
-
     }
 
     private static void unZip(String compressFilePath, String decompressDirPath) throws Exception {
-        Assert.hasText(compressFilePath, "CompressFilePath is empty!");
-        Assert.hasText(decompressDirPath, "DecompressDirPath is empty!");
-        File compressFile = new File(compressFilePath);
-        if (!compressFile.exists()) {
-            throw new RuntimeException("CompressFile[" + compressFilePath + "] not exist!");
-        }
-
-        if (!compressFile.isFile()) {
-            throw new RuntimeException("CompressFile[" + compressFilePath + "] is not a file!");
-        }
-
-        File decompressDir = new File(decompressDirPath);
-        if (decompressDir.exists() && !decompressDir.isDirectory()) {
-            throw new RuntimeException("DecompressDir[" + decompressDirPath + "] is not a directory!");
-        }
-
-        if (!decompressDir.exists() && !decompressDir.mkdirs()) {
-            throw new RuntimeException("Creating directory[" + decompressDirPath + "] failed!");
-        }
-
         InputStream is = null;
-        ZipArchiveInputStream zis = null;
+        ArchiveInputStream zis = null;
         try {
-            is = new FileInputStream(compressFile);
+            is = new FileInputStream(compressFilePath);
             zis = new ZipArchiveInputStream(is);
             ArchiveEntry archiveEntry;
             while ((archiveEntry = zis.getNextEntry()) != null) {
                 if (archiveEntry.isDirectory()) {
-                    File entryDirFile = new File(decompressDir, archiveEntry.getName());
+                    File entryDirFile = new File(decompressDirPath, archiveEntry.getName());
                     if (!entryDirFile.exists() && !entryDirFile.mkdirs()) {
                         throw new IOException("Creating directory["
                                 + entryDirFile.getAbsolutePath() + "] failed!");
@@ -213,7 +220,13 @@ public class FsUtils {
 
                 OutputStream outputStream = null;
                 try {
-                    File entryFile = new File(decompressDir, archiveEntry.getName());
+                    File entryFile = new File(decompressDirPath, archiveEntry.getName());
+                    File parentFile = entryFile.getParentFile();
+                    if (!parentFile.exists() && !parentFile.mkdirs()) {
+                        throw new IOException("Creating directory["
+                                + parentFile.getAbsolutePath() + "] failed!");
+                    }
+
                     if (!entryFile.exists() && !entryFile.createNewFile()) {
                         throw new IOException("Creating file[" + entryFile.getAbsolutePath() + "] failed!");
                     }
@@ -227,6 +240,58 @@ public class FsUtils {
         } finally {
             IOUtils.closeQuietly(is);
             IOUtils.closeQuietly(zis);
+        }
+    }
+
+    private static void unSevenZ(String compressFilePath, String decompressDirPath) throws Exception {
+        SevenZFile sevenZFile = null;
+        try {
+            sevenZFile = new SevenZFile(new File(compressFilePath));
+            ArchiveEntry archiveEntry;
+            while ((archiveEntry = sevenZFile.getNextEntry()) != null) {
+                if (archiveEntry.isDirectory()) {
+                    File entryDirFile = new File(decompressDirPath, archiveEntry.getName());
+                    if (!entryDirFile.exists() && !entryDirFile.mkdirs()) {
+                        throw new IOException("Creating directory["
+                                + entryDirFile.getAbsolutePath() + "] failed!");
+                    }
+
+                    continue;
+                }
+
+                OutputStream outputStream = null;
+                try {
+                    File entryFile = new File(decompressDirPath, archiveEntry.getName());
+                    File parentFile = entryFile.getParentFile();
+                    if (!parentFile.exists() && !parentFile.mkdirs()) {
+                        throw new IOException("Creating directory["
+                                + parentFile.getAbsolutePath() + "] failed!");
+                    }
+
+                    if (!entryFile.exists() && !entryFile.createNewFile()) {
+                        throw new IOException("Creating file[" + entryFile.getAbsolutePath() + "] failed!");
+                    }
+
+                    outputStream = new FileOutputStream(entryFile);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = sevenZFile.read(buffer)) > -1) {
+                        outputStream.write(buffer, 0, len);
+                    }
+
+                    outputStream.flush();
+                } finally {
+                    IOUtils.closeQuietly(outputStream);
+                }
+            }
+        } finally {
+            if (sevenZFile != null) {
+                try {
+                    sevenZFile.close();
+                } catch (Exception e) {
+                    //np
+                }
+            }
         }
     }
 

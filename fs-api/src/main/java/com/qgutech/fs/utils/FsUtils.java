@@ -301,6 +301,20 @@ public class FsUtils {
         }
     }
 
+    public static void compress(String srcFilePath, String compressFilePath) throws Exception {
+        Assert.hasText(compressFilePath, "CompressFilePath is empty!");
+        String extension = FilenameUtils.getExtension(compressFilePath);
+        if (FsConstants.COMPRESS_FILE_SUFFIX_ZIP.equalsIgnoreCase(extension)) {
+            compressToZip(srcFilePath, compressFilePath);
+        } else if (FsConstants.COMPRESS_FILE_SUFFIX_7Z.equalsIgnoreCase(extension)) {
+            compressTo7Z(srcFilePath, compressFilePath);
+        } else if (FsConstants.COMPRESS_FILE_SUFFIX_RAR.equalsIgnoreCase(extension)) {
+            compressToRar(srcFilePath, compressFilePath);
+        } else {
+            throw new RuntimeException("extension[" + extension + "] is not support compress!");
+        }
+    }
+
     public static void compressToZip(String srcFilePath, String compressFilePath) throws Exception {
         Assert.hasText(srcFilePath, "SrcFilePath is empty!");
         Assert.hasText(compressFilePath, "CompressFilePath is empty!");
@@ -451,6 +465,10 @@ public class FsUtils {
         }
     }
 
+    public static void compressToRar(String srcFilePath, String compressFilePath) throws Exception {
+        throw new RuntimeException("Compress rar is not support!");
+    }
+
     private static List<String> getSubFiles(String filePath, String prefix) {
         Assert.hasText(filePath, "FilePath is empty!");
         File file = new File(filePath);
@@ -479,10 +497,10 @@ public class FsUtils {
     }
 
     public static void main(String[] args) throws Exception {
-      /*  decompress("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\尚学堂-李腾飞OA项目源码.7z"
-                , "C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\my");*/
-        compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"
-                , "C:/Users/Administrator/Desktop/test/my/my.7z");
+        decompress("C:/Users/Administrator/Desktop/test/my/my.7z"
+                , "C:/Users/Administrator/Desktop/test/my");
+       /* compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"
+                , "C:/Users/Administrator/Desktop/test/my/my.7z");*/
         //System.out.println(getImageResolution("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\2.png"));
     }
 

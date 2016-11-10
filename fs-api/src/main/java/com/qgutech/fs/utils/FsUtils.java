@@ -3,11 +3,13 @@ package com.qgutech.fs.utils;
 
 import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
-import com.qgutech.fs.domain.FsFile;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -17,7 +19,9 @@ import org.springframework.util.Assert;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -295,13 +299,108 @@ public class FsUtils {
         }
     }
 
-    public static String compress(FsFile fsFile) {
-        return null;
+    public static void compressToZip(String srcFilePath, String compressFilePath) throws Exception {
+        Assert.hasText(srcFilePath, "SrcFilePath is empty!");
+        Assert.hasText(compressFilePath, "CompressFilePath is empty!");
+        File srcFile = new File(srcFilePath);
+        if (!srcFile.exists()) {
+            throw new RuntimeException("SrcFile[" + srcFilePath + "] not exist!");
+        }
+
+        File[] files = srcFile.listFiles();
+        if (srcFile.isDirectory() && (files == null || files.length == 0)) {
+            throw new RuntimeException("SrcFile[" + srcFilePath + "] is a directory but not has sub file!");
+        }
+
+        File compressFile = new File(compressFilePath);
+        if (compressFile.exists() && compressFile.isDirectory()) {
+            throw new RuntimeException("compressFile[" + compressFilePath + "] must not be directory!");
+        }
+
+        if (compressFile.exists() && !compressFilePath.endsWith(FsConstants.COMPRESS_FILE_SUFFIX_ZIP)) {
+            throw new RuntimeException("compressFile[" + compressFilePath + "]'s suffix must not end with zip!");
+        }
+
+        if (!compressFilePath.endsWith(FsConstants.COMPRESS_FILE_SUFFIX_ZIP)) {
+            compressFilePath = compressFilePath + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP;
+            compressFile = new File(compressFilePath);
+        }
+
+        File parentFile = compressFile.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs()) {
+            throw new IOException("Creating directory[" + parentFile.getAbsolutePath() + "] failed!");
+        }
+
+        if (!compressFile.exists() && !compressFile.createNewFile()) {
+            throw new IOException("Creating file[" + compressFile.getAbsolutePath() + "] failed!");
+        }
+
+        ZipArchiveOutputStream zos = null;
+        try {
+            zos = new ZipArchiveOutputStream(compressFile);
+            zos.setUseZip64(Zip64Mode.AsNeeded);
+            ZipArchiveEntry zipArchiveEntry = null;
+            InputStream inputStream = null;
+            List<String> subFiles = getSubFiles(srcFilePath, null);
+            for (String subFile : subFiles) {
+                try {
+                    File inputFile = srcFile.isFile() ? srcFile : new File(srcFilePath, subFile);
+                    zipArchiveEntry = new ZipArchiveEntry(inputFile, subFile);
+                    zos.putArchiveEntry(zipArchiveEntry);
+                    if (inputFile.isDirectory()) {
+                        continue;
+                    }
+
+                    inputStream = new FileInputStream(inputFile);
+                    IOUtils.copy(inputStream, zos);
+                } finally {
+                    if (zipArchiveEntry != null) {
+                        try {
+                            zos.closeArchiveEntry();
+                        } catch (Exception e) {
+                            //np
+                        }
+                    }
+                    IOUtils.closeQuietly(inputStream);
+                }
+            }
+        } finally {
+            IOUtils.closeQuietly(zos);
+        }
+    }
+
+    private static List<String> getSubFiles(String filePath, String prefix) {
+        Assert.hasText(filePath, "FilePath is empty!");
+        File file = new File(filePath);
+        if (file.isFile()) {
+            List<String> subFiles = new ArrayList<String>(1);
+            subFiles.add(file.getName());
+            return subFiles;
+        }
+
+        File[] files = file.listFiles();
+        if (files == null || files.length == 0) {
+            return new ArrayList<String>(0);
+        }
+
+        List<String> subFiles = new ArrayList<String>();
+        for (File f : files) {
+            String name = StringUtils.isEmpty(prefix) ? f.getName()
+                    : prefix + FsConstants.PATH_SEPARATOR + f.getName();
+            subFiles.add(name);
+            if (f.isDirectory()) {
+                subFiles.addAll(getSubFiles(f.getAbsolutePath(), name));
+            }
+        }
+
+        return subFiles;
     }
 
     public static void main(String[] args) throws Exception {
-        decompress("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\mp41.rar"
-                , "C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\my");
+        /*decompress("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\mp41.rar"
+                , "C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\my");*/
+        compressToZip("C:/Users/Administrator/Desktop/test/mp41"
+                , "C:/Users/Administrator/Desktop/test/my/my.zip");
         //System.out.println(getImageResolution("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\2.png"));
     }
 

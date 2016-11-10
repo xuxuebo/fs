@@ -5,7 +5,9 @@ import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -369,6 +371,86 @@ public class FsUtils {
         }
     }
 
+    public static void compressTo7Z(String srcFilePath, String compressFilePath) throws Exception {
+        Assert.hasText(srcFilePath, "SrcFilePath is empty!");
+        Assert.hasText(compressFilePath, "CompressFilePath is empty!");
+        File srcFile = new File(srcFilePath);
+        if (!srcFile.exists()) {
+            throw new RuntimeException("SrcFile[" + srcFilePath + "] not exist!");
+        }
+
+        File[] files = srcFile.listFiles();
+        if (srcFile.isDirectory() && (files == null || files.length == 0)) {
+            throw new RuntimeException("SrcFile[" + srcFilePath + "] is a directory but not has sub file!");
+        }
+
+        File compressFile = new File(compressFilePath);
+        if (compressFile.exists() && compressFile.isDirectory()) {
+            throw new RuntimeException("compressFile[" + compressFilePath + "] must not be directory!");
+        }
+
+        if (compressFile.exists() && !compressFilePath.endsWith(FsConstants.COMPRESS_FILE_SUFFIX_7Z)) {
+            throw new RuntimeException("compressFile[" + compressFilePath + "]'s suffix must not end with 7z!");
+        }
+
+        if (!compressFilePath.endsWith(FsConstants.COMPRESS_FILE_SUFFIX_7Z)) {
+            compressFilePath = compressFilePath + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_7Z;
+            compressFile = new File(compressFilePath);
+        }
+
+        File parentFile = compressFile.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs()) {
+            throw new IOException("Creating directory[" + parentFile.getAbsolutePath() + "] failed!");
+        }
+
+        if (!compressFile.exists() && !compressFile.createNewFile()) {
+            throw new IOException("Creating file[" + compressFile.getAbsolutePath() + "] failed!");
+        }
+
+
+        SevenZOutputFile sevenZOutputFile = null;
+        try {
+            sevenZOutputFile = new SevenZOutputFile(compressFile);
+            SevenZArchiveEntry archiveEntry = null;
+            InputStream inputStream = null;
+            List<String> subFiles = getSubFiles(srcFilePath, null);
+            for (String subFile : subFiles) {
+                try {
+                    File inputFile = srcFile.isFile() ? srcFile : new File(srcFilePath, subFile);
+                    archiveEntry = sevenZOutputFile.createArchiveEntry(inputFile, subFile);
+                    sevenZOutputFile.putArchiveEntry(archiveEntry);
+                    if (inputFile.isDirectory()) {
+                        continue;
+                    }
+
+                    inputStream = new FileInputStream(inputFile);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buffer)) > -1) {
+                        sevenZOutputFile.write(buffer, 0, len);
+                    }
+                } finally {
+                    if (archiveEntry != null) {
+                        try {
+                            sevenZOutputFile.closeArchiveEntry();
+                        } catch (Exception e) {
+                            //np
+                        }
+                    }
+                    IOUtils.closeQuietly(inputStream);
+                }
+            }
+        } finally {
+            try {
+                if (sevenZOutputFile != null) {
+                    sevenZOutputFile.close();
+                }
+            } catch (Exception e) {
+                //np
+            }
+        }
+    }
+
     private static List<String> getSubFiles(String filePath, String prefix) {
         Assert.hasText(filePath, "FilePath is empty!");
         File file = new File(filePath);
@@ -397,10 +479,10 @@ public class FsUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        /*decompress("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\mp41.rar"
+      /*  decompress("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\尚学堂-李腾飞OA项目源码.7z"
                 , "C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\my");*/
-        compressToZip("C:/Users/Administrator/Desktop/test/mp41"
-                , "C:/Users/Administrator/Desktop/test/my/my.zip");
+        compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"
+                , "C:/Users/Administrator/Desktop/test/my/my.7z");
         //System.out.println(getImageResolution("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\2.png"));
     }
 

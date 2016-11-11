@@ -35,4 +35,5 @@ public interface FsConstants {
     String COMPRESS_FILE_SUFFIX_ZIP = "zip";
     String COMPRESS_FILE_SUFFIX_7Z = "7z";
     String COMPRESS_FILE_SUFFIX_RAR = "rar";
+    String DECOMPRESS = "decompress";
 }

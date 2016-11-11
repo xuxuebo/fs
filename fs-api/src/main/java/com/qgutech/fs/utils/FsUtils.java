@@ -161,11 +161,22 @@ public class FsUtils {
     private static void unRar(String compressFilePath, String decompressDirPath) throws Exception {
         Archive archive = null;
         try {
+            String baseName = FilenameUtils.getBaseName(compressFilePath);
             archive = new Archive(new File(compressFilePath));
             FileHeader fh;
             while ((fh = archive.nextFileHeader()) != null) {
                 String fileName = fh.getFileNameW().isEmpty() ?
                         fh.getFileNameString() : fh.getFileNameW();
+                if (fh.isDirectory() && (fileName.equals(baseName)
+                        || fileName.equals(baseName + FsConstants.PATH_SEPARATOR))) {
+                    continue;
+                }
+
+                int indexOf = fileName.indexOf(baseName);
+                if (indexOf > -1) {
+                    fileName = fileName.substring(indexOf + baseName.length());
+                }
+
                 if (fh.isDirectory()) {
                     File entryDirFile = new File(decompressDirPath, fileName);
                     if (!entryDirFile.exists() && !entryDirFile.mkdirs()) {
@@ -210,12 +221,24 @@ public class FsUtils {
         InputStream is = null;
         ArchiveInputStream zis = null;
         try {
+            String baseName = FilenameUtils.getBaseName(compressFilePath);
             is = new FileInputStream(compressFilePath);
             zis = new ZipArchiveInputStream(is);
             ArchiveEntry archiveEntry;
             while ((archiveEntry = zis.getNextEntry()) != null) {
+                String name = archiveEntry.getName();
+                if (archiveEntry.isDirectory() && (name.equals(baseName)
+                        || name.equals(baseName + FsConstants.PATH_SEPARATOR))) {
+                    continue;
+                }
+
+                int indexOf = name.indexOf(baseName);
+                if (indexOf > -1) {
+                    name = name.substring(indexOf + baseName.length());
+                }
+
                 if (archiveEntry.isDirectory()) {
-                    File entryDirFile = new File(decompressDirPath, archiveEntry.getName());
+                    File entryDirFile = new File(decompressDirPath, name);
                     if (!entryDirFile.exists() && !entryDirFile.mkdirs()) {
                         throw new IOException("Creating directory["
                                 + entryDirFile.getAbsolutePath() + "] failed!");
@@ -226,7 +249,7 @@ public class FsUtils {
 
                 OutputStream outputStream = null;
                 try {
-                    File entryFile = new File(decompressDirPath, archiveEntry.getName());
+                    File entryFile = new File(decompressDirPath, name);
                     File parentFile = entryFile.getParentFile();
                     if (!parentFile.exists() && !parentFile.mkdirs()) {
                         throw new IOException("Creating directory["
@@ -497,7 +520,7 @@ public class FsUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        decompress("C:/Users/Administrator/Desktop/test/my/my.7z"
+        decompress("C:/Users/Administrator/Desktop/test/mp41.rar"
                 , "C:/Users/Administrator/Desktop/test/my");
        /* compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"
                 , "C:/Users/Administrator/Desktop/test/my/my.7z");*/

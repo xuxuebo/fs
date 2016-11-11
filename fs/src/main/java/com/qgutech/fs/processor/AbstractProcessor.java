@@ -154,14 +154,6 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected String decompress(String compressFilePath,String decompress) {
-        return null;
-    }
-
-    protected String compress(FsFile fsFile) {
-        return null;
-    }
-
     protected boolean submit(FsFile fsFile, int count) {
         try {
             submitToRedis(fsFile);

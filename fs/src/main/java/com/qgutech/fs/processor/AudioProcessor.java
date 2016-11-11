@@ -17,18 +17,7 @@ public class AudioProcessor extends AbstractProcessor {
 
     @Override
     protected boolean validateFile(FsFile fsFile) throws Exception {
-        String audioTypes = PropertiesUtils.getAudioType();
-        if (StringUtils.isEmpty(audioTypes)) {
-            return true;
-        }
-
-        for (String audioType : audioTypes.split(",")) {
-            if (audioType.equalsIgnoreCase(fsFile.getSuffix())) {
-                return true;
-            }
-        }
-
-        return false;
+        return validateAudio(fsFile.getSuffix());
     }
 
     @Override

@@ -154,6 +154,21 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
+    protected boolean validateAudio(String extension) {
+        String audioTypes = PropertiesUtils.getAudioType();
+        if (StringUtils.isEmpty(audioTypes)) {
+            return false;
+        }
+
+        for (String audioType : audioTypes.split(",")) {
+            if (audioType.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected boolean submit(FsFile fsFile, int count) {
         try {
             submitToRedis(fsFile);

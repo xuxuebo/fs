@@ -18,18 +18,7 @@ public class ImageProcessor extends AbstractProcessor {
 
     @Override
     protected boolean validateFile(FsFile fsFile) throws Exception {
-        String imageTypes = PropertiesUtils.getImageType();
-        if (StringUtils.isEmpty(imageTypes)) {
-            return true;
-        }
-
-        for (String imageType : imageTypes.split(",")) {
-            if (imageType.equalsIgnoreCase(fsFile.getSuffix())) {
-                return true;
-            }
-        }
-
-        return false;
+        return validateImage(fsFile.getSuffix());
     }
 
     @Override

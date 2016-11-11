@@ -4,7 +4,6 @@ package com.qgutech.fs.processor;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.FsUtils;
-import com.qgutech.fs.utils.PropertiesUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -13,19 +12,7 @@ import java.io.File;
 public class ZipAudioProcessor extends AbstractProcessor {
     @Override
     protected boolean validateFile(FsFile fsFile) throws Exception {
-        String zipTypes = PropertiesUtils.getZipType();
-        if (StringUtils.isEmpty(zipTypes)) {
-            return false;
-        }
-
-        boolean valid = false;
-        String suffix = fsFile.getSuffix();
-        for (String zipType : zipTypes.split(",")) {
-            if (zipType.equalsIgnoreCase(suffix)) {
-                valid = true;
-            }
-        }
-
+        boolean valid = validateZip(fsFile.getSuffix());
         if (!valid) {
             return false;
         }
@@ -45,7 +32,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             }
 
             String extension = FilenameUtils.getExtension(file.getName());
-            if (!validateAudio(extension)) {
+            if (StringUtils.isEmpty(extension) || !validateAudio(extension)) {
                 return false;
             }
         }

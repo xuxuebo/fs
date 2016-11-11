@@ -2,6 +2,7 @@ package com.qgutech.fs.processor;
 
 
 import com.google.gson.Gson;
+import com.qgutech.fs.domain.DocTypeEnum;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
@@ -154,7 +155,7 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected boolean validateAudio(String extension) {
+    protected final boolean validateAudio(String extension) {
         String audioTypes = PropertiesUtils.getAudioType();
         if (StringUtils.isEmpty(audioTypes)) {
             return false;
@@ -162,6 +163,62 @@ public abstract class AbstractProcessor implements Processor {
 
         for (String audioType : audioTypes.split(",")) {
             if (audioType.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected final boolean validateZip(String extension) {
+        String zipTypes = PropertiesUtils.getZipType();
+        if (StringUtils.isEmpty(zipTypes)) {
+            return false;
+        }
+
+        for (String zipType : zipTypes.split(",")) {
+            if (zipType.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected final boolean validateVideo(String extension) {
+        String videoTypes = PropertiesUtils.getVideoType();
+        if (StringUtils.isEmpty(videoTypes)) {
+            return false;
+        }
+
+        for (String videoType : videoTypes.split(",")) {
+            if (videoType.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected final boolean validateDoc(String extension) {
+        DocTypeEnum[] values = DocTypeEnum.values();
+        for (DocTypeEnum value : values) {
+            if (value.name().equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected final boolean validateImage(String extension) {
+        String imageTypes = PropertiesUtils.getImageType();
+        if (StringUtils.isEmpty(imageTypes)) {
+            return false;
+        }
+
+        for (String imageType : imageTypes.split(",")) {
+            if (imageType.equalsIgnoreCase(extension)) {
                 return true;
             }
         }

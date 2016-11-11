@@ -5,7 +5,6 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.JedisCommands;
 
 import java.io.File;

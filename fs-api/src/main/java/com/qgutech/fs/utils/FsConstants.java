@@ -28,12 +28,13 @@ public interface FsConstants {
     String ZIP_INDEX_FILE = "index.html";
     String UNDERLINE = "_";
     String DEFAULT_CORP_CODE = "default";
-
     String RESPONSE_RESULT_ERROR = "error";
     String RESPONSE_RESULT_SUCCESS = "success";
-
     String COMPRESS_FILE_SUFFIX_ZIP = "zip";
     String COMPRESS_FILE_SUFFIX_7Z = "7z";
     String COMPRESS_FILE_SUFFIX_RAR = "rar";
     String DECOMPRESS = "decompress";
+    String FS_FILE = "fsFile";
+    String WAIL_PROCESS_CNT = "waitProcessCnt";
+    String PROCESSED_CNT = "processedCnt";
 }

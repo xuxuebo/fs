@@ -49,6 +49,7 @@ public abstract class AbstractProcessor implements Processor {
         OutputStream outputStream = null;
         String fsFileId = null;
         String originFilePath = null;
+        boolean needAsync = true;
         try {
             saveTmpFile(fsFile);
             if (!validateFile(fsFile)) {
@@ -64,19 +65,25 @@ public abstract class AbstractProcessor implements Processor {
             outputStream = new FileOutputStream(originFilePath);
             IOUtils.copy(inputStream, outputStream);
 
-            if (needAsync(fsFile)) {
+            needAsync = needAsync(fsFile);
+            if (needAsync) {
                 submit(fsFile, 0);
             } else {
                 process(fsFile);
             }
         } catch (Exception e) {
+            needAsync = true;
             deleteFile(originFilePath);
             deleteFile(tmpDir);
-            deleteFsFile(fsFileId);
+            deleteFile(getGenFilePath(fsFile));
+            deleteFsFile(fsFileId);//todo redis
             throw e;
         } finally {
             IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(outputStream);
+            if (!needAsync) {
+                deleteFile(tmpDir);
+            }
         }
 
         return fsFile;
@@ -226,7 +233,7 @@ public abstract class AbstractProcessor implements Processor {
         return false;
     }
 
-    protected boolean submit(FsFile fsFile, int count) {
+    protected boolean submit(FsFile fsFile, int count) throws Exception {
         try {
             submitToRedis(fsFile);
         } catch (Exception e) {
@@ -308,7 +315,7 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected String getGenFilePath(FsFile fsFile) {
-        throw new UnsupportedOperationException("This method should be override by ths subClass!");
+        return null;
     }
 
     @Override

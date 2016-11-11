@@ -23,8 +23,11 @@ public class AudioProcessor extends AbstractProcessor {
     protected void submitToRedis(FsFile fsFile) {
         JedisCommands commonJedis = FsRedis.getCommonJedis();
         commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, RedisKey.FS_AUDIO_QUEUE_LIST);
-        commonJedis.lpush(RedisKey.FS_AUDIO_QUEUE_LIST, fsFile.getId());
-        commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), gson.toJson(fsFile));
+        String fsFileId = fsFile.getId();
+        //当重复提交时，防止处理音频重复
+        //commonJedis.lrem(RedisKey.FS_AUDIO_QUEUE_LIST, 0, fsFileId);
+        commonJedis.lpush(RedisKey.FS_AUDIO_QUEUE_LIST, fsFileId);
+        commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
     }
 
     protected boolean needAsync(FsFile fsFile) {
@@ -44,14 +47,14 @@ public class AudioProcessor extends AbstractProcessor {
     @Override
     public void process(FsFile fsFile) throws Exception {
         String genFilePath = getGenFilePath(fsFile);
-        boolean async = needAsync(fsFile);
+        boolean needAsync = needAsync(fsFile);
         try {
             File genFile = new File(genFilePath);
             if (!genFile.exists() && !genFile.mkdirs()) {
                 throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
             }
 
-            if (async) {
+            if (needAsync) {
                 List<String> commands = new ArrayList<String>(5);
                 commands.add("ffmpeg");
                 commands.add("-i");
@@ -67,13 +70,11 @@ public class AudioProcessor extends AbstractProcessor {
 
             afterProcess(fsFile);
         } catch (Exception e) {
-            deleteFile(genFilePath);
-            fsFile.setStatus(ProcessStatusEnum.FAILED);
-            fsFile.setCreateTime(null);
-            if (async) {
+            if (needAsync) {
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setCreateTime(null);
+                deleteFile(genFilePath);
                 updateFsFile(fsFile);
-            } else {
-                deleteFsFile(fsFile.getId());//todo delete originFile
             }
 
             throw e;

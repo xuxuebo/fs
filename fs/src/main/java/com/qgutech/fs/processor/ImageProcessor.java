@@ -5,7 +5,6 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ImageTypeEnum;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.FsUtils;
-import com.qgutech.fs.utils.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;

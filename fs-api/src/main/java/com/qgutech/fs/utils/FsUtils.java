@@ -521,11 +521,7 @@ public class FsUtils {
 
     public static Video getVideo(String videoPath) throws Exception {
         Assert.hasText(videoPath, "VideoPath is empty!");
-        List<String> commands = new ArrayList<String>(3);
-        commands.add(FsConstants.FFMPEG);
-        commands.add("-i");
-        commands.add(videoPath);
-        String result = executeCommand(commands.toArray(new String[commands.size()]));
+        String result = executeCommand(new String[]{FsConstants.FFMPEG, "-i", videoPath});
         Video video = new Video();
         Matcher matcher = Pattern.compile("Duration:[^\\d:.]+([\\d:.]+)[^\\d:.]+").matcher(result);
         if (matcher.find()) {
@@ -553,6 +549,28 @@ public class FsUtils {
         }
 
         return video;
+    }
+
+    public static Audio getAudio(String audioPath) throws Exception {
+        Assert.hasText(audioPath, "AudioPath is empty!");
+        String result = executeCommand(new String[]{FsConstants.FFMPEG, "-i", audioPath});
+        Audio audio = new Audio();
+
+        Matcher matcher = Pattern.compile("Duration:[^\\d:.]+([\\d:.]+)[^\\d:.]+").matcher(result);
+        if (matcher.find()) {
+            audio.setDuration(matcher.group(1));
+        } else {
+            throw new RuntimeException("File[" + audioPath + "] not exist or not an audio!");
+        }
+
+        matcher = Pattern.compile("bitrate:[^\\d]+(\\d+)[^\\d]+").matcher(result);
+        if (matcher.find()) {
+            audio.setBitRate(Integer.parseInt(matcher.group(1)));
+        } else {
+            throw new RuntimeException("File[" + audioPath + "] not exist or not an audio!");
+        }
+
+        return audio;
     }
 
     public static long parseStringTimeToLong(String time) {

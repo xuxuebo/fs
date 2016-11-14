@@ -51,6 +51,9 @@ public class AudioProcessor extends AbstractProcessor {
                 FileUtils.copyFile(srcFile, destFile);
             }
 
+            Audio audio = FsUtils.getAudio(fsFile.getTmpFilePath());
+            fsFile.setDurations(audio.getDuration());
+
             afterProcess(fsFile);
         } catch (Exception e) {
             if (needAsync) {

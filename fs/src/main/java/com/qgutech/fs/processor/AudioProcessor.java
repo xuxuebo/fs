@@ -36,6 +36,7 @@ public class AudioProcessor extends AbstractProcessor {
     public void process(FsFile fsFile) throws Exception {
         String genFilePath = getGenFilePath(fsFile);
         boolean needAsync = needAsync(fsFile);
+        String tmpFilePath = fsFile.getTmpFilePath();
         try {
             File genFile = new File(genFilePath);
             if (!genFile.exists() && !genFile.mkdirs()) {
@@ -43,15 +44,15 @@ public class AudioProcessor extends AbstractProcessor {
             }
 
             if (needAsync) {
-                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", fsFile.getTmpFilePath()
+                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", tmpFilePath
                         , "-y", genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
             } else {
-                File srcFile = new File(fsFile.getTmpFilePath());
+                File srcFile = new File(tmpFilePath);
                 File destFile = new File(genFilePath, FsConstants.DEFAULT_AUDIO_NAME);
                 FileUtils.copyFile(srcFile, destFile);
             }
 
-            Audio audio = FsUtils.getAudio(fsFile.getTmpFilePath());
+            Audio audio = FsUtils.getAudio(tmpFilePath);
             fsFile.setDurations(audio.getDuration());
 
             afterProcess(fsFile);
@@ -65,7 +66,7 @@ public class AudioProcessor extends AbstractProcessor {
 
             throw e;
         } finally {
-            deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
+            deleteFile(new File(tmpFilePath).getParentFile());
         }
     }
 }

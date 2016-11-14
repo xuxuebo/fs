@@ -19,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public abstract class AbstractProcessor implements Processor {
 
@@ -29,6 +31,7 @@ public abstract class AbstractProcessor implements Processor {
     protected final Log LOG = LogFactory.getLog(getClass());
     protected final Gson gson = new Gson();
     protected ThreadPoolTaskExecutor taskExecutor;
+    protected int semaphoreCnt;
 
     @Override
     public FsFile beforeProcess(FsFile fsFile) throws Exception {
@@ -327,5 +330,35 @@ public abstract class AbstractProcessor implements Processor {
     public void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         updateFsFile(fsFile);
+    }
+
+    protected final <T> void getFutures(List<Future<T>> futures) throws Exception {
+        try {
+            for (Future<T> future : futures) {
+                future.get();
+            }
+        } catch (Exception e) {
+            for (Future<T> future : futures) {
+                future.cancel(true);
+            }
+
+            throw e;
+        }
+    }
+
+    public int getSemaphoreCnt() {
+        return semaphoreCnt;
+    }
+
+    public void setSemaphoreCnt(int semaphoreCnt) {
+        this.semaphoreCnt = semaphoreCnt;
+    }
+
+    public ThreadPoolTaskExecutor getTaskExecutor() {
+        return taskExecutor;
+    }
+
+    public void setTaskExecutor(ThreadPoolTaskExecutor taskExecutor) {
+        this.taskExecutor = taskExecutor;
     }
 }

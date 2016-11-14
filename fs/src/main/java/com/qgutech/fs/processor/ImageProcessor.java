@@ -51,7 +51,7 @@ public class ImageProcessor extends AbstractProcessor {
             List<String> commands = new ArrayList<String>(7);
             int w = value.getW();
             int h = value.getH();
-            commands.add("ffmpeg");
+            commands.add(FsConstants.FFMPEG);
             commands.add("-i");
             commands.add(tmpFilePath);
             if (w > 0 && h > 0) {

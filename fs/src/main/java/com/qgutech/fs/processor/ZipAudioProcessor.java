@@ -10,9 +10,7 @@ import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ZipAudioProcessor extends AbstractProcessor {
@@ -147,12 +145,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
         }
 
-        List<String> commands = new ArrayList<String>(5);
-        commands.add("ffmpeg");
-        commands.add("-i");
-        commands.add(fsFile.getTmpFilePath());
-        commands.add("-y");
-        commands.add(genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME);
-        FsUtils.executeCommand(commands.toArray(new String[commands.size()]));
+        FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", fsFile.getTmpFilePath()
+                , "-y", genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
     }
 }

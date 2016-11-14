@@ -9,8 +9,6 @@ import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AudioProcessor extends AbstractProcessor {
 
@@ -55,13 +53,8 @@ public class AudioProcessor extends AbstractProcessor {
             }
 
             if (needAsync) {
-                List<String> commands = new ArrayList<String>(5);
-                commands.add("ffmpeg");
-                commands.add("-i");
-                commands.add(fsFile.getTmpFilePath());
-                commands.add("-y");
-                commands.add(genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME);
-                FsUtils.executeCommand(commands.toArray(new String[commands.size()]));
+                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", fsFile.getTmpFilePath()
+                        , "-y", genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
             } else {
                 File srcFile = new File(fsFile.getTmpFilePath());
                 File destFile = new File(genFilePath, FsConstants.DEFAULT_AUDIO_NAME);

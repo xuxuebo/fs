@@ -15,12 +15,6 @@ public class DocProcessor extends AbstractProcessor {
     }
 
     @Override
-    protected String getGenFilePath(FsFile fsFile) {
-        //todo
-        return null;
-    }
-
-    @Override
     public void process(FsFile fsFile) throws Exception {
         //todo
         afterProcess(fsFile);

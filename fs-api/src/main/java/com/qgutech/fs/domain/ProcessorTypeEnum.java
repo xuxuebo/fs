@@ -1,5 +1,7 @@
 package com.qgutech.fs.domain;
 
+import com.qgutech.fs.utils.FsConstants;
+
 public enum ProcessorTypeEnum {
     /**
      * 视频
@@ -52,5 +54,20 @@ public enum ProcessorTypeEnum {
         }
 
         return ZIP.name().toLowerCase();
+    }
+
+    public static String toGenDirectory(ProcessorTypeEnum processorTypeEnum) {
+        if (AUD.equals(processorTypeEnum) || ZAUD.equals(processorTypeEnum)) {
+            return FsConstants.DEFAULT_AUDIO_TYPE;
+        } else if (VID.equals(processorTypeEnum) || ZVID.equals(processorTypeEnum)) {
+            return FsConstants.DEFAULT_VIDEO_TYPE;
+        } else if (IMG.equals(processorTypeEnum) || ZIMG.equals(processorTypeEnum)
+                || DOC.equals(processorTypeEnum) || ZDOC.equals(processorTypeEnum)) {
+            return FsConstants.FILE_DIR_IMG;
+        } else if (ZIP.equals(processorTypeEnum)) {
+            return FsConstants.FILE_DIR_UNZIP;
+        } else {
+            throw new RuntimeException("processorTypeEnum[" + processorTypeEnum + "] is not support!");
+        }
     }
 }

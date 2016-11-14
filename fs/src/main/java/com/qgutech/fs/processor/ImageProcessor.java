@@ -25,16 +25,6 @@ public class ImageProcessor extends AbstractProcessor {
     }
 
     @Override
-    protected String getGenFilePath(FsFile fsFile) {
-        return PropertiesUtils.getFileStoreDir() + fsFile.getCorpCode()
-                + File.separator + fsFile.getAppCode()
-                + File.separator + FsConstants.FILE_DIR_GEN
-                + File.separator + FsConstants.FILE_DIR_IMG
-                + File.separator + FsUtils.formatDateToYYMM(fsFile.getCreateTime())
-                + File.separator + fsFile.getId();
-    }
-
-    @Override
     public void process(FsFile fsFile) throws Exception {
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);

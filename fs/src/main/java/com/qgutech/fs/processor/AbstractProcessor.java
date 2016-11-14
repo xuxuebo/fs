@@ -310,7 +310,12 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected String getGenFilePath(FsFile fsFile) {
-        return null;
+        return PropertiesUtils.getFileStoreDir() + fsFile.getCorpCode()
+                + File.separator + fsFile.getAppCode()
+                + File.separator + FsConstants.FILE_DIR_GEN
+                + File.separator + ProcessorTypeEnum.toGenDirectory(fsFile.getProcessor())
+                + File.separator + FsUtils.formatDateToYYMM(fsFile.getCreateTime())
+                + File.separator + fsFile.getId();
     }
 
     @Override

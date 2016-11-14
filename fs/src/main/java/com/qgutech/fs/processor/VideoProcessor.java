@@ -32,16 +32,6 @@ public class VideoProcessor extends AbstractProcessor {
     }
 
     @Override
-    protected String getGenFilePath(FsFile fsFile) {
-        return PropertiesUtils.getFileStoreDir() + fsFile.getCorpCode()
-                + File.separator + fsFile.getAppCode()
-                + File.separator + FsConstants.FILE_DIR_GEN
-                + File.separator + FsConstants.DEFAULT_VIDEO_TYPE
-                + File.separator + FsUtils.formatDateToYYMM(fsFile.getCreateTime())
-                + File.separator + fsFile.getId();
-    }
-
-    @Override
     public void process(FsFile fsFile) throws Exception {
         final String genFilePath = getGenFilePath(fsFile);
         final String tmpFilePath = fsFile.getTmpFilePath();

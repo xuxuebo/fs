@@ -210,14 +210,7 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected final boolean validateDoc(String extension) {
-        DocTypeEnum[] values = DocTypeEnum.values();
-        for (DocTypeEnum value : values) {
-            if (value.name().equalsIgnoreCase(extension)) {
-                return true;
-            }
-        }
-
-        return false;
+        return DocTypeEnum.isDoc(extension);
     }
 
     protected final boolean validateImage(String extension) {

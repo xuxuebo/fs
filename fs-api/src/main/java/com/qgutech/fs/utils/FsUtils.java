@@ -60,7 +60,7 @@ public class FsUtils {
             bufferReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             String line;
             while ((line = bufferReader.readLine()) != null) {
-                LOG.info(line.trim());
+                LOG.debug(line.trim());
                 if (builder.length() > 0) {
                     builder.append("\r\n");
                 }
@@ -90,7 +90,7 @@ public class FsUtils {
             bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = bufferReader.readLine()) != null) {
-                LOG.info(line.trim());
+                LOG.debug(line.trim());
                 if (builder.length() > 0) {
                     builder.append("\r\n");
                 }
@@ -646,6 +646,8 @@ public class FsUtils {
 
     public static void main(String[] args) throws Exception {
         System.out.println(getVideo("E:\\1.mkv"));
+        executeCommand(new String[]{FsConstants.FFMPEG, "-i", "E:\\1.mkv", "-ss"
+                , "00:10:00", "-y", "E:\\1.png"});
     /*    decompress("C:/Users/Administrator/Desktop/test/mp41.rar"
                 , "C:/Users/Administrator/Desktop/test/my");*/
        /* compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"

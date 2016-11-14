@@ -638,7 +638,7 @@ public class FsUtils {
 
         long millSecond = time % 1000;
         if (millSecond != 0) {
-            result += "." + second;
+            result += "." + millSecond;
         }
 
         return result;

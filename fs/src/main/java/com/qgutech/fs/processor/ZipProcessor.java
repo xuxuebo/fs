@@ -4,7 +4,6 @@ package com.qgutech.fs.processor;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.FsUtils;
-import com.qgutech.fs.utils.PropertiesUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

@@ -6,7 +6,6 @@ import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
@@ -34,37 +33,17 @@ public class ZipAudioProcessor extends AbstractProcessor {
         commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
     }
 
-    protected boolean decompress(FsFile fsFile) throws Exception {
-        String tmpFilePath = fsFile.getTmpFilePath();
-        File parentFile = new File(tmpFilePath).getParentFile();
-        File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
-        FsUtils.decompress(tmpFilePath, decompressDir.getAbsolutePath());
-        File[] files = decompressDir.listFiles();
-        if (files == null || files.length == 0) {
-            return false;
-        }
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                return false;
-            }
-
-            String extension = FilenameUtils.getExtension(file.getName());
-            if (StringUtils.isEmpty(extension) || !validateAudio(extension)) {
-                return false;
-            }
-        }
-
-        fsFile.setSubFileCount(files.length);
-        return true;
-    }
-
     @Override
     public void process(FsFile fsFile) throws Exception {
         String tmpFilePath = fsFile.getTmpFilePath();
         File parentFile = new File(tmpFilePath).getParentFile();
         try {
-            if (!decompress(fsFile)) {
+            if (!decompress(fsFile, new Validate() {
+                @Override
+                public boolean validate(String extension) {
+                    return validateAudio(extension);
+                }
+            })) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 updateFsFile(fsFile);
                 return;

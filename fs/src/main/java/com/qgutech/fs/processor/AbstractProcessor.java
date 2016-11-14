@@ -231,6 +231,35 @@ public abstract class AbstractProcessor implements Processor {
         return false;
     }
 
+    protected boolean decompress(FsFile fsFile, Validate validate) throws Exception {
+        String tmpFilePath = fsFile.getTmpFilePath();
+        File parentFile = new File(tmpFilePath).getParentFile();
+        File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
+        FsUtils.decompress(tmpFilePath, decompressDir.getAbsolutePath());
+        File[] files = decompressDir.listFiles();
+        if (files == null || files.length == 0) {
+            return false;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                return false;
+            }
+
+            String extension = FilenameUtils.getExtension(file.getName());
+            if (StringUtils.isEmpty(extension) || !validate.validate(extension)) {
+                return false;
+            }
+        }
+
+        fsFile.setSubFileCount(files.length);
+        return true;
+    }
+
+    protected interface Validate {
+        boolean validate(String extension);
+    }
+
     protected boolean submit(FsFile fsFile, int count) throws Exception {
         try {
             submitToRedis(fsFile);

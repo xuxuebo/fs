@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
@@ -27,6 +28,7 @@ public abstract class AbstractProcessor implements Processor {
 
     protected final Log LOG = LogFactory.getLog(getClass());
     protected final Gson gson = new Gson();
+    protected ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public FsFile beforeProcess(FsFile fsFile) throws Exception {

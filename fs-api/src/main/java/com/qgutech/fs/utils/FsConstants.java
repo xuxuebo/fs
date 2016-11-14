@@ -37,4 +37,5 @@ public interface FsConstants {
     String FS_FILE = "fsFile";
     String WAIL_PROCESS_CNT = "waitProcessCnt";
     String PROCESSED_CNT = "processedCnt";
+    String FFMPEG = "ffmpeg";
 }

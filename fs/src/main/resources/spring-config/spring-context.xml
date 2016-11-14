@@ -39,6 +39,7 @@
         <property name="videoType" value="${fs.videoType}"/>
         <property name="audioType" value="${fs.audioType}"/>
         <property name="zipType" value="${fs.zipType}"/>
+        <property name="cutImageTime" value="${fs.cutImageTime}"/>
     </bean>
 
     <!-- jedis连接池 -->

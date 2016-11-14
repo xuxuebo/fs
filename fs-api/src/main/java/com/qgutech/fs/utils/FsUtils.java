@@ -111,7 +111,7 @@ public class FsUtils {
 
     public static String getImageResolution(String filePath) throws Exception {
         Assert.hasText(filePath, "filePath is empty!");
-        String result = executeCommand(new String[]{"ffmpeg", "-i", filePath});
+        String result = executeCommand(new String[]{FsConstants.FFMPEG, "-i", filePath});
         if (StringUtils.isEmpty(result)) {
             throw new RuntimeException("File[" + filePath + "] not exist or is not an image!");
         }
@@ -519,9 +519,135 @@ public class FsUtils {
         return subFiles;
     }
 
+    public static Video getVideo(String videoPath) throws Exception {
+        Assert.hasText(videoPath, "VideoPath is empty!");
+        List<String> commands = new ArrayList<String>(3);
+        commands.add(FsConstants.FFMPEG);
+        commands.add("-i");
+        commands.add(videoPath);
+        String result = executeCommand(commands.toArray(new String[commands.size()]));
+        Video video = new Video();
+        Matcher matcher = Pattern.compile("Duration:[^\\d:.]+([\\d:.]+)[^\\d:.]+").matcher(result);
+        if (matcher.find()) {
+            video.setDuration(matcher.group(1));
+        } else {
+            throw new RuntimeException("File[" + videoPath + "] not exist or not a video!");
+        }
+
+        matcher = Pattern.compile("bitrate:[^\\d]+(\\d+)[^\\d]+").matcher(result);
+        if (matcher.find()) {
+            video.setBitRate(Integer.parseInt(matcher.group(1)));
+        } else {
+            throw new RuntimeException("File[" + videoPath + "] not exist or not a video!");
+        }
+
+        matcher = Pattern.compile("Video:.*[^\\d]+(\\d+x\\d+)[^\\d]+").matcher(result);
+        if (matcher.find()) {
+            String resolution = matcher.group(1);
+            video.setResolution(resolution);
+            int indexOf = resolution.indexOf("x");
+            video.setWidth(Integer.parseInt(resolution.substring(0, indexOf)));
+            video.setHeight(Integer.parseInt(resolution.substring(indexOf + 1)));
+        } else {
+            throw new RuntimeException("File[" + videoPath + "] not exist or not a video!");
+        }
+
+        return video;
+    }
+
+    public static long parseStringTimeToLong(String time) {
+        if (StringUtils.isBlank(time)) {
+            return 0l;
+        }
+
+        String[] times = time.split(":");
+        if (times.length != 3) {
+            throw new RuntimeException("Time[" + time
+                    + "]'s format is invalid,it must be like HH:mm:ss.SSS!");
+        }
+
+        String hour = StringUtils.trim(times[0]);
+        String minute = StringUtils.trim(times[1]);
+        String second = StringUtils.trim(times[2]);
+        if (StringUtils.length(hour) == 0 || StringUtils.length(hour) > 2
+                || StringUtils.length(minute) == 0 || StringUtils.length(minute) > 2
+                || StringUtils.length(second) == 0) {
+            throw new RuntimeException("Time[" + time
+                    + "]'s format is invalid,it must be like HH:mm:ss.SSS!");
+        }
+
+        long result = Integer.parseInt(hour) * 60 * 60 * 1000 + Integer.parseInt(minute) * 60 * 1000;
+        if (!second.contains(".")) {
+            if (StringUtils.length(second) > 2) {
+                throw new RuntimeException("Time[" + time
+                        + "]'s format is invalid,it must be like HH:mm:ss.SSS!");
+            }
+
+            result += Integer.parseInt(second) * 1000;
+        } else {
+            String[] seconds = second.split("\\.");
+            String secondPart = StringUtils.trim(seconds[0]);
+            String millPart = StringUtils.trim(seconds[1]);
+            if (StringUtils.length(secondPart) == 0
+                    || StringUtils.length(secondPart) > 2
+                    || (StringUtils.length(millPart) == 0
+                    || StringUtils.length(millPart) > 3)) {
+                throw new RuntimeException("Time[" + time
+                        + "]'s format is invalid,it must be like HH:mm:ss.SSS!");
+            }
+
+            result += Integer.parseInt(secondPart) * 1000;
+            result += Integer.parseInt(millPart);
+        }
+
+        return result;
+    }
+
+    public static String parseLongToDayTime(Long time) {
+        if (time == null || time <= 0) {
+            return "00:00:00";
+        }
+
+        String result = "";
+        long hour = time % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
+        if (hour == 0) {
+            result += "00";
+        } else if (hour < 9) {
+            result += "0" + hour;
+        } else {
+            result += hour;
+        }
+
+        long minute = time % (60 * 60 * 1000) / (60 * 1000);
+        if (minute == 0) {
+            result += ":00";
+        } else if (minute < 9) {
+            result += ":0" + minute;
+        } else {
+            result += ":" + minute;
+        }
+
+        long second = time % (60 * 1000) / 1000;
+        if (second == 0) {
+            result += ":00";
+        } else if (second < 9) {
+            result += ":0" + second;
+        } else {
+            result += ":" + second;
+        }
+
+        long millSecond = time % 1000;
+        if (millSecond != 0) {
+            result += "." + second;
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) throws Exception {
-        decompress("C:/Users/Administrator/Desktop/test/mp41.rar"
-                , "C:/Users/Administrator/Desktop/test/my");
+        System.out.println(getVideo("E:\\1.mkv"));
+    /*    decompress("C:/Users/Administrator/Desktop/test/mp41.rar"
+                , "C:/Users/Administrator/Desktop/test/my");*/
        /* compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"
                 , "C:/Users/Administrator/Desktop/test/my/my.7z");*/
         //System.out.println(getImageResolution("C:\\\\Users\\\\Administrator\\\\Desktop\\\\test\\\\2.png"));

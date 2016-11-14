@@ -18,6 +18,7 @@ public class PropertiesUtils {
     private static String videoType;
     private static String audioType;
     private static String zipType;
+    private static int cutImageTime;
 
     public static String getServerCode() {
         return serverCode;
@@ -145,5 +146,13 @@ public class PropertiesUtils {
 
     public void setZipType(String zipType) {
         PropertiesUtils.zipType = zipType;
+    }
+
+    public static int getCutImageTime() {
+        return cutImageTime;
+    }
+
+    public void setCutImageTime(int cutImageTime) {
+        PropertiesUtils.cutImageTime = cutImageTime;
     }
 }

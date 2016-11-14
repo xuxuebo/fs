@@ -66,6 +66,12 @@ public class AudioProcessor extends AbstractProcessor {
 
             throw e;
         } finally {
+            if (needAsync) {
+                JedisCommands commonJedis = FsRedis.getCommonJedis();
+                commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
+                commonJedis.srem(RedisKey.FS_AUDIO_QUEUE_LIST, fsFile.getId());
+            }
+
             deleteFile(new File(tmpFilePath).getParentFile());
         }
     }

@@ -7,12 +7,7 @@ public class ZipImageProcessor extends AbstractProcessor {
 
     @Override
     protected boolean validateFile(FsFile fsFile) throws Exception {
-        return super.validateFile(fsFile);
-    }
-
-    @Override
-    protected boolean needAsync(FsFile fsFile) {
-        return super.needAsync(fsFile);
+        return validateZip(fsFile.getSuffix());
     }
 
     @Override

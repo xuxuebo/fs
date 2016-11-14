@@ -2,8 +2,14 @@ package com.qgutech.fs.utils;
 
 
 public class Audio {
+    /**
+     * 时长，如00:10:10
+     */
     private String duration;
 
+    /**
+     * 码率（单位为kb/s）
+     */
     private int bitRate;
 
     public String getDuration() {
@@ -20,5 +26,13 @@ public class Audio {
 
     public void setBitRate(int bitRate) {
         this.bitRate = bitRate;
+    }
+
+    @Override
+    public String toString() {
+        return "Audio{" +
+                "duration='" + duration + '\'' +
+                ", bitRate=" + bitRate +
+                '}';
     }
 }

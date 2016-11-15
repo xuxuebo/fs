@@ -308,17 +308,25 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected final String saveFsFile(FsFile fsFile) {
+        String fsFileId = fsFile.getId();
+        if (StringUtils.isNotEmpty(fsFileId)) {
+            return fsFileId;
+        }
+
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
-        fsFile.setSign(Signer.sign(PropertiesUtils.getServerHost()
-                , PropertiesUtils.getServerSecret(), timestamp));
+        String serverHost = PropertiesUtils.getServerHost();
+        fsFile.setServerHost(serverHost);
+        fsFile.setSign(Signer.sign(serverHost, PropertiesUtils.getServerSecret(), timestamp));
         return HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
     }
 
     protected final String updateFsFile(FsFile fsFile) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
-        fsFile.setSign(Signer.sign(fsFile.getId(), PropertiesUtils.getServerHost()
+        String serverHost = PropertiesUtils.getServerHost();
+        fsFile.setServerHost(serverHost);
+        fsFile.setSign(Signer.sign(fsFile.getId(), serverHost
                 , PropertiesUtils.getServerSecret(), timestamp));
         return HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
     }

@@ -153,6 +153,12 @@ public class FsFile extends BaseEntity {
     @Transient
     private String tmpFilePath;
 
+    /**
+     * 文档处理完后，返回的url
+     */
+    @Transient
+    private String backUrl;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -305,6 +311,14 @@ public class FsFile extends BaseEntity {
         this.tmpFilePath = tmpFilePath;
     }
 
+    public String getBackUrl() {
+        return backUrl;
+    }
+
+    public void setBackUrl(String backUrl) {
+        this.backUrl = backUrl;
+    }
+
     @Override
     public String toString() {
         return "FsFile{" +
@@ -326,6 +340,8 @@ public class FsFile extends BaseEntity {
                 ", timestamp=" + timestamp +
                 ", sign='" + sign + '\'' +
                 ", serverHost='" + serverHost + '\'' +
+                ", tmpFilePath='" + tmpFilePath + '\'' +
+                ", backUrl='" + backUrl + '\'' +
                 '}';
     }
 

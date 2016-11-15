@@ -40,4 +40,9 @@ public class HttpUtils {
             postMethod.releaseConnection();
         }
     }
+
+    public static String doPost(String url, Map<String, String> paramMap
+            , Map<String, String> filePathNameMap) {
+        return null;
+    }
 }

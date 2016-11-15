@@ -4,12 +4,10 @@ package com.qgutech.fs.utils;
 public interface FsConstants {
     String PDF_SUFFIX = ".pdf";
     String PDF_PREFIX = "pdfResult_";
-    String DEFAULT_AUDIO_SUFFIX = ".mp3";
     String DEFAULT_AUDIO_TYPE = "mp3";
     String DEFAULT_VIDEO_SUFFIX = ".m3u8";
     String DEFAULT_VIDEO_TYPE = "m3u8";
     String DEFAULT_IMAGE_SUFFIX = ".png";
-    String DEFAULT_IMAGE_TYPE = "png";
     String FILE_DIR_SRC = "src";
     String FILE_DIR_GEN = "gen";
     String FILE_DIR_TMP = "tmp";
@@ -34,8 +32,5 @@ public interface FsConstants {
     String COMPRESS_FILE_SUFFIX_7Z = "7z";
     String COMPRESS_FILE_SUFFIX_RAR = "rar";
     String DECOMPRESS = "decompress";
-    String FS_FILE = "fsFile";
-    String WAIL_PROCESS_CNT = "waitProcessCnt";
-    String PROCESSED_CNT = "processedCnt";
     String FFMPEG = "ffmpeg";
 }

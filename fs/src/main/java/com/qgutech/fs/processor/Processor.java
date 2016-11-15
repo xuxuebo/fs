@@ -9,6 +9,4 @@ public interface Processor {
 
     void process(FsFile fsFile) throws Exception;
 
-    void afterProcess(FsFile fsFile) throws Exception;
-
 }

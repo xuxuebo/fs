@@ -366,8 +366,7 @@ public abstract class AbstractProcessor implements Processor {
 
     }
 
-    @Override
-    public void afterProcess(FsFile fsFile) throws Exception {
+    protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         updateFsFile(fsFile);
     }

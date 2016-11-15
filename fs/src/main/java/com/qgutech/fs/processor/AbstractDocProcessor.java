@@ -44,6 +44,31 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
 
     protected abstract String getProcessQueueName();
 
+    @Override
+    public void process(FsFile fsFile) throws Exception {
+        File tmpDirFile = new File(fsFile.getTmpFilePath()).getParentFile();
+        try {
+            process(fsFile, tmpDirFile);
+        } catch (Exception e) {
+            deleteFile(getGenFilePath(fsFile));
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            updateFsFile(fsFile);
+
+            throw e;
+        } finally {
+            JedisCommands commonJedis = FsRedis.getCommonJedis();
+            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
+            commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
+            deleteFile(tmpDirFile);
+            if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {
+                deleteFile(getGenFilePath(fsFile));
+                deleteFile(getOriginFilePath(fsFile));
+            }
+        }
+    }
+
+    protected abstract void process(FsFile fsFile, File tmpDirFile) throws Exception;
+
     protected int processDoc(String srcFilePath, String imageTmpDirPath
             , String pdfTmpDirPath, final String genFilePath) throws Exception {
         String extension = FilenameUtils.getExtension(srcFilePath);

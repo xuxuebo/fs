@@ -145,7 +145,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void afterProcess(FsFile fsFile) throws Exception {
+    protected void afterProcess(FsFile fsFile) throws Exception {
         String backUrl = fsFile.getBackUrl();
         if (StringUtils.isNotEmpty(backUrl)) {
             String genFilePath = getGenFilePath(fsFile);

@@ -35,7 +35,7 @@ public abstract class AbstractProcessor implements Processor {
     protected int semaphoreCnt = DEFAULT_SEMAPHORE_CNT;
 
     @Override
-    public FsFile beforeProcess(FsFile fsFile) throws Exception {
+    public FsFile submit(FsFile fsFile) throws Exception {
         if (!validateParams(fsFile)) {
             return fsFile;
         }

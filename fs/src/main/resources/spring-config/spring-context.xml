@@ -85,4 +85,8 @@
     </bean>
 
 
+    <bean id="processorFactory" class="com.qgutech.fs.processor.ProcessorFactory">
+        <property name="docProcessor" ref="docProcessor"/>
+    </bean>
+
 </beans>

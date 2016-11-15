@@ -5,7 +5,7 @@ import com.qgutech.fs.domain.FsFile;
 
 public interface Processor {
 
-    FsFile beforeProcess(FsFile fsFile) throws Exception;
+    FsFile submit(FsFile fsFile) throws Exception;
 
     void process(FsFile fsFile) throws Exception;
 

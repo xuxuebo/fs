@@ -40,6 +40,7 @@
         <property name="audioType" value="${fs.audioType}"/>
         <property name="zipType" value="${fs.zipType}"/>
         <property name="cutImageTime" value="${fs.cutImageTime}"/>
+        <property name="docConvert" value="${fs.docConvert}"/>
     </bean>
 
     <!-- jedis连接池 -->
@@ -59,5 +60,29 @@
             </bean>
         </property>
     </bean>
+
+    <bean id="converter" abstract="true" class="com.qgutech.fs.convert.AbstractConverter">
+        <property name="serverType" value="${fs.serverType}"/>
+    </bean>
+
+    <bean id="docToPdfConverter" parent="converter" class="com.qgutech.fs.convert.DocToPdfConverter">
+    </bean>
+
+    <bean id="pdfToImageConverter" parent="converter" class="com.qgutech.fs.convert.PdfToImageConverter">
+        <property name="taskExecutor" ref="taskExecutor"/>
+        <property name="semaphoreCnt" value="${fs.pdfToImage.semaphoreCnt}"/>
+        <property name="pdfSplitSize" value="${fs.pdfToImage.pdfSplitSize}"/>
+        <property name="convertToolPath" value="${fs.pdfToImage.convertToolPath}"/>
+    </bean>
+
+    <bean id="processor" abstract="true" class="com.qgutech.fs.processor.AbstractProcessor">
+        <property name="taskExecutor" ref="taskExecutor"/>
+    </bean>
+
+    <bean id="docProcessor" parent="processor" class="com.qgutech.fs.processor.DocProcessor">
+        <property name="docToPdfConverter" ref="docToPdfConverter"/>
+        <property name="pdfToImageConverter" ref="pdfToImageConverter"/>
+    </bean>
+
 
 </beans>

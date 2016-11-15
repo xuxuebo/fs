@@ -27,11 +27,12 @@ public abstract class AbstractProcessor implements Processor {
 
     protected static final int MAX_EXECUTE_CNT = 10;
     protected static final int DEFAULT_WAIT_TIME = 1000;
+    protected static final int DEFAULT_SEMAPHORE_CNT = Runtime.getRuntime().availableProcessors() / 2 + 1;
 
     protected final Log LOG = LogFactory.getLog(getClass());
     protected final Gson gson = new Gson();
     protected ThreadPoolTaskExecutor taskExecutor;
-    protected int semaphoreCnt;
+    protected int semaphoreCnt = DEFAULT_SEMAPHORE_CNT;
 
     @Override
     public FsFile beforeProcess(FsFile fsFile) throws Exception {

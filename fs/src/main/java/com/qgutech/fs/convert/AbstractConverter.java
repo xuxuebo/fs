@@ -24,10 +24,8 @@ public abstract class AbstractConverter implements Converter {
         File inputFile = new File(inputFilePath);
         Assert.isTrue(inputFile.exists(), "inputFile[absolutePath:" + inputFilePath + "] not exists!");
         File targetDir = new File(targetFileDirPath);
-        if (!targetDir.exists()) {
-            if (!targetDir.mkdirs()) {
-                throw new RuntimeException("Create targetDir[path:" + targetFileDirPath + "] failed!");
-            }
+        if (!targetDir.exists() && !targetDir.mkdirs()) {
+            throw new RuntimeException("Create targetDir[path:" + targetFileDirPath + "] failed!");
         }
 
         if (SERVER_TYPE_WINDOWS.equals(serverType)) {

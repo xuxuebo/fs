@@ -1,6 +1,7 @@
 package com.qgutech.fs.convert;
 
 import com.qgutech.fs.utils.FsConstants;
+import com.qgutech.fs.utils.FsUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -28,7 +28,7 @@ public class PdfToImageConverter extends AbstractConverter {
     protected File windowsConvert(String inputFilePath, final String targetFileDirPath) throws Exception {
         List<String> pdfFilePathList = splitPdf(inputFilePath);
         if (pdfFilePathList.size() == 1) {
-            return super.windowsConvert(inputFilePath, targetFileDirPath);
+            return superWindowsConvert(inputFilePath, targetFileDirPath);
         }
 
         final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
@@ -85,9 +85,9 @@ public class PdfToImageConverter extends AbstractConverter {
                 return Arrays.asList(pdfFile);
             }
 
-            tempDir = new File(file.getParentFile(), UUID.randomUUID().toString());
+            tempDir = new File(file.getParentFile(), FsUtils.generateUUID());
             if (!tempDir.mkdirs()) {
-                throw new IOException("cannot create directory[" + tempDir.getAbsolutePath() + "]!");
+                throw new IOException("Creating directory[" + tempDir.getAbsolutePath() + "] failed!");
             }
 
             Splitter splitter = new Splitter();

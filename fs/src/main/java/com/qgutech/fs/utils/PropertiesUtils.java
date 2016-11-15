@@ -19,6 +19,7 @@ public class PropertiesUtils {
     private static String audioType;
     private static String zipType;
     private static int cutImageTime;
+    private static boolean docConvert;
 
     public static String getServerCode() {
         return serverCode;
@@ -154,5 +155,13 @@ public class PropertiesUtils {
 
     public void setCutImageTime(int cutImageTime) {
         PropertiesUtils.cutImageTime = cutImageTime;
+    }
+
+    public static boolean isDocConvert() {
+        return docConvert;
+    }
+
+    public void setDocConvert(boolean docConvert) {
+        PropertiesUtils.docConvert = docConvert;
     }
 }

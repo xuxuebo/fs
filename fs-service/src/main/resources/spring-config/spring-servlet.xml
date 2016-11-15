@@ -26,12 +26,12 @@
     </context:component-scan>
 
     <!-- 文件上传 视图解析器-->
-    <!--<bean id="multipartResolver"
+    <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="defaultEncoding" value="utf-8"/>
-        <property name="maxUploadSize" value="10240000000"/>
-        <property name="maxInMemorySize" value="20"/>
-    </bean>-->
+        <!--<property name="maxUploadSize" value="10240000000"/>
+        <property name="maxInMemorySize" value="20"/>-->
+    </bean>
 
     <mvc:resources mapping="/pages/**" location="/pages/"/>
 </beans>

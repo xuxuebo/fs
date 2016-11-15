@@ -153,9 +153,7 @@ public class DocProcessor extends AbstractProcessor {
             File compressFile = new File(parentFile, FsUtils.generateUUID()
                     + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP);
             FsUtils.compress(genFilePath, compressFile.getAbsolutePath());
-            Map<String, String> filePathNameMap = new HashMap<String, String>(1);
-            filePathNameMap.put(compressFile.getAbsolutePath(), compressFile.getName());
-            HttpUtils.doPost(backUrl, fsFile.toMap(), filePathNameMap);
+            HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);
         }
 
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);

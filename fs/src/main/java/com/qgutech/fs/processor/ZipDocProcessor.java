@@ -1,51 +1,20 @@
 package com.qgutech.fs.processor;
 
 
-import com.qgutech.fs.convert.Converter;
-import com.qgutech.fs.domain.DocTypeEnum;
 import com.qgutech.fs.domain.FsFile;
-import com.qgutech.fs.domain.ImageTypeEnum;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
 
-public class ZipDocProcessor extends AbstractProcessor {
-
-    protected Converter docToPdfConverter;
-    protected Converter pdfToImageConverter;
+public class ZipDocProcessor extends AbstractDocProcessor {
 
     @Override
     protected boolean validateFile(FsFile fsFile) throws Exception {
         return validateZip(fsFile.getSuffix());
-    }
-
-    @Override
-    protected void submitToRedis(FsFile fsFile) {
-        if (PropertiesUtils.isDocConvert()) {
-            JedisCommands commonJedis = FsRedis.getCommonJedis();
-            commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, RedisKey.FS_ZIP_DOC_QUEUE_LIST);
-            String fsFileId = fsFile.getId();
-            //当重复提交时，防止处理音频重复
-            //commonJedis.lrem(RedisKey.FS_ZIP_DOC_QUEUE_LIST, 0, fsFileId);
-            commonJedis.lpush(RedisKey.FS_ZIP_DOC_QUEUE_LIST, fsFileId);
-            commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
-        } else {
-            String backUrl = PropertiesUtils.getHttpProtocol() + FsConstants.HTTP_COLON
-                    + PropertiesUtils.getServerHost() + PropertiesUtils.getBackUri();
-            fsFile.setBackUrl(backUrl);
-            HttpUtils.doPost(PropertiesUtils.getAsyncUrl(), fsFile.toMap()
-                    , fsFile.getTmpFilePath(), fsFile.getStoredFileName());
-        }
     }
 
     @Override
@@ -75,110 +44,46 @@ public class ZipDocProcessor extends AbstractProcessor {
             final String genFilePath = getGenFilePath(fsFile);
             File genFile = new File(genFilePath);
             if (!genFile.exists() && !genFile.mkdirs()) {
-                throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
+                throw new IOException("Creating directory[path:" + genFilePath + "] failed!");
             }
 
-            File imageDirFile = new File(parentFile, FsUtils.generateUUID() + FsConstants.FILE_DIR_IMG);
-            if (!imageDirFile.exists() && !imageDirFile.mkdirs()) {
-                throw new IOException("Creating directory[path:" + imageDirFile.getAbsolutePath() + "] failed!");
+            File imageTmpDirFile = new File(parentFile, FsUtils.generateUUID() + FsConstants.FILE_DIR_IMG);
+            if (!imageTmpDirFile.exists() && !imageTmpDirFile.mkdirs()) {
+                throw new IOException("Creating directory[path:" + imageTmpDirFile.getAbsolutePath() + "] failed!");
             }
 
-            String targetFileDirPath = imageDirFile.getAbsolutePath() + File.separator;
-            for (File docFile : docFiles) {
-               // String targetFile
-                String extension = FilenameUtils.getExtension(docFile.getName());
-                boolean convert = true;
-                String docFilePath = docFile.getAbsolutePath();
-                if (DocTypeEnum.PPT.name().equalsIgnoreCase(extension)
-                        || DocTypeEnum.PPTX.name().equalsIgnoreCase(extension)) {
-                    try {
-                        ConvertUtils.pptToPng(docFilePath, targetFileDirPath);
-                        convert = false;
-                    } catch (Exception e) {
-                        LOG.error("Exception occurred when ppt straight turn to png!", e);
-                    }
+            String pdfTmpDirPath = parentFile.getAbsolutePath() + File.separator;
+            StringBuilder subFileCounts = new StringBuilder();
+            for (int i = 0; i < docFiles.length; i++) {
+                File docFile = docFiles[i];
+                String srcFilePath = docFile.getAbsolutePath();
+                File nextImageTmpDirFile = new File(imageTmpDirFile, (i + 1) + "");
+                String nextImageTmpDirPath = nextImageTmpDirFile.getAbsolutePath() + File.separator;
+                if (!nextImageTmpDirFile.exists() && !nextImageTmpDirFile.mkdirs()) {
+                    throw new IOException("Creating directory[path:" + nextImageTmpDirPath + "] failed!");
                 }
 
-                if (convert) {
-                    File pdfFile = docToPdfConverter.convert(docFilePath
-                            , parentFile.getAbsolutePath() + File.separator);
-                    pdfToImageConverter.convert(pdfFile.getAbsolutePath(), targetFileDirPath);
+                File nextGenFileDirFile = new File(genFilePath, (i + 1) + "");
+                String nextGenFileDirPath = nextGenFileDirFile.getAbsolutePath() + File.separator;
+                if (!nextGenFileDirFile.exists() && !nextGenFileDirFile.mkdirs()) {
+                    throw new IOException("Creating directory[path:" + nextGenFileDirPath + "] failed!");
                 }
-            }
 
-            String extension = FilenameUtils.getExtension(tmpFilePath);
-            boolean convert = true;
-            if (DocTypeEnum.PPT.name().equalsIgnoreCase(extension)
-                    || DocTypeEnum.PPTX.name().equalsIgnoreCase(extension)) {
-                try {
-                    ConvertUtils.pptToPng(tmpFilePath, targetFileDirPath);
-                    convert = false;
-                } catch (Exception e) {
-                    LOG.error("Exception occurred when ppt straight turn to png!", e);
+                int docPage = processDoc(srcFilePath, nextImageTmpDirPath
+                        , pdfTmpDirPath, nextGenFileDirPath);
+                if (docPage <= 0) {
+                    deleteFile(getGenFilePath(fsFile));
+                    fsFile.setStatus(ProcessStatusEnum.FAILED);
+                    updateFsFile(fsFile);
+                    return;
                 }
+
+                subFileCounts.append(docPage).append(FsConstants.VERTICAL_LINE);
             }
 
-            if (convert) {
-                File pdfFile = docToPdfConverter.convert(tmpFilePath
-                        , parentFile.getAbsolutePath() + File.separator);
-                pdfToImageConverter.convert(pdfFile.getAbsolutePath(), targetFileDirPath);
-            }
-
-            File[] imageFiles = imageDirFile.listFiles();
-            if (imageFiles == null || imageFiles.length == 0) {
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
-                return;
-            }
-
-            List<Future<String>> futures = new ArrayList<Future<String>>(imageFiles.length);
-            final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
-            for (int i = 0; i < imageFiles.length; i++) {
-                final int index = i + 1;
-                final String imagePath = imageFiles[i].getAbsolutePath();
-                semaphore.acquire();
-                futures.add(taskExecutor.submit(new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        try {
-                            String orgResolution = FsUtils.getImageResolution(imagePath);
-                            int indexOf = orgResolution.indexOf("x");
-                            int width = Integer.parseInt(orgResolution.substring(0, indexOf));
-                            int height = Integer.parseInt(orgResolution.substring(indexOf + 1));
-                            for (ImageTypeEnum value : ImageTypeEnum.values()) {
-                                int w = value.getW();
-                                int h = value.getH();
-                                String resolution;
-                                if (w > 0 && h > 0) {
-                                    if (w > width) {
-                                        w = width;
-                                    }
-
-                                    if (h > height) {
-                                        h = height;
-                                    }
-
-                                    resolution = w + "*" + h;
-                                } else {
-                                    resolution = orgResolution;
-                                }
-
-                                String destFilePath = genFilePath + File.separator + index
-                                        + value.name().toLowerCase() + FsConstants.DEFAULT_IMAGE_SUFFIX;
-                                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", imagePath
-                                        , "-s", resolution, "-y", destFilePath});
-                            }
-
-                            return null;
-                        } finally {
-                            semaphore.release();
-                        }
-                    }
-                }));
-            }
-
-            getFutures(futures);
             fsFile.setSubFileCount(docFiles.length);
+            fsFile.setSubFileCounts(subFileCounts.delete(subFileCounts.length() - 1
+                    , subFileCounts.length()).toString());
             afterProcess(fsFile);
         } catch (Exception e) {
             deleteFile(getGenFilePath(fsFile));
@@ -188,8 +93,8 @@ public class ZipDocProcessor extends AbstractProcessor {
             throw e;
         } finally {
             JedisCommands commonJedis = FsRedis.getCommonJedis();
-            commonJedis.expire(RedisKey.FS_DOC_QUEUE_LIST + fsFile.getId(), 0);
-            commonJedis.srem(RedisKey.FS_ZIP_VIDEO_QUEUE_LIST + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
+            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
+            commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(parentFile);
             if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {
                 deleteFile(getGenFilePath(fsFile));
@@ -199,34 +104,7 @@ public class ZipDocProcessor extends AbstractProcessor {
     }
 
     @Override
-    public void afterProcess(FsFile fsFile) throws Exception {
-        String backUrl = fsFile.getBackUrl();
-        if (StringUtils.isNotEmpty(backUrl)) {
-            String genFilePath = getGenFilePath(fsFile);
-            File parentFile = new File(fsFile.getTmpFilePath()).getParentFile();
-            File compressFile = new File(parentFile, FsUtils.generateUUID()
-                    + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP);
-            FsUtils.compress(genFilePath, compressFile.getAbsolutePath());
-            HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
-        }
-
-        fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        updateFsFile(fsFile);
-    }
-
-    public Converter getDocToPdfConverter() {
-        return docToPdfConverter;
-    }
-
-    public void setDocToPdfConverter(Converter docToPdfConverter) {
-        this.docToPdfConverter = docToPdfConverter;
-    }
-
-    public Converter getPdfToImageConverter() {
-        return pdfToImageConverter;
-    }
-
-    public void setPdfToImageConverter(Converter pdfToImageConverter) {
-        this.pdfToImageConverter = pdfToImageConverter;
+    protected String getProcessQueueName() {
+        return RedisKey.FS_ZIP_DOC_QUEUE_LIST;
     }
 }

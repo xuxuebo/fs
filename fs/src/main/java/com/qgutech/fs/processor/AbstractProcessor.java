@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.multipart.MultipartFile;
+import redis.clients.jedis.JedisCommands;
 
 import java.io.*;
 import java.util.Date;
@@ -284,10 +285,6 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected void submitToRedis(FsFile fsFile) {
-
-    }
-
     protected boolean needAsync(FsFile fsFile) {
         return true;
     }
@@ -361,9 +358,6 @@ public abstract class AbstractProcessor implements Processor {
                 + File.separator + fsFile.getId();
     }
 
-    @Override
-    public abstract void process(FsFile fsFile) throws Exception;
-
     protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         updateFsFile(fsFile);
@@ -381,6 +375,20 @@ public abstract class AbstractProcessor implements Processor {
 
             throw e;
         }
+    }
+
+    protected String getProcessQueueName() {
+        return null;
+    }
+
+    protected void submitToRedis(FsFile fsFile) {
+        JedisCommands commonJedis = FsRedis.getCommonJedis();
+        commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, getProcessQueueName());
+        String fsFileId = fsFile.getId();
+        //当重复提交时，防止重复处理
+        //commonJedis.lrem(getProcessQueueName(), 0, fsFileId);
+        commonJedis.lpush(getProcessQueueName(), fsFileId);
+        commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
     }
 
     public int getSemaphoreCnt() {

@@ -17,17 +17,6 @@ public class AudioProcessor extends AbstractProcessor {
         return validateAudio(fsFile.getSuffix());
     }
 
-    @Override
-    protected void submitToRedis(FsFile fsFile) {
-        JedisCommands commonJedis = FsRedis.getCommonJedis();
-        commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, RedisKey.FS_AUDIO_QUEUE_LIST);
-        String fsFileId = fsFile.getId();
-        //当重复提交时，防止处理音频重复
-        //commonJedis.lrem(RedisKey.FS_AUDIO_QUEUE_LIST, 0, fsFileId);
-        commonJedis.lpush(RedisKey.FS_AUDIO_QUEUE_LIST, fsFileId);
-        commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
-    }
-
     protected boolean needAsync(FsFile fsFile) {
         return !FsConstants.DEFAULT_AUDIO_TYPE.equals(fsFile.getSuffix());
     }
@@ -69,10 +58,15 @@ public class AudioProcessor extends AbstractProcessor {
             if (needAsync) {
                 JedisCommands commonJedis = FsRedis.getCommonJedis();
                 commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
-                commonJedis.srem(RedisKey.FS_AUDIO_QUEUE_LIST + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
+                commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             }
 
             deleteFile(new File(tmpFilePath).getParentFile());
         }
+    }
+
+    @Override
+    protected String getProcessQueueName() {
+        return RedisKey.FS_AUDIO_QUEUE_LIST;
     }
 }

@@ -26,13 +26,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
     @Override
     protected void submitToRedis(FsFile fsFile) {
         if (PropertiesUtils.isDocConvert()) {
-            JedisCommands commonJedis = FsRedis.getCommonJedis();
-            commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, getProcessQueueName());
-            String fsFileId = fsFile.getId();
-            //当重复提交时，防止处理音频重复
-            //commonJedis.lrem(getProcessQueueName(), 0, fsFileId);
-            commonJedis.lpush(RedisKey.FS_DOC_QUEUE_LIST, fsFileId);
-            commonJedis.set(getProcessQueueName() + fsFileId, gson.toJson(fsFile));
+            super.submitToRedis(fsFile);
         } else {
             String backUrl = PropertiesUtils.getHttpProtocol() + FsConstants.HTTP_COLON
                     + PropertiesUtils.getServerHost() + PropertiesUtils.getBackUri();
@@ -41,8 +35,6 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
                     , fsFile.getTmpFilePath(), fsFile.getStoredFileName());
         }
     }
-
-    protected abstract String getProcessQueueName();
 
     @Override
     public void process(FsFile fsFile) throws Exception {

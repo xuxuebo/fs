@@ -22,15 +22,8 @@ public class ZipAudioProcessor extends AbstractProcessor {
         return validateZip(fsFile.getSuffix());
     }
 
-    @Override
-    protected void submitToRedis(FsFile fsFile) {
-        JedisCommands commonJedis = FsRedis.getCommonJedis();
-        commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, RedisKey.FS_ZIP_AUDIO_QUEUE_LIST);
-        String fsFileId = fsFile.getId();
-        //当重复提交时，防止重复处理
-        //commonJedis.lrem(RedisKey.FS_ZIP_AUDIO_QUEUE_LIST, 0, fsFileId);
-        commonJedis.lpush(RedisKey.FS_ZIP_AUDIO_QUEUE_LIST, fsFileId);
-        commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
+    protected String getProcessQueueName() {
+        return RedisKey.FS_ZIP_AUDIO_QUEUE_LIST;
     }
 
     @Override
@@ -110,7 +103,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
         } finally {
             JedisCommands commonJedis = FsRedis.getCommonJedis();
             commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
-            commonJedis.srem(RedisKey.FS_ZIP_AUDIO_QUEUE_LIST + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
+            commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(parentFile);
         }
     }

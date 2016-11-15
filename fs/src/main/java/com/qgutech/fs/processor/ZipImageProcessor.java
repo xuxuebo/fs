@@ -120,7 +120,7 @@ public class ZipImageProcessor extends AbstractProcessor {
         } finally {
             JedisCommands commonJedis = FsRedis.getCommonJedis();
             commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
-            commonJedis.srem(RedisKey.FS_ZIP_IMAGE_QUEUE_LIST, fsFile.getId());
+            commonJedis.srem(RedisKey.FS_ZIP_IMAGE_QUEUE_LIST + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(parentFile);
         }
     }

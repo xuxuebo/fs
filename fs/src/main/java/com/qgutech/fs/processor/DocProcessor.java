@@ -14,9 +14,7 @@ import redis.clients.jedis.JedisCommands;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -147,6 +145,9 @@ public class DocProcessor extends AbstractProcessor {
 
             throw e;
         } finally {
+            JedisCommands commonJedis = FsRedis.getCommonJedis();
+            commonJedis.expire(RedisKey.FS_DOC_QUEUE_LIST + fsFile.getId(), 0);
+            commonJedis.srem(RedisKey.FS_ZIP_VIDEO_QUEUE_LIST + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(parentFile);
             if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {
                 deleteFile(getGenFilePath(fsFile));
@@ -164,7 +165,7 @@ public class DocProcessor extends AbstractProcessor {
             File compressFile = new File(parentFile, FsUtils.generateUUID()
                     + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP);
             FsUtils.compress(genFilePath, compressFile.getAbsolutePath());
-            HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);
+            HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
         }
 
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);

@@ -145,7 +145,9 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setFileSize(file.getSize());
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
-        fsFile.setCreateTime(new Date());
+        if (StringUtils.isEmpty(fsFile.getId())) {
+            fsFile.setCreateTime(new Date());
+        }
 
         return true;
     }

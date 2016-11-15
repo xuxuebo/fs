@@ -20,6 +20,9 @@ public class PropertiesUtils {
     private static String zipType;
     private static int cutImageTime;
     private static boolean docConvert;
+    private static String asyncUrl;
+    private static String backUri;
+    private static String httpProtocol;
 
     public static String getServerCode() {
         return serverCode;
@@ -163,5 +166,29 @@ public class PropertiesUtils {
 
     public void setDocConvert(boolean docConvert) {
         PropertiesUtils.docConvert = docConvert;
+    }
+
+    public static String getBackUri() {
+        return backUri;
+    }
+
+    public void setBackUri(String backUri) {
+        PropertiesUtils.backUri = backUri;
+    }
+
+    public static String getAsyncUrl() {
+        return asyncUrl;
+    }
+
+    public void setAsyncUrl(String asyncUrl) {
+        PropertiesUtils.asyncUrl = asyncUrl;
+    }
+
+    public static String getHttpProtocol() {
+        return httpProtocol;
+    }
+
+    public void setHttpProtocol(String httpProtocol) {
+        PropertiesUtils.httpProtocol = httpProtocol;
     }
 }

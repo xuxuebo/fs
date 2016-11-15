@@ -41,6 +41,9 @@
         <property name="zipType" value="${fs.zipType}"/>
         <property name="cutImageTime" value="${fs.cutImageTime}"/>
         <property name="docConvert" value="${fs.docConvert}"/>
+        <property name="asyncUrl" value="${fs.asyncUrl}"/>
+        <property name="backUri" value="${fs.backUri}"/>
+        <property name="httpProtocol" value="${fs.httpProtocol}"/>
     </bean>
 
     <!-- jedis连接池 -->

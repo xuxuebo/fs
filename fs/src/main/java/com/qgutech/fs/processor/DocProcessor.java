@@ -9,6 +9,7 @@ import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +33,19 @@ public class DocProcessor extends AbstractProcessor {
     @Override
     protected void submitToRedis(FsFile fsFile) {
         if (PropertiesUtils.isDocConvert()) {
-
+            JedisCommands commonJedis = FsRedis.getCommonJedis();
+            commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, RedisKey.FS_DOC_QUEUE_LIST);
+            String fsFileId = fsFile.getId();
+            //当重复提交时，防止处理音频重复
+            //commonJedis.lrem(RedisKey.FS_DOC_QUEUE_LIST, 0, fsFileId);
+            commonJedis.lpush(RedisKey.FS_DOC_QUEUE_LIST, fsFileId);
+            commonJedis.set(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, gson.toJson(fsFile));
         } else {
-
+            String backUrl = PropertiesUtils.getHttpProtocol() + FsConstants.HTTP_COLON
+                    + PropertiesUtils.getServerHost() + PropertiesUtils.getBackUri();
+            fsFile.setBackUrl(backUrl);
+            HttpUtils.doPost(PropertiesUtils.getAsyncUrl(), fsFile.toMap()
+                    , fsFile.getTmpFilePath(), fsFile.getStoredFileName());
         }
     }
 

@@ -51,6 +51,7 @@ public class FsServerServiceImpl extends BaseServiceImpl<FsServer> implements Fs
     }
 
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     public FsServer getFsServerByServerHostAndServerCode(String serverHost, String serverCode) {
         Assert.hasText(serverHost, "ServerHost is empty!");
         Assert.hasText(serverCode, "ServerCode is empty!");

@@ -1,6 +1,7 @@
 package com.qgutech.fs;
 
 
+import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.utils.HttpUtils;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
@@ -19,7 +20,7 @@ public class BaseServiceTest extends AbstractTransactionalJUnit4SpringContextTes
 
     @Test
     public void test() {
-        HttpUtils.getFsFile("1");
+        FsFile fsFile = HttpUtils.getFsFile("402881d65828f018015828f01ae40000");
     }
 
 }

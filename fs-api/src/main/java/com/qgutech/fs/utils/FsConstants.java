@@ -33,4 +33,7 @@ public interface FsConstants {
     String COMPRESS_FILE_SUFFIX_RAR = "rar";
     String DECOMPRESS = "decompress";
     String FFMPEG = "ffmpeg";
+    String RESPONSE_FORMAT_JSON = "json";
+    String RESPONSE_FORMAT_HTML = "html";
+    String RESPONSE_FORMAT_XML = "xml";
 }

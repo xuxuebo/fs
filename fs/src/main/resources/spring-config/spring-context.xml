@@ -44,6 +44,7 @@
         <property name="asyncUrl" value="${fs.asyncUrl}"/>
         <property name="backUri" value="${fs.backUri}"/>
         <property name="httpProtocol" value="${fs.httpProtocol}"/>
+        <property name="canOutputDocumentDomain" value="${fs.canOutputDocumentDomain}"/>
     </bean>
 
     <!-- jedis连接池 -->

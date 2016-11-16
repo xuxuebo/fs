@@ -23,6 +23,7 @@ public class PropertiesUtils {
     private static String asyncUrl;
     private static String backUri;
     private static String httpProtocol;
+    private static boolean canOutputDocumentDomain;
 
     public static String getServerCode() {
         return serverCode;
@@ -190,5 +191,13 @@ public class PropertiesUtils {
 
     public void setHttpProtocol(String httpProtocol) {
         PropertiesUtils.httpProtocol = httpProtocol;
+    }
+
+    public static boolean isCanOutputDocumentDomain() {
+        return canOutputDocumentDomain;
+    }
+
+    public void setCanOutputDocumentDomain(boolean canOutputDocumentDomain) {
+        PropertiesUtils.canOutputDocumentDomain = canOutputDocumentDomain;
     }
 }

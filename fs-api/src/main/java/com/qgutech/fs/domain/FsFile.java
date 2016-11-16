@@ -2,6 +2,7 @@ package com.qgutech.fs.domain;
 
 
 import com.qgutech.fs.domain.base.BaseEntity;
+import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.ReflectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,12 +11,28 @@ import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Entity
 @Table(name = "t_fs_file")
 public class FsFile extends BaseEntity {
-
+    public static final String _storedFileName = "storedFileName";
+    public static final String _processor = "processor";
+    public static final String _appCode = "appCode";
+    public static final String _subFileCount = "subFileCount";
+    public static final String _subFileCounts = "subFileCounts";
+    public static final String _fileSize = "fileSize";
+    public static final String _businessId = "businessId";
+    public static final String _businessCode = "businessCode";
+    public static final String _businessDir = "businessDir";
+    public static final String _suffix = "suffix";
+    public static final String _videoLevels = "videoLevels";
+    public static final String _durations = "durations";
+    public static final String _status = "status";
+    public static final String _processMsg = "processMsg";
     public static final String _serverCode = "serverCode";
+    public static final String _responseFormat = "responseFormat";
+    public static final String _fileUrl = "fileUrl";
     public static final String _timestamp = "timestamp";
     public static final String _sign = "sign";
     public static final String _serverHost = "serverHost";
@@ -104,6 +121,9 @@ public class FsFile extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ProcessStatusEnum status;
 
+    @Column(length = 500)
+    private String processMsg;
+
     /**
      * 文档上传的文档服务器所在的集群编号
      */
@@ -145,6 +165,18 @@ public class FsFile extends BaseEntity {
      */
     @Transient
     private String backUrl;
+
+    /**
+     * 响应请求的格式
+     */
+    @Transient
+    private String responseFormat = FsConstants.RESPONSE_FORMAT_JSON;
+
+    /**
+     * 文件的url
+     */
+    @Transient
+    private String fileUrl;
 
     public String getStoredFileName() {
         return storedFileName;
@@ -242,14 +274,6 @@ public class FsFile extends BaseEntity {
         this.durations = durations;
     }
 
-    public MultipartFile getFile() {
-        return file;
-    }
-
-    public void setFile(MultipartFile file) {
-        this.file = file;
-    }
-
     public ProcessStatusEnum getStatus() {
         return status;
     }
@@ -258,12 +282,28 @@ public class FsFile extends BaseEntity {
         this.status = status;
     }
 
+    public String getProcessMsg() {
+        return processMsg;
+    }
+
+    public void setProcessMsg(String processMsg) {
+        this.processMsg = processMsg;
+    }
+
     public String getServerCode() {
         return serverCode;
     }
 
     public void setServerCode(String serverCode) {
         this.serverCode = serverCode;
+    }
+
+    public MultipartFile getFile() {
+        return file;
+    }
+
+    public void setFile(MultipartFile file) {
+        this.file = file;
     }
 
     public Long getTimestamp() {
@@ -304,6 +344,22 @@ public class FsFile extends BaseEntity {
 
     public void setBackUrl(String backUrl) {
         this.backUrl = backUrl;
+    }
+
+    public String getResponseFormat() {
+        return responseFormat;
+    }
+
+    public void setResponseFormat(String responseFormat) {
+        this.responseFormat = responseFormat;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     @Override
@@ -389,4 +445,155 @@ public class FsFile extends BaseEntity {
 
         return resultMap;
     }
+
+    protected Map<String, String> toValueMap() {
+        Map<String, String> valueMap = new TreeMap<String, String>();
+        String id = getId();
+        if (StringUtils.isNotEmpty(id)) {
+            valueMap.put(_id, id);
+        }
+
+        String corpCode = getCorpCode();
+        if (StringUtils.isNotEmpty(corpCode)) {
+            valueMap.put(_corpCode, corpCode);
+        }
+
+        if (StringUtils.isNotEmpty(storedFileName)) {
+            valueMap.put(_storedFileName, storedFileName);
+        }
+
+        if (processor != null) {
+            valueMap.put(_processor, processor.name());
+        }
+
+        if (StringUtils.isNotEmpty(appCode)) {
+            valueMap.put(_appCode, appCode);
+        }
+
+        if (subFileCount != null) {
+            valueMap.put(_subFileCount, subFileCount.toString());
+        }
+
+        if (StringUtils.isNotEmpty(subFileCounts)) {
+            valueMap.put(_subFileCounts, subFileCounts);
+        }
+
+        if (fileSize != null) {
+            valueMap.put(_fileSize, fileSize.toString());
+        }
+
+        if (StringUtils.isNotEmpty(businessId)) {
+            valueMap.put(_businessId, businessId);
+        }
+
+        if (StringUtils.isNotEmpty(businessCode)) {
+            valueMap.put(_businessCode, businessCode);
+        }
+
+        if (StringUtils.isNotEmpty(businessDir)) {
+            valueMap.put(_businessDir, businessDir);
+        }
+
+        if (StringUtils.isNotEmpty(suffix)) {
+            valueMap.put(_suffix, suffix);
+        }
+
+        if (StringUtils.isNotEmpty(videoLevels)) {
+            valueMap.put(_videoLevels, videoLevels);
+        }
+
+        if (StringUtils.isNotEmpty(durations)) {
+            valueMap.put(_durations, durations);
+        }
+
+        if (status != null) {
+            valueMap.put(_status, status.name());
+        }
+
+        if (StringUtils.isNotEmpty(processMsg)) {
+            valueMap.put(_processMsg, processMsg);
+        }
+
+        if (StringUtils.isNotEmpty(serverCode)) {
+            valueMap.put(_serverCode, serverCode);
+        }
+
+        if (StringUtils.isNotEmpty(responseFormat)) {
+            valueMap.put(_responseFormat, responseFormat);
+        }
+
+        if (StringUtils.isNotEmpty(fileUrl)) {
+            valueMap.put(_fileUrl, fileUrl);
+        }
+
+        return valueMap;
+    }
+
+    public String toJson() {
+        Map<String, String> valueMap = toValueMap();
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\n");
+        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+            builder.append("\"");
+            builder.append(entry.getKey());
+            builder.append("\":");
+            builder.append("\"");
+            builder.append(entry.getValue());
+            builder.append("\"");
+            builder.append(",\n");
+        }
+
+        builder.delete(builder.length() - 1, builder.length());
+        builder.append("\n}");
+
+        return builder.toString();
+    }
+
+    public String toHtml(String domain) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<html>\n");
+        builder.append(getHeader(domain));
+        builder.append("<body>\n<div id='result'>\n");
+        Map<String, String> valueMap = toValueMap();
+        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+            builder.append("<div id=\"");
+            builder.append(entry.getKey());
+            builder.append("\">");
+            builder.append(entry.getValue());
+            builder.append("</div>\n");
+        }
+
+        builder.append("</div>\n</body>\n</html>");
+        return builder.toString();
+    }
+
+    protected String getHeader(String domain) {
+        return "<head>\n"
+                + (StringUtils.isNotEmpty(domain) ? "<script></script>\n"
+                : "<script>document.domain='" + domain + "'</script>\n")
+                + "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"/>\n"
+                + "<meta http-equiv=\"pragma\" content=\"no-cache\"/>\n"
+                + "<meta http-equiv=\"cache-control\" content=\"no-cache\"/>\n"
+                + "<meta http-equiv=\"expires\" content=\"0\"/>\n"
+                + "</head>\n";
+    }
+
+    public String toXml() {
+        Map<String, String> valueMap = toValueMap();
+        StringBuilder builder = new StringBuilder();
+        builder.append("<result>\n");
+        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+            builder.append("<");
+            builder.append(entry.getKey());
+            builder.append(">");
+            builder.append(entry.getValue());
+            builder.append("</");
+            builder.append(entry.getKey());
+            builder.append(">\n");
+        }
+
+        builder.append("</result>");
+        return builder.toString();
+    }
+
 }

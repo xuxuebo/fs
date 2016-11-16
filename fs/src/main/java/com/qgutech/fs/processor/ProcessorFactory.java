@@ -16,7 +16,7 @@ public class ProcessorFactory {
     private Processor zipImageProcessor;
     private Processor zipDocProcessor;
 
-    public Processor createProcessor(ProcessorTypeEnum processor) {
+    public Processor acquireProcessor(ProcessorTypeEnum processor) {
         switch (processor) {
             case VID:
                 return videoProcessor;

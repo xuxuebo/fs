@@ -33,6 +33,7 @@ public abstract class AbstractProcessor implements Processor {
     protected final Log LOG = LogFactory.getLog(getClass());
     protected final Gson gson = new Gson();
     protected ThreadPoolTaskExecutor taskExecutor;
+    protected JedisCommands commonJedis;
     protected int semaphoreCnt = DEFAULT_SEMAPHORE_CNT;
     protected int maxSubmitCnt = MAX_SUBMIT_CNT;
     protected int submitFailedWaitTime = DEFAULT_WAIT_TIME;
@@ -384,7 +385,6 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected void submitToRedis(FsFile fsFile) {
-        JedisCommands commonJedis = FsRedis.getCommonJedis();
         commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, getProcessQueueName());
         String fsFileId = fsFile.getId();
         //当重复提交时，防止重复处理
@@ -423,5 +423,13 @@ public abstract class AbstractProcessor implements Processor {
 
     public void setSubmitFailedWaitTime(int submitFailedWaitTime) {
         this.submitFailedWaitTime = submitFailedWaitTime;
+    }
+
+    public JedisCommands getCommonJedis() {
+        return commonJedis;
+    }
+
+    public void setCommonJedis(JedisCommands commonJedis) {
+        this.commonJedis = commonJedis;
     }
 }

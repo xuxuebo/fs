@@ -22,7 +22,7 @@ public class FileController {
     @RequestMapping("/uploadFile")
     public String uploadFile(FsFile fsFile) {
         try {
-            Processor processor = processorFactory.createProcessor(fsFile.getProcessor());
+            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             fsFile = processor.submit(fsFile);
         } catch (Exception e) {
             LOG.error(e);

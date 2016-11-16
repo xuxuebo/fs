@@ -5,7 +5,6 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.VideoTypeEnum;
 import com.qgutech.fs.utils.*;
-import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +101,6 @@ public class VideoProcessor extends AbstractProcessor {
 
             throw e;
         } finally {
-            JedisCommands commonJedis = FsRedis.getCommonJedis();
             commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
             commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(new File(tmpFilePath).getParentFile());

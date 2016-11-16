@@ -22,7 +22,7 @@
         <property name="corePoolSize" value="${fs.taskExecutor.corePoolSize}"/>
     </bean>
 
-    <bean class="com.qgutech.fs.utils.PropertiesUtils">
+    <bean id="propertiesUtils" class="com.qgutech.fs.utils.PropertiesUtils">
         <property name="serverCode" value="${fs.serverCode}"/>
         <property name="serverSecret" value="${fs.serverSecret}"/>
         <property name="urlExpireTime" value="${fs.urlExpireTime}"/>
@@ -55,13 +55,13 @@
     </bean>
 
     <bean name="fsRedis" class="com.qgutech.fs.utils.FsRedis" lazy-init="false">
-        <property name="commonJedis">
-            <bean class="com.qgutech.fs.utils.RedisFactoryBean">
-                <constructor-arg index="0" ref="jedisPoolConfig"/>
-                <constructor-arg index="1" value="${commonRedisUrl}"/>
-                <constructor-arg index="2" value="${commonRedisPort}"/>
-            </bean>
-        </property>
+        <property name="commonJedis" ref="commonJedis"/>
+    </bean>
+
+    <bean id="commonJedis" class="com.qgutech.fs.utils.RedisFactoryBean">
+        <constructor-arg index="0" ref="jedisPoolConfig"/>
+        <constructor-arg index="1" value="${commonRedisUrl}"/>
+        <constructor-arg index="2" value="${commonRedisPort}"/>
     </bean>
 
     <bean id="converter" abstract="true" class="com.qgutech.fs.convert.AbstractConverter">
@@ -78,8 +78,10 @@
         <property name="convertToolPath" value="${fs.pdfToImage.convertToolPath}"/>
     </bean>
 
-    <bean id="processor" abstract="true" class="com.qgutech.fs.processor.AbstractProcessor">
+    <bean id="processor" abstract="true" class="com.qgutech.fs.processor.AbstractProcessor"
+          depends-on="propertiesUtils">
         <property name="taskExecutor" ref="taskExecutor"/>
+        <property name="commonJedis" ref="commonJedis"/>
         <property name="maxSubmitCnt" value="${fs.processor.maxSubmitCnt}"/>
         <property name="submitFailedWaitTime" value="${fs.processor.submitFailedWaitTime}"/>
         <property name="semaphoreCnt" value="${fs.processor.default.semaphoreCnt}"/>
@@ -134,6 +136,29 @@
         <property name="zipVideoProcessor" ref="zipVideoProcessor"/>
         <property name="docProcessor" ref="docProcessor"/>
         <property name="zipDocProcessor" ref="zipDocProcessor"/>
+    </bean>
+
+    <bean id="processorExecutor" class="com.qgutech.fs.processor.ProcessorExecutor"
+          init-method="init" depends-on="propertiesUtils">
+        <property name="taskExecutor" ref="taskExecutor"/>
+        <property name="commonJedis" ref="commonJedis"/>
+        <property name="lockExpireTime" value="${fs.processorExecutor.lockExpireTime}"/>
+        <property name="maxDoingListSize" value="${fs.processorExecutor.maxDoingListSize}"/>
+        <property name="minAvailablePoolSize" value="${fs.processorExecutor.minAvailablePoolSize}"/>
+        <property name="timerDelay" value="${fs.processorExecutor.timerDelay}"/>
+        <property name="timerPeriod" value="${fs.processorExecutor.timerPeriod}"/>
+        <property name="processorFactory" ref="processorFactory"/>
+        <property name="maxDoingListSizeMap">
+            <map key-type="java.lang.String" value-type="java.lang.Integer">
+                <entry key="AUD" value="${fs.processorExecutor.audio.maxDoingListSize}"/>
+                <entry key="ZAUD" value="${fs.processorExecutor.zipAudio.maxDoingListSize}"/>
+                <entry key="VID" value="${fs.processorExecutor.video.maxDoingListSize}"/>
+                <entry key="ZVID" value="${fs.processorExecutor.zipVideo.maxDoingListSize}"/>
+                <entry key="DOC" value="${fs.processorExecutor.doc.maxDoingListSize}"/>
+                <entry key="ZDOC" value="${fs.processorExecutor.zipDoc.maxDoingListSize}"/>
+                <entry key="IMG" value="${fs.processorExecutor.image.maxDoingListSize}"/>
+            </map>
+        </property>
     </bean>
 
 </beans>

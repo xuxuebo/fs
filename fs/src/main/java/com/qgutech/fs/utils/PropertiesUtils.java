@@ -25,6 +25,7 @@ public class PropertiesUtils {
     private static String backUri;
     private static String httpProtocol;
     private static boolean canOutputDocumentDomain;
+    private static int getFileMaxExecuteCnt;
 
     public static String getServerCode() {
         return serverCode;
@@ -208,5 +209,13 @@ public class PropertiesUtils {
 
     public void setCanOutputDocumentDomain(boolean canOutputDocumentDomain) {
         PropertiesUtils.canOutputDocumentDomain = canOutputDocumentDomain;
+    }
+
+    public static int getGetFileMaxExecuteCnt() {
+        return getFileMaxExecuteCnt;
+    }
+
+    public void setGetFileMaxExecuteCnt(int getFileMaxExecuteCnt) {
+        PropertiesUtils.getFileMaxExecuteCnt = getFileMaxExecuteCnt;
     }
 }

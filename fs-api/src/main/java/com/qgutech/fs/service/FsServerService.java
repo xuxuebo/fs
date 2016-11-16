@@ -14,4 +14,6 @@ public interface FsServerService extends BaseService<FsServer> {
     List<FsServer> getDownloadFsServerListByServerCode(String corpCode, String serverCode);
 
     List<FsServer> getDownloadFsServerList(Set<String> corpCodes, Set<String> serverCodes);
+
+    FsServer getFsServerByServerHostAndServerCode(String serverHost, String serverCode);
 }

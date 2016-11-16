@@ -110,19 +110,32 @@ public class HttpUtils {
         String serverHost = PropertiesUtils.getServerHost();
         String serverSecret = PropertiesUtils.getServerSecret();
         String sign = Signer.sign(fsFileId, serverHost, serverSecret, timestamp);
-        Map<String, String> paramMap = new HashMap<String, String>(4);
+        Map<String, String> paramMap = new HashMap<String, String>(5);
         paramMap.put(FsFile._id, fsFileId);
         paramMap.put(FsFile._serverHost, serverHost);
-        paramMap.put(FsFile._timestamp, timestamp + "");
+        paramMap.put(FsFile._timestamp, timestamp + StringUtils.EMPTY);
         paramMap.put(FsFile._sign, sign);
-        String fsFileJson = HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), paramMap);
+        paramMap.put(FsFile._serverCode, PropertiesUtils.getServerCode());
+        String fsFileJson;
+        try {
+            fsFileJson = HttpUtils.doPost(PropertiesUtils.getGetFileUrl(), paramMap);
+        } catch (Exception e) {
+            if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
+                throw (RuntimeException) e;
+            }
+
+            return getFsFile(fsFileId, ++executeCnt);
+        }
+
         if (StringUtils.isEmpty(fsFileJson)) {
             return null;
         }
 
         if (FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileJson)) {
-            if (executeCnt >= 3) {
-                return null;
+            if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
+                throw new RuntimeException("Exception occurred when getting fsFile[id:"
+                        + fsFileId + "] by post request[url:" + PropertiesUtils.getGetFileUrl()
+                        + ",executeCnt:" + executeCnt + "]!");
             }
 
             return getFsFile(fsFileId, ++executeCnt);

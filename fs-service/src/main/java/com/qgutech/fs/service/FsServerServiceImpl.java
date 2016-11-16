@@ -49,4 +49,16 @@ public class FsServerServiceImpl extends BaseServiceImpl<FsServer> implements Fs
                 .add(Restrictions.eq(_download, true))
                 .add(Restrictions.in(_serverCode, serverCodes)));
     }
+
+    @Override
+    public FsServer getFsServerByServerHostAndServerCode(String serverHost, String serverCode) {
+        Assert.hasText(serverHost, "ServerHost is empty!");
+        Assert.hasText(serverCode, "ServerCode is empty!");
+
+        return getByCriterion(Restrictions.conjunction()
+                .add(Restrictions.eq(_host, serverHost))
+                .add(Restrictions.eq(_serverCode, serverCode)));
+    }
+
+
 }

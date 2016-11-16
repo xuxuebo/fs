@@ -319,11 +319,12 @@ public abstract class AbstractProcessor implements Processor {
         long timestamp = System.currentTimeMillis();
         String serverHost = PropertiesUtils.getServerHost();
         String sign = Signer.sign(fsFileId, serverHost, PropertiesUtils.getServerSecret(), timestamp);
-        Map<String, String> paramMap = new HashMap<String, String>(4);
+        Map<String, String> paramMap = new HashMap<String, String>(5);
         paramMap.put(FsFile._id, fsFileId);
         paramMap.put(FsFile._timestamp, timestamp + "");
         paramMap.put(FsFile._sign, sign);
         paramMap.put(FsFile._serverHost, serverHost);
+        paramMap.put(FsFile._serverCode, PropertiesUtils.getServerCode());
 
         return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
     }
@@ -338,6 +339,7 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setTimestamp(timestamp);
         String serverHost = PropertiesUtils.getServerHost();
         fsFile.setServerHost(serverHost);
+        fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setSign(Signer.sign(serverHost, PropertiesUtils.getServerSecret(), timestamp));
         return HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
     }
@@ -347,6 +349,7 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setTimestamp(timestamp);
         String serverHost = PropertiesUtils.getServerHost();
         fsFile.setServerHost(serverHost);
+        fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setSign(Signer.sign(fsFile.getId(), serverHost
                 , PropertiesUtils.getServerSecret(), timestamp));
         return HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());

@@ -32,6 +32,7 @@
         <property name="deleteFileUrl" value="${fs.deleteFileUrl}"/>
         <property name="updateFileUrl" value="${fs.updateFileUrl}"/>
         <property name="getFileUrl" value="${fs.getFileUrl}"/>
+        <property name="getFileMaxExecuteCnt" value="${fs.getFileMaxExecuteCnt}"/>
         <property name="upload" value="${fs.upload}"/>
         <property name="download" value="${fs.download}"/>
         <property name="convert" value="${fs.convert}"/>

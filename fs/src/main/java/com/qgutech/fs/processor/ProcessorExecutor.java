@@ -43,7 +43,9 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
 
     @Override
     public void run() {
-        execute();
+        if (PropertiesUtils.isConvert()) {
+            execute();
+        }
     }
 
     private int getMaxDoingListSize(String queueName) {
@@ -67,6 +69,11 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
         }
 
         for (final String queueName : queueNames) {
+            if (!PropertiesUtils.isDocConvert() && (RedisKey.FS_ZIP_DOC_QUEUE_LIST.equals(queueName)
+                    || RedisKey.FS_DOC_QUEUE_LIST.equals(queueName))) {
+                continue;
+            }
+
             int activeCount = taskExecutor.getMaxPoolSize() - taskExecutor.getActiveCount();
             if (activeCount <= minAvailablePoolSize) {
                 continue;

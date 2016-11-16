@@ -3,12 +3,15 @@ package com.qgutech.fs.controller;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
+import com.qgutech.fs.utils.PropertiesUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/file/*")
@@ -20,7 +23,12 @@ public class FileController {
     private ProcessorFactory processorFactory;
 
     @RequestMapping("/uploadFile")
-    public String uploadFile(FsFile fsFile) {
+    public void uploadFile(FsFile fsFile, HttpServletRequest request, HttpServletResponse response) {
+        if (PropertiesUtils.isUpload()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
         try {
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             fsFile = processor.submit(fsFile);
@@ -28,21 +36,41 @@ public class FileController {
             LOG.error(e);
         }
 
-        return null;
+
     }
 
     @RequestMapping("/getFile/*")
-    public String getFile(FsFile fsFile) {
+    public String getFile(FsFile fsFile, HttpServletResponse response) {
+        if (PropertiesUtils.isDownload()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
+
         return null;
     }
 
     @RequestMapping("/downloadFile/*")
-    public String downloadFile(FsFile fsFile) {
+    public String downloadFile(FsFile fsFile, HttpServletResponse response) {
+        if (PropertiesUtils.isDownload()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
+
         return null;
     }
 
     @RequestMapping("/cutImage")
-    public String cutImage(FsFile fsFile) {
+    public String cutImage(FsFile fsFile, HttpServletResponse response) {
+        if (PropertiesUtils.isUpload()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
+
+        return null;
+    }
+
+    @RequestMapping("/reprocessFile")
+    public String reprocessFile(FsFile fsFile) {
         return null;
     }
 

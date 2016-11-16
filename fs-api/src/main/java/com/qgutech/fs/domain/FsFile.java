@@ -15,19 +15,6 @@ import java.util.Map;
 @Table(name = "t_fs_file")
 public class FsFile extends BaseEntity {
 
-    public static final String _storedFileName = "storedFileName";
-    public static final String _processor = "processor";
-    public static final String _appCode = "appCode";
-    public static final String _subFileCount = "subFileCount";
-    public static final String _subFileCounts = "subFileCounts";
-    public static final String _fileSize = "fileSize";
-    public static final String _businessId = "businessId";
-    public static final String _businessCode = "businessCode";
-    public static final String _businessDir = "businessDir";
-    public static final String _suffix = "suffix";
-    public static final String _videoLevels = "videoLevels";
-    public static final String _durations = "durations";
-    public static final String _status = "status";
     public static final String _serverCode = "serverCode";
     public static final String _timestamp = "timestamp";
     public static final String _sign = "sign";

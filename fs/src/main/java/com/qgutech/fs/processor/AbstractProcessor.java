@@ -7,6 +7,7 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.utils.*;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -14,9 +15,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
 import redis.clients.jedis.JedisCommands;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -129,6 +134,20 @@ public abstract class AbstractProcessor implements Processor {
         }
 
         MultipartFile file = fsFile.getFile();
+        if (file == null) {
+            HttpServletRequest request = ((ServletRequestAttributes)
+                    RequestContextHolder.getRequestAttributes()).getRequest();
+            if (request instanceof MultipartRequest) {
+                MultipartRequest multipartRequest = (MultipartRequest) request;
+                Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+                if (MapUtils.isNotEmpty(fileMap)) {
+                    for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
+                        fsFile.setFile(entry.getValue());
+                    }
+                }
+            }
+        }
+
         if (file == null || StringUtils.isEmpty(file.getOriginalFilename())
                 || file.getInputStream() == null) {
             LOG.error("Upload file not exist or originalFilename is empty!");

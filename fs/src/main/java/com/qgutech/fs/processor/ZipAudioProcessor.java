@@ -100,8 +100,6 @@ public class ZipAudioProcessor extends AbstractProcessor {
 
             throw e;
         } finally {
-            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFile.getId(), 0);
-            commonJedis.srem(getProcessQueueName() + RedisKey.FS_DOING_LIST_SUFFIX, fsFile.getId());
             deleteFile(parentFile);
         }
     }

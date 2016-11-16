@@ -150,13 +150,13 @@
         <property name="processorFactory" ref="processorFactory"/>
         <property name="maxDoingListSizeMap">
             <map key-type="java.lang.String" value-type="java.lang.Integer">
-                <entry key="AUD" value="${fs.processorExecutor.audio.maxDoingListSize}"/>
-                <entry key="ZAUD" value="${fs.processorExecutor.zipAudio.maxDoingListSize}"/>
-                <entry key="VID" value="${fs.processorExecutor.video.maxDoingListSize}"/>
-                <entry key="ZVID" value="${fs.processorExecutor.zipVideo.maxDoingListSize}"/>
-                <entry key="DOC" value="${fs.processorExecutor.doc.maxDoingListSize}"/>
-                <entry key="ZDOC" value="${fs.processorExecutor.zipDoc.maxDoingListSize}"/>
-                <entry key="IMG" value="${fs.processorExecutor.image.maxDoingListSize}"/>
+                <entry key="fs_audio_queue_list" value="${fs.processorExecutor.audio.maxDoingListSize}"/>
+                <entry key="fs_zip_audio_queue_list" value="${fs.processorExecutor.zipAudio.maxDoingListSize}"/>
+                <entry key="fs_video_queue_list" value="${fs.processorExecutor.video.maxDoingListSize}"/>
+                <entry key="fs_zip_video_queue_list" value="${fs.processorExecutor.zipVideo.maxDoingListSize}"/>
+                <entry key="fs_doc_queue_list" value="${fs.processorExecutor.doc.maxDoingListSize}"/>
+                <entry key="fs_zip_doc_queue_list" value="${fs.processorExecutor.zipDoc.maxDoingListSize}"/>
+                <entry key="fs_zip_image_queue_list" value="${fs.processorExecutor.image.maxDoingListSize}"/>
             </map>
         </property>
     </bean>

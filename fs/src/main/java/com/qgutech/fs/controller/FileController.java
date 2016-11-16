@@ -9,6 +9,7 @@ import com.qgutech.fs.utils.PropertiesUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@DependsOn({"propertiesUtils"})
 @RequestMapping("/file/*")
 public class FileController {
 
@@ -120,6 +122,9 @@ public class FileController {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return null;
         }
+
+        String fsFileId = fsFile.getId();
+
 
         return null;
     }

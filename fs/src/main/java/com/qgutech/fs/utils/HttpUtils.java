@@ -1,5 +1,7 @@
 package com.qgutech.fs.utils;
 
+import com.google.gson.Gson;
+import com.qgutech.fs.domain.FsFile;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
@@ -18,9 +20,12 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HttpUtils {
+
+    public static final Gson gson = new Gson();
 
     public static String doPost(String url) {
         return doPost(url, null, null, null);
@@ -93,5 +98,36 @@ public class HttpUtils {
                 //np
             }
         }
+    }
+
+    public static FsFile getFsFile(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getFsFile(fsFileId, 1);
+    }
+
+    private static FsFile getFsFile(String fsFileId, int executeCnt) {
+        long timestamp = System.currentTimeMillis();
+        String serverHost = PropertiesUtils.getServerHost();
+        String serverSecret = PropertiesUtils.getServerSecret();
+        String sign = Signer.sign(fsFileId, serverHost, serverSecret, timestamp);
+        Map<String, String> paramMap = new HashMap<String, String>(4);
+        paramMap.put(FsFile._id, fsFileId);
+        paramMap.put(FsFile._serverHost, serverHost);
+        paramMap.put(FsFile._timestamp, timestamp + "");
+        paramMap.put(FsFile._sign, sign);
+        String fsFileJson = HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), paramMap);
+        if (StringUtils.isEmpty(fsFileJson)) {
+            return null;
+        }
+
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileJson)) {
+            if (executeCnt >= 3) {
+                return null;
+            }
+
+            return getFsFile(fsFileId, ++executeCnt);
+        }
+
+        return gson.fromJson(fsFileJson, FsFile.class);
     }
 }

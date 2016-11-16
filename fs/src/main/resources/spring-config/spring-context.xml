@@ -22,7 +22,7 @@
         <property name="corePoolSize" value="${fs.taskExecutor.corePoolSize}"/>
     </bean>
 
-    <bean id="propertiesUtils" class="com.qgutech.fs.utils.PropertiesUtils">
+    <bean id="propertiesUtils" class="com.qgutech.fs.utils.PropertiesUtils" lazy-init="false">
         <property name="serverCode" value="${fs.serverCode}"/>
         <property name="serverSecret" value="${fs.serverSecret}"/>
         <property name="urlExpireTime" value="${fs.urlExpireTime}"/>
@@ -31,6 +31,7 @@
         <property name="saveFileUrl" value="${fs.saveFileUrl}"/>
         <property name="deleteFileUrl" value="${fs.deleteFileUrl}"/>
         <property name="updateFileUrl" value="${fs.updateFileUrl}"/>
+        <property name="getFileUrl" value="${fs.getFileUrl}"/>
         <property name="upload" value="${fs.upload}"/>
         <property name="download" value="${fs.download}"/>
         <property name="convert" value="${fs.convert}"/>

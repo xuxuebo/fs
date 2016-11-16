@@ -178,6 +178,30 @@ public class FsFile extends BaseEntity {
     @Transient
     private String fileUrl;
 
+    /**
+     * 截图时指定的x轴坐标
+     */
+    @Transient
+    private Integer x;
+
+    /**
+     * 截图时指定的y轴坐标
+     */
+    @Transient
+    private Integer y;
+
+    /**
+     * 截图时指定的宽度
+     */
+    @Transient
+    private Integer w;
+
+    /**
+     * 截图时指定的高度
+     */
+    @Transient
+    private Integer h;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -360,6 +384,38 @@ public class FsFile extends BaseEntity {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
+    }
+
+    public Integer getX() {
+        return x;
+    }
+
+    public void setX(Integer x) {
+        this.x = x;
+    }
+
+    public Integer getY() {
+        return y;
+    }
+
+    public void setY(Integer y) {
+        this.y = y;
+    }
+
+    public Integer getW() {
+        return w;
+    }
+
+    public void setW(Integer w) {
+        this.w = w;
+    }
+
+    public Integer getH() {
+        return h;
+    }
+
+    public void setH(Integer h) {
+        this.h = h;
     }
 
     @Override

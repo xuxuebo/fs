@@ -10,6 +10,7 @@ public class PropertiesUtils {
     private static String saveFileUrl;
     private static String updateFileUrl;
     private static String deleteFileUrl;
+    private static String getFileUrl;
     private static boolean upload;
     private static boolean download;
     private static boolean convert;
@@ -119,6 +120,14 @@ public class PropertiesUtils {
 
     public void setDeleteFileUrl(String deleteFileUrl) {
         PropertiesUtils.deleteFileUrl = deleteFileUrl;
+    }
+
+    public static String getGetFileUrl() {
+        return getFileUrl;
+    }
+
+    public void setGetFileUrl(String getFileUrl) {
+        PropertiesUtils.getFileUrl = getFileUrl;
     }
 
     public static String getImageType() {

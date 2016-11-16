@@ -80,16 +80,60 @@
 
     <bean id="processor" abstract="true" class="com.qgutech.fs.processor.AbstractProcessor">
         <property name="taskExecutor" ref="taskExecutor"/>
+        <property name="maxSubmitCnt" value="${fs.processor.maxSubmitCnt}"/>
+        <property name="submitFailedWaitTime" value="${fs.processor.submitFailedWaitTime}"/>
+        <property name="semaphoreCnt" value="${fs.processor.default.semaphoreCnt}"/>
     </bean>
 
-    <bean id="docProcessor" parent="processor" class="com.qgutech.fs.processor.DocProcessor">
+    <bean id="imageProcessor" parent="processor" class="com.qgutech.fs.processor.ImageProcessor"/>
+
+    <bean id="zipImageProcessor" parent="processor" class="com.qgutech.fs.processor.ZipImageProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.zipImage.semaphoreCnt}"/>
+    </bean>
+
+    <bean id="fileProcessor" parent="processor" class="com.qgutech.fs.processor.FileProcessor"/>
+
+    <bean id="zipProcessor" parent="processor" class="com.qgutech.fs.processor.ZipProcessor"/>
+
+    <bean id="audioProcessor" parent="processor" class="com.qgutech.fs.processor.AudioProcessor"/>
+
+    <bean id="zipAudioProcessor" parent="processor" class="com.qgutech.fs.processor.ZipAudioProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.zipAudio.semaphoreCnt}"/>
+    </bean>
+
+    <bean id="videoProcessor" parent="processor" class="com.qgutech.fs.processor.VideoProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.video.semaphoreCnt}"/>
+    </bean>
+
+    <bean id="zipVideoProcessor" parent="processor" class="com.qgutech.fs.processor.ZipVideoProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.zipVideo.semaphoreCnt}"/>
+    </bean>
+
+    <bean id="aDocProcessor" abstract="true" parent="processor"
+          class="com.qgutech.fs.processor.AbstractDocProcessor">
         <property name="docToPdfConverter" ref="docToPdfConverter"/>
         <property name="pdfToImageConverter" ref="pdfToImageConverter"/>
     </bean>
 
+    <bean id="docProcessor" parent="aDocProcessor" class="com.qgutech.fs.processor.DocProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.doc.semaphoreCnt}"/>
+    </bean>
+
+    <bean id="zipDocProcessor" parent="aDocProcessor" class="com.qgutech.fs.processor.ZipDocProcessor">
+        <property name="semaphoreCnt" value="${fs.processor.zipDoc.semaphoreCnt}"/>
+    </bean>
 
     <bean id="processorFactory" class="com.qgutech.fs.processor.ProcessorFactory">
+        <property name="imageProcessor" ref="imageProcessor"/>
+        <property name="zipImageProcessor" ref="zipImageProcessor"/>
+        <property name="fileProcessor" ref="fileProcessor"/>
+        <property name="zipProcessor" ref="zipProcessor"/>
+        <property name="audioProcessor" ref="audioProcessor"/>
+        <property name="zipAudioProcessor" ref="zipAudioProcessor"/>
+        <property name="videoProcessor" ref="videoProcessor"/>
+        <property name="zipVideoProcessor" ref="zipVideoProcessor"/>
         <property name="docProcessor" ref="docProcessor"/>
+        <property name="zipDocProcessor" ref="zipDocProcessor"/>
     </bean>
 
 </beans>

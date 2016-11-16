@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 
 public abstract class AbstractProcessor implements Processor {
 
-    protected static final int MAX_EXECUTE_CNT = 10;
+    protected static final int MAX_SUBMIT_CNT = 10;
     protected static final int DEFAULT_WAIT_TIME = 1000;
     protected static final int DEFAULT_SEMAPHORE_CNT = Runtime.getRuntime().availableProcessors() / 2 + 1;
 
@@ -34,6 +34,8 @@ public abstract class AbstractProcessor implements Processor {
     protected final Gson gson = new Gson();
     protected ThreadPoolTaskExecutor taskExecutor;
     protected int semaphoreCnt = DEFAULT_SEMAPHORE_CNT;
+    protected int maxSubmitCnt = MAX_SUBMIT_CNT;
+    protected int submitFailedWaitTime = DEFAULT_WAIT_TIME;
 
     @Override
     public FsFile submit(FsFile fsFile) throws Exception {
@@ -269,12 +271,12 @@ public abstract class AbstractProcessor implements Processor {
             submitToRedis(fsFile);
         } catch (Exception e) {
             try {
-                Thread.sleep(DEFAULT_WAIT_TIME);
+                Thread.sleep(submitFailedWaitTime);
             } catch (Exception ex) {
                 //NP
             }
 
-            if (count < MAX_EXECUTE_CNT) {
+            if (count < maxSubmitCnt) {
                 submit(fsFile, ++count);
             } else {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
@@ -405,5 +407,21 @@ public abstract class AbstractProcessor implements Processor {
 
     public void setTaskExecutor(ThreadPoolTaskExecutor taskExecutor) {
         this.taskExecutor = taskExecutor;
+    }
+
+    public int getMaxSubmitCnt() {
+        return maxSubmitCnt;
+    }
+
+    public void setMaxSubmitCnt(int maxSubmitCnt) {
+        this.maxSubmitCnt = maxSubmitCnt;
+    }
+
+    public int getSubmitFailedWaitTime() {
+        return submitFailedWaitTime;
+    }
+
+    public void setSubmitFailedWaitTime(int submitFailedWaitTime) {
+        this.submitFailedWaitTime = submitFailedWaitTime;
     }
 }

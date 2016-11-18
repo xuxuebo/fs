@@ -26,6 +26,9 @@ public class PropertiesUtils {
     private static String httpProtocol;
     private static boolean canOutputDocumentDomain;
     private static int getFileMaxExecuteCnt;
+    private static int saveFileMaxExecuteCnt;
+    private static int deleteFileMaxExecuteCnt;
+    private static int updateFileMaxExecuteCnt ;
 
     public static String getServerCode() {
         return serverCode;
@@ -217,5 +220,29 @@ public class PropertiesUtils {
 
     public void setGetFileMaxExecuteCnt(int getFileMaxExecuteCnt) {
         PropertiesUtils.getFileMaxExecuteCnt = getFileMaxExecuteCnt;
+    }
+
+    public static int getSaveFileMaxExecuteCnt() {
+        return saveFileMaxExecuteCnt;
+    }
+
+    public void setSaveFileMaxExecuteCnt(int saveFileMaxExecuteCnt) {
+        PropertiesUtils.saveFileMaxExecuteCnt = saveFileMaxExecuteCnt;
+    }
+
+    public static int getDeleteFileMaxExecuteCnt() {
+        return deleteFileMaxExecuteCnt;
+    }
+
+    public void setDeleteFileMaxExecuteCnt(int deleteFileMaxExecuteCnt) {
+        PropertiesUtils.deleteFileMaxExecuteCnt = deleteFileMaxExecuteCnt;
+    }
+
+    public static int getUpdateFileMaxExecuteCnt() {
+        return updateFileMaxExecuteCnt;
+    }
+
+    public void setUpdateFileMaxExecuteCnt(int updateFileMaxExecuteCnt) {
+        PropertiesUtils.updateFileMaxExecuteCnt = updateFileMaxExecuteCnt;
     }
 }

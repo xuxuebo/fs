@@ -12,17 +12,22 @@ public class Signer {
     private static char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6',
             '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-    public static String sign(String serverHost, String secret, long timestamp) {
+    public static String sign(String serverHost, String serverCode, String secret, long timestamp) {
         return md5(md5(secret + FsConstants.VERTICAL_LINE + serverHost)
+                + FsConstants.VERTICAL_LINE
+                + md5(secret + FsConstants.VERTICAL_LINE + serverCode)
                 + FsConstants.VERTICAL_LINE
                 + md5(secret + FsConstants.VERTICAL_LINE + timestamp)
                 + FsConstants.VERTICAL_LINE + secret);
     }
 
-    public static String sign(String fsFileId, String serverHost, String secret, long timestamp) {
+    public static String sign(String fsFileId, String serverHost, String serverCode
+            , String secret, long timestamp) {
         return md5(md5(secret + FsConstants.VERTICAL_LINE + fsFileId)
                 + FsConstants.VERTICAL_LINE
                 + md5(secret + FsConstants.VERTICAL_LINE + serverHost)
+                + FsConstants.VERTICAL_LINE
+                + md5(secret + FsConstants.VERTICAL_LINE + serverCode)
                 + FsConstants.VERTICAL_LINE
                 + md5(secret + FsConstants.VERTICAL_LINE + timestamp)
                 + FsConstants.VERTICAL_LINE + secret);

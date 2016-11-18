@@ -149,14 +149,14 @@ public class FileServerController {
             return false;
         }
 
-        String newSign = checkFsFileId ? Signer.sign(fsFileId, serverHost, fsServer.getSecret(), timestamp)
-                : Signer.sign(serverHost, fsServer.getSecret(), timestamp);
+        String secret = fsServer.getSecret();
+        String newSign = checkFsFileId ? Signer.sign(fsFileId, serverHost, serverCode, secret, timestamp)
+                : Signer.sign(serverHost, serverCode, secret, timestamp);
         if (!sign.equals(newSign)) {
             LOG.error("The generating sign[sign:" + newSign
                     + (checkFsFileId ? (",id:" + fsFileId) : StringUtils.EMPTY)
                     + ",serverHost:" + serverHost + ",timestamp:" + timestamp
-                    + ",secret:" + fsServer.getSecret()
-                    + "] is not equal the param sign[sign:" + sign + "]!");
+                    + ",secret:" + secret + "] is not equal the param sign[sign:" + sign + "]!");
             writer.write(FsConstants.RESPONSE_RESULT_ERROR);
             return false;
         }

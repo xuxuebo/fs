@@ -43,7 +43,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
         } catch (Exception e) {
             deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
 
             throw e;
         } finally {
@@ -145,7 +145,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
         }
 
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        updateFsFile(fsFile);
+        HttpUtils.updateFsFile(fsFile);
     }
 
     public Converter getDocToPdfConverter() {

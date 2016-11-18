@@ -37,7 +37,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
                 }
             })) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
                 return;
             }
 
@@ -45,7 +45,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             File[] audioFiles = decompressDir.listFiles();
             if (audioFiles == null || audioFiles.length == 0) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
                 return;
             }
 
@@ -96,7 +96,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
         } catch (Exception e) {
             deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
 
             throw e;
         } finally {

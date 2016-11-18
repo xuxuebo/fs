@@ -38,7 +38,7 @@ public class DocProcessor extends AbstractDocProcessor {
         if (docPage <= 0) {
             deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
         } else {
             fsFile.setSubFileCount(docPage);
             afterProcess(fsFile);

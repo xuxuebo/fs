@@ -38,7 +38,7 @@ public class ZipImageProcessor extends AbstractProcessor {
                 }
             })) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
                 return;
             }
 
@@ -46,7 +46,7 @@ public class ZipImageProcessor extends AbstractProcessor {
             File[] imageFiles = decompressDir.listFiles();
             if (imageFiles == null || imageFiles.length == 0) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
                 return;
             }
 
@@ -107,7 +107,7 @@ public class ZipImageProcessor extends AbstractProcessor {
         } catch (Exception e) {
             deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
 
             throw e;
         } finally {

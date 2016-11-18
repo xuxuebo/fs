@@ -49,7 +49,7 @@ public class AudioProcessor extends AbstractProcessor {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 fsFile.setCreateTime(null);
                 deleteFile(genFilePath);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
             }
 
             throw e;

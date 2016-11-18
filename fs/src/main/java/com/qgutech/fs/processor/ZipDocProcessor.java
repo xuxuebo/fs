@@ -24,7 +24,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             }
         })) {
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -32,7 +32,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
         File[] docFiles = decompressDir.listFiles();
         if (docFiles == null || docFiles.length == 0) {
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -69,7 +69,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             if (docPage <= 0) {
                 deleteFile(getGenFilePath(fsFile));
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                updateFsFile(fsFile);
+                HttpUtils.updateFsFile(fsFile);
                 return;
             }
 

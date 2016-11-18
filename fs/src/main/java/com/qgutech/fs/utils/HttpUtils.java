@@ -108,14 +108,16 @@ public class HttpUtils {
     private static FsFile getFsFile(String fsFileId, int executeCnt) {
         long timestamp = System.currentTimeMillis();
         String serverHost = PropertiesUtils.getServerHost();
+        String serverCode = PropertiesUtils.getServerCode();
         String serverSecret = PropertiesUtils.getServerSecret();
-        String sign = Signer.sign(fsFileId, serverHost, serverSecret, timestamp);
+        String sign = Signer.sign(fsFileId, serverHost, serverCode, serverSecret, timestamp);
         Map<String, String> paramMap = new HashMap<String, String>(5);
         paramMap.put(FsFile._id, fsFileId);
         paramMap.put(FsFile._serverHost, serverHost);
+        paramMap.put(FsFile._serverCode, serverCode);
         paramMap.put(FsFile._timestamp, timestamp + StringUtils.EMPTY);
         paramMap.put(FsFile._sign, sign);
-        paramMap.put(FsFile._serverCode, PropertiesUtils.getServerCode());
+
         String fsFileJson;
         try {
             fsFileJson = HttpUtils.doPost(PropertiesUtils.getGetFileUrl(), paramMap);
@@ -142,5 +144,69 @@ public class HttpUtils {
         }
 
         return gson.fromJson(fsFileJson, FsFile.class);
+    }
+
+    public static String saveFsFile(FsFile fsFile) {
+        Assert.notNull(fsFile, "FsFile is null!");
+        String fsFileId = fsFile.getId();
+        if (StringUtils.isNotEmpty(fsFileId)) {
+            return fsFileId;
+        }
+
+        return saveFsFile(fsFile, 1);
+    }
+
+    private static String saveFsFile(FsFile fsFile, int executeCnt) {
+        long timestamp = System.currentTimeMillis();
+        fsFile.setTimestamp(timestamp);
+        String serverHost = PropertiesUtils.getServerHost();
+        fsFile.setServerHost(serverHost);
+        String serverCode = PropertiesUtils.getServerCode();
+        fsFile.setServerCode(serverCode);
+        fsFile.setSign(Signer.sign(serverHost, serverCode, PropertiesUtils.getServerSecret(), timestamp));
+        String fsFileId;
+        try {
+            fsFileId = HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
+        } catch (Exception e) {
+            if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
+                throw (RuntimeException) e;
+            }
+
+            return saveFsFile(fsFile, ++executeCnt);
+        }
+
+        return fsFileId;
+    }
+
+    public static String deleteFsFile(String fsFileId) {
+        if (StringUtils.isEmpty(fsFileId)) {
+            return null;
+        }
+
+        long timestamp = System.currentTimeMillis();
+        String serverHost = PropertiesUtils.getServerHost();
+        String serverCode = PropertiesUtils.getServerCode();
+        String sign = Signer.sign(fsFileId, serverHost, serverCode
+                , PropertiesUtils.getServerSecret(), timestamp);
+        Map<String, String> paramMap = new HashMap<String, String>(5);
+        paramMap.put(FsFile._id, fsFileId);
+        paramMap.put(FsFile._serverHost, serverHost);
+        paramMap.put(FsFile._serverCode, serverCode);
+        paramMap.put(FsFile._timestamp, timestamp + "");
+        paramMap.put(FsFile._sign, sign);
+
+        return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
+    }
+
+    public static String updateFsFile(FsFile fsFile) {
+        long timestamp = System.currentTimeMillis();
+        fsFile.setTimestamp(timestamp);
+        String serverHost = PropertiesUtils.getServerHost();
+        fsFile.setServerHost(serverHost);
+        String serverCode = PropertiesUtils.getServerCode();
+        fsFile.setServerCode(serverCode);
+        fsFile.setSign(Signer.sign(fsFile.getId(), serverHost, serverCode
+                , PropertiesUtils.getServerSecret(), timestamp));
+        return HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
     }
 }

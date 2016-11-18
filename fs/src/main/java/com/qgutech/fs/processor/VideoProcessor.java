@@ -97,7 +97,7 @@ public class VideoProcessor extends AbstractProcessor {
         } catch (Exception e) {
             deleteFile(genFilePath);
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            updateFsFile(fsFile);
+            HttpUtils.updateFsFile(fsFile);
 
             throw e;
         } finally {

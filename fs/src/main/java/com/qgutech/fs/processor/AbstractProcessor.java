@@ -73,7 +73,7 @@ public abstract class AbstractProcessor implements Processor {
             }
 
             fsFile.setStatus(ProcessStatusEnum.PROCESSING);
-            fsFileId = saveFsFile(fsFile);
+            fsFileId = HttpUtils.saveFsFile(fsFile);
             fsFile.setId(fsFileId);
             inputStream = new FileInputStream(tmpFilePath);
             originFilePath = getOriginFilePath(fsFile);
@@ -91,7 +91,7 @@ public abstract class AbstractProcessor implements Processor {
             deleteFile(originFilePath);
             deleteFile(tmpDir);
             deleteFile(getGenFilePath(fsFile));
-            deleteFsFile(fsFileId);//todo redis
+            HttpUtils.deleteFsFile(fsFileId);//todo redis
             throw e;
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -311,50 +311,6 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected final String deleteFsFile(String fsFileId) {
-        if (StringUtils.isEmpty(fsFileId)) {
-            return null;
-        }
-
-        long timestamp = System.currentTimeMillis();
-        String serverHost = PropertiesUtils.getServerHost();
-        String sign = Signer.sign(fsFileId, serverHost, PropertiesUtils.getServerSecret(), timestamp);
-        Map<String, String> paramMap = new HashMap<String, String>(5);
-        paramMap.put(FsFile._id, fsFileId);
-        paramMap.put(FsFile._timestamp, timestamp + "");
-        paramMap.put(FsFile._sign, sign);
-        paramMap.put(FsFile._serverHost, serverHost);
-        paramMap.put(FsFile._serverCode, PropertiesUtils.getServerCode());
-
-        return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
-    }
-
-    protected final String saveFsFile(FsFile fsFile) {
-        String fsFileId = fsFile.getId();
-        if (StringUtils.isNotEmpty(fsFileId)) {
-            return fsFileId;
-        }
-
-        long timestamp = System.currentTimeMillis();
-        fsFile.setTimestamp(timestamp);
-        String serverHost = PropertiesUtils.getServerHost();
-        fsFile.setServerHost(serverHost);
-        fsFile.setServerCode(PropertiesUtils.getServerCode());
-        fsFile.setSign(Signer.sign(serverHost, PropertiesUtils.getServerSecret(), timestamp));
-        return HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
-    }
-
-    protected final String updateFsFile(FsFile fsFile) {
-        long timestamp = System.currentTimeMillis();
-        fsFile.setTimestamp(timestamp);
-        String serverHost = PropertiesUtils.getServerHost();
-        fsFile.setServerHost(serverHost);
-        fsFile.setServerCode(PropertiesUtils.getServerCode());
-        fsFile.setSign(Signer.sign(fsFile.getId(), serverHost
-                , PropertiesUtils.getServerSecret(), timestamp));
-        return HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
-    }
-
     protected String getOriginFilePath(FsFile fsFile) {
         StringBuilder builder = new StringBuilder();
         builder.append(PropertiesUtils.getFileStoreDir()).append(fsFile.getCorpCode())
@@ -385,7 +341,7 @@ public abstract class AbstractProcessor implements Processor {
 
     protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        updateFsFile(fsFile);
+        HttpUtils.updateFsFile(fsFile);
     }
 
     protected final <T> void getFutures(List<Future<T>> futures) throws Exception {

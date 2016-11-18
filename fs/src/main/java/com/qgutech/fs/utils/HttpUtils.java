@@ -164,12 +164,23 @@ public class HttpUtils {
         String serverCode = PropertiesUtils.getServerCode();
         fsFile.setServerCode(serverCode);
         fsFile.setSign(Signer.sign(serverHost, serverCode, PropertiesUtils.getServerSecret(), timestamp));
+
         String fsFileId;
         try {
             fsFileId = HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
         } catch (Exception e) {
-            if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
+            if (executeCnt >= PropertiesUtils.getSaveFileMaxExecuteCnt()) {
                 throw (RuntimeException) e;
+            }
+
+            return saveFsFile(fsFile, ++executeCnt);
+        }
+
+        if (StringUtils.isEmpty(fsFileId) || FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileId)) {
+            if (executeCnt >= PropertiesUtils.getSaveFileMaxExecuteCnt()) {
+                throw new RuntimeException("Exception occurred when saving fsFile["
+                        + fsFile + "] by post request[url:" + PropertiesUtils.getSaveFileUrl()
+                        + ",executeCnt:" + executeCnt + "]!");
             }
 
             return saveFsFile(fsFile, ++executeCnt);
@@ -178,11 +189,15 @@ public class HttpUtils {
         return fsFileId;
     }
 
-    public static String deleteFsFile(String fsFileId) {
+    public static void deleteFsFile(String fsFileId) {
         if (StringUtils.isEmpty(fsFileId)) {
-            return null;
+            return;
         }
 
+        deleteFsFile(fsFileId, 1);
+    }
+
+    private static void deleteFsFile(String fsFileId, int executeCnt) {
         long timestamp = System.currentTimeMillis();
         String serverHost = PropertiesUtils.getServerHost();
         String serverCode = PropertiesUtils.getServerCode();
@@ -192,13 +207,39 @@ public class HttpUtils {
         paramMap.put(FsFile._id, fsFileId);
         paramMap.put(FsFile._serverHost, serverHost);
         paramMap.put(FsFile._serverCode, serverCode);
-        paramMap.put(FsFile._timestamp, timestamp + "");
+        paramMap.put(FsFile._timestamp, timestamp + StringUtils.EMPTY);
         paramMap.put(FsFile._sign, sign);
 
-        return HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
+        String receive;
+        try {
+            receive = HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
+        } catch (Exception e) {
+            if (executeCnt >= PropertiesUtils.getDeleteFileMaxExecuteCnt()) {
+                throw (RuntimeException) e;
+            }
+
+            deleteFsFile(fsFileId, ++executeCnt);
+            return;
+        }
+
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)) {
+            if (executeCnt >= PropertiesUtils.getDeleteFileMaxExecuteCnt()) {
+                throw new RuntimeException("Exception occurred when deleting fsFile["
+                        + paramMap + "] by post request[url:" + PropertiesUtils.getDeleteFileUrl()
+                        + ",executeCnt:" + executeCnt + "]!");
+            }
+
+            deleteFsFile(fsFileId, ++executeCnt);
+        }
     }
 
-    public static String updateFsFile(FsFile fsFile) {
+    public static void updateFsFile(FsFile fsFile) {
+        Assert.notNull(fsFile, "FsFile is null!");
+        Assert.hasText(fsFile.getId(), "FsFile's id is empty!");
+        updateFsFile(fsFile, 1);
+    }
+
+    private static void updateFsFile(FsFile fsFile, int executeCnt) {
         long timestamp = System.currentTimeMillis();
         fsFile.setTimestamp(timestamp);
         String serverHost = PropertiesUtils.getServerHost();
@@ -207,6 +248,26 @@ public class HttpUtils {
         fsFile.setServerCode(serverCode);
         fsFile.setSign(Signer.sign(fsFile.getId(), serverHost, serverCode
                 , PropertiesUtils.getServerSecret(), timestamp));
-        return HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
+        String receive;
+        try {
+            receive = HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
+        } catch (Exception e) {
+            if (executeCnt >= PropertiesUtils.getUpdateFileMaxExecuteCnt()) {
+                throw (RuntimeException) e;
+            }
+
+            updateFsFile(fsFile, ++executeCnt);
+            return;
+        }
+
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)) {
+            if (executeCnt >= PropertiesUtils.getUpdateFileMaxExecuteCnt()) {
+                throw new RuntimeException("Exception occurred when updating fsFile["
+                        + fsFile + "] by post request[url:" + PropertiesUtils.getUpdateFileUrl()
+                        + ",executeCnt:" + executeCnt + "]!");
+            }
+
+            updateFsFile(fsFile, ++executeCnt);
+        }
     }
 }

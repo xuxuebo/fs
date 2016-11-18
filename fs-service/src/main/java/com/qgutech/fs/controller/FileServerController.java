@@ -106,7 +106,6 @@ public class FileServerController {
 
             dbFsFile.merge(fsFile);
             fsFileService.update(dbFsFile);
-            writer.print(FsConstants.RESPONSE_RESULT_SUCCESS);
         } catch (Exception e) {
             LOG.error("Exception occurred  when updating fsFile[" + fsFile + "]!", e);
             writer.print(FsConstants.RESPONSE_RESULT_ERROR);

@@ -27,7 +27,11 @@ public interface FsConstants {
     String UNDERLINE = "_";
     String DEFAULT_CORP_CODE = "default";
     String RESPONSE_RESULT_ERROR = "error";
-    String RESPONSE_RESULT_SUCCESS = "success";
+    String RESPONSE_RESULT_PARAM_ILLEGAL = "param_illegal";
+    String RESPONSE_RESULT_TIME_OUT = "time_out";
+    String RESPONSE_RESULT_SERVER_NOT_EXIST = "server_not_exist";
+    String RESPONSE_RESULT_SIGN_ERROR = "sign_error";
+    String RESPONSE_RESULT_FS_FILE_NOT_EXIST = "fs_file_not_exist";
     String COMPRESS_FILE_SUFFIX_ZIP = "zip";
     String COMPRESS_FILE_SUFFIX_7Z = "7z";
     String COMPRESS_FILE_SUFFIX_RAR = "rar";

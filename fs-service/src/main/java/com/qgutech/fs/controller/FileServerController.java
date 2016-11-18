@@ -100,7 +100,7 @@ public class FileServerController {
             FsFile dbFsFile = fsFileService.get(fsFileId);
             if (dbFsFile == null) {
                 LOG.error("FsFile[id:" + fsFileId + "] not exist when updating fsFile!");
-                writer.print(FsConstants.RESPONSE_RESULT_ERROR);
+                writer.print(FsConstants.RESPONSE_RESULT_FS_FILE_NOT_EXIST);
                 return;
             }
 
@@ -126,7 +126,7 @@ public class FileServerController {
             LOG.error("One of the param[sign:" + sign + ",serverHost:" + serverHost + ",timestamp:"
                     + timestamp + (checkFsFileId ? (",id:" + fsFileId) : StringUtils.EMPTY)
                     + ",serverCode:" + serverCode + "] is null or empty!");
-            writer.write(FsConstants.RESPONSE_RESULT_ERROR);
+            writer.write(FsConstants.RESPONSE_RESULT_PARAM_ILLEGAL);
             return false;
         }
 
@@ -136,7 +136,7 @@ public class FileServerController {
             LOG.error("The request timeout because of  the current timestamp[" + timeMillis
                     + "] subtract param timestamp[" + timestamp
                     + "] bigger than maxWaitTime[" + maxWaitForRequest + "]!");
-            writer.write(FsConstants.RESPONSE_RESULT_ERROR);
+            writer.write(FsConstants.RESPONSE_RESULT_TIME_OUT);
             return false;
         }
 
@@ -144,7 +144,7 @@ public class FileServerController {
         if (fsServer == null) {
             LOG.error("Can not find a fs server which  host is "
                     + serverHost + " and serverCode is " + serverCode + " !");
-            writer.write(FsConstants.RESPONSE_RESULT_ERROR);
+            writer.write(FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST);
             return false;
         }
 
@@ -156,7 +156,7 @@ public class FileServerController {
                     + (checkFsFileId ? (",id:" + fsFileId) : StringUtils.EMPTY)
                     + ",serverHost:" + serverHost + ",timestamp:" + timestamp
                     + ",secret:" + secret + "] is not equal the param sign[sign:" + sign + "]!");
-            writer.write(FsConstants.RESPONSE_RESULT_ERROR);
+            writer.write(FsConstants.RESPONSE_RESULT_SIGN_ERROR);
             return false;
         }
 

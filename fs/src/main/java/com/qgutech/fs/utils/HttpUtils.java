@@ -133,14 +133,23 @@ public class HttpUtils {
             return null;
         }
 
-        if (FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileJson)) {
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileJson)
+                || FsConstants.RESPONSE_RESULT_TIME_OUT.equals(fsFileJson)) {
             if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
-                throw new RuntimeException("Exception occurred when getting fsFile[id:"
-                        + fsFileId + "] by post request[url:" + PropertiesUtils.getGetFileUrl()
-                        + ",executeCnt:" + executeCnt + "]!");
+                throw new RuntimeException("Exception occurred when getting fsFile["
+                        + paramMap + "] by post request[url:" + PropertiesUtils.getGetFileUrl()
+                        + ",executeCnt:" + executeCnt + ",errorCode:" + fsFileJson + "]!");
             }
 
             return getFsFile(fsFileId, ++executeCnt);
+        }
+
+        if (FsConstants.RESPONSE_RESULT_PARAM_ILLEGAL.equals(fsFileJson)
+                || FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST.equals(fsFileJson)
+                || FsConstants.RESPONSE_RESULT_SIGN_ERROR.equals(fsFileJson)) {
+            throw new RuntimeException("Exception occurred when getting fsFile["
+                    + paramMap + "] by post request[url:" + PropertiesUtils.getGetFileUrl()
+                    + ",executeCnt:" + executeCnt + ",errorCode:" + fsFileJson + "]!");
         }
 
         return gson.fromJson(fsFileJson, FsFile.class);
@@ -176,14 +185,24 @@ public class HttpUtils {
             return saveFsFile(fsFile, ++executeCnt);
         }
 
-        if (StringUtils.isEmpty(fsFileId) || FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileId)) {
+        if (StringUtils.isEmpty(fsFileId)
+                || FsConstants.RESPONSE_RESULT_ERROR.equals(fsFileId)
+                || FsConstants.RESPONSE_RESULT_TIME_OUT.equals(fsFileId)) {
             if (executeCnt >= PropertiesUtils.getSaveFileMaxExecuteCnt()) {
                 throw new RuntimeException("Exception occurred when saving fsFile["
                         + fsFile + "] by post request[url:" + PropertiesUtils.getSaveFileUrl()
-                        + ",executeCnt:" + executeCnt + "]!");
+                        + ",executeCnt:" + executeCnt + ",errorCode:" + fsFileId + "]!");
             }
 
             return saveFsFile(fsFile, ++executeCnt);
+        }
+
+        if (FsConstants.RESPONSE_RESULT_PARAM_ILLEGAL.equals(fsFileId)
+                || FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST.equals(fsFileId)
+                || FsConstants.RESPONSE_RESULT_SIGN_ERROR.equals(fsFileId)) {
+            throw new RuntimeException("Exception occurred when saving fsFile["
+                    + fsFile + "] by post request[url:" + PropertiesUtils.getSaveFileUrl()
+                    + ",executeCnt:" + executeCnt + ",errorCode:" + fsFileId + "]!");
         }
 
         return fsFileId;
@@ -222,14 +241,24 @@ public class HttpUtils {
             return;
         }
 
-        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)) {
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)
+                || FsConstants.RESPONSE_RESULT_TIME_OUT.equals(receive)) {
             if (executeCnt >= PropertiesUtils.getDeleteFileMaxExecuteCnt()) {
                 throw new RuntimeException("Exception occurred when deleting fsFile["
                         + paramMap + "] by post request[url:" + PropertiesUtils.getDeleteFileUrl()
-                        + ",executeCnt:" + executeCnt + "]!");
+                        + ",executeCnt:" + executeCnt + ",errorCode:" + receive + "]!");
             }
 
             deleteFsFile(fsFileId, ++executeCnt);
+            return;
+        }
+
+        if (FsConstants.RESPONSE_RESULT_PARAM_ILLEGAL.equals(receive)
+                || FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST.equals(receive)
+                || FsConstants.RESPONSE_RESULT_SIGN_ERROR.equals(receive)) {
+            throw new RuntimeException("Exception occurred when deleting fsFile["
+                    + paramMap + "] by post request[url:" + PropertiesUtils.getDeleteFileUrl()
+                    + ",executeCnt:" + executeCnt + ",errorCode:" + receive + "]!");
         }
     }
 
@@ -260,14 +289,24 @@ public class HttpUtils {
             return;
         }
 
-        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)) {
+        if (FsConstants.RESPONSE_RESULT_ERROR.equals(receive)
+                || FsConstants.RESPONSE_RESULT_TIME_OUT.equals(receive)) {
             if (executeCnt >= PropertiesUtils.getUpdateFileMaxExecuteCnt()) {
                 throw new RuntimeException("Exception occurred when updating fsFile["
                         + fsFile + "] by post request[url:" + PropertiesUtils.getUpdateFileUrl()
-                        + ",executeCnt:" + executeCnt + "]!");
+                        + ",executeCnt:" + executeCnt + ",errorCode:" + receive + "]!");
             }
 
             updateFsFile(fsFile, ++executeCnt);
+            return;
+        }
+
+        if (FsConstants.RESPONSE_RESULT_PARAM_ILLEGAL.equals(receive)
+                || FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST.equals(receive)
+                || FsConstants.RESPONSE_RESULT_SIGN_ERROR.equals(receive)) {
+            throw new RuntimeException("Exception occurred when updating fsFile["
+                    + fsFile + "] by post request[url:" + PropertiesUtils.getUpdateFileUrl()
+                    + ",executeCnt:" + executeCnt + ",errorCode:" + receive + "]!");
         }
     }
 }

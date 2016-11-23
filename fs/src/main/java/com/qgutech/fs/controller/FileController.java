@@ -1,11 +1,15 @@
 package com.qgutech.fs.controller;
 
 import com.qgutech.fs.domain.FsFile;
+import com.qgutech.fs.domain.SignLevelEnum;
 import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
 import com.qgutech.fs.utils.CustomDomainUtil;
 import com.qgutech.fs.utils.FsConstants;
+import com.qgutech.fs.utils.MimeUtils;
 import com.qgutech.fs.utils.PropertiesUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 @Controller
 @DependsOn({"propertiesUtils"})
@@ -96,14 +103,42 @@ public class FileController {
         return null;
     }
 
-    @RequestMapping("/getFile/*")
-    public String getFile(FsFile fsFile, HttpServletResponse response) {
+    @RequestMapping("/getFile/**")
+    public void getFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (!PropertiesUtils.isDownload()) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            return;
         }
 
-        return null;
+        String requestURI = request.getRequestURI();
+        String signLevel = PropertiesUtils.getSignLevel();
+        String validSegment = FsConstants.FILE_URL_COMMON
+                + signLevel + FsConstants.PATH_SEPARATOR;
+        int position = requestURI.indexOf(validSegment);
+        if (position < 0 || position > (requestURI.length() - validSegment.length())) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        if (SignLevelEnum.nn.name().equals(signLevel)) {
+            File file = new File(PropertiesUtils.getFileStoreDir()
+                    , requestURI.substring(position + validSegment.length()));
+            String extension = FilenameUtils.getExtension(file.getName());
+            if (!file.exists() || StringUtils.isEmpty(extension)) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            response.setContentType(MimeUtils.getContentTypeByExt(extension));
+            InputStream inputStream = null;
+            try {
+                inputStream = new FileInputStream(file);
+                response.setContentLength((int) file.length());
+                IOUtils.copy(inputStream, response.getOutputStream());
+            } finally {
+                IOUtils.closeQuietly(inputStream);
+            }
+        }
     }
 
     @RequestMapping("/downloadFile/*")
@@ -144,5 +179,8 @@ public class FileController {
         return null;
     }
 
-
+    public static void main(String[] args) {
+        long length = new File("C:\\Users\\Administrator\\Desktop\\test\\3.png").length();
+        System.out.println(length);
+    }
 }

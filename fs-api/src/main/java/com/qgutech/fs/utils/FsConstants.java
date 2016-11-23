@@ -40,4 +40,5 @@ public interface FsConstants {
     String RESPONSE_FORMAT_JSON = "json";
     String RESPONSE_FORMAT_HTML = "html";
     String RESPONSE_FORMAT_XML = "xml";
+    String FILE_URL_COMMON = "/file/getFile/";
 }

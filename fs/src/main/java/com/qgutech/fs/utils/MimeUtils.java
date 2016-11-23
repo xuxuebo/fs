@@ -8,6 +8,7 @@ import java.util.Properties;
 public class MimeUtils {
 
     private static final Properties properties = new Properties();
+    public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     static {
         InputStream resourceAsStream = MimeUtils.class.getClassLoader()
@@ -25,9 +26,9 @@ public class MimeUtils {
 
     public static String getContentTypeByExt(String ext) {
         if (StringUtils.isEmpty(ext)) {
-            return null;
+            return DEFAULT_CONTENT_TYPE;
         }
 
-        return properties.getProperty(ext);
+        return properties.getProperty(ext, DEFAULT_CONTENT_TYPE);
     }
 }

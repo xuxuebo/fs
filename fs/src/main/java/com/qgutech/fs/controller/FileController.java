@@ -185,11 +185,12 @@ public class FileController {
         String signLevel = PropertiesUtils.getSignLevel();
         String checkSeg = (download ? FsConstants.FILE_URL_DOWNLOAD_FILE : FsConstants.FILE_URL_GET_FILE)
                 + signLevel + FsConstants.PATH_SEPARATOR;
-        int pos = requestURI.indexOf(checkSeg) + checkSeg.length();
-        if (pos < 0 || pos >= requestURI.length()) {
+        int pos = requestURI.indexOf(checkSeg);
+        if (pos < 0 || (pos + checkSeg.length()) >= requestURI.length()) {
             return false;
         }
 
+        pos += checkSeg.length();
         if (SignLevelEnum.nn.name().equals(signLevel)) {
             return true;
         }

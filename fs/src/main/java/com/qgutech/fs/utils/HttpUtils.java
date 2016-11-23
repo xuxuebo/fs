@@ -18,6 +18,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -308,5 +309,27 @@ public class HttpUtils {
                     + fsFile + "] by post request[url:" + PropertiesUtils.getUpdateFileUrl()
                     + ",executeCnt:" + executeCnt + ",errorCode:" + receive + "]!");
         }
+    }
+
+    public static String getRealRemoteAddress(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        return getRealRemoteAddress(remoteAddr, xForwardedFor);
+    }
+
+    public static String getRealRemoteAddress(String remoteAddr, String xForwardedFor) {
+        if (StringUtils.isEmpty(remoteAddr) || remoteAddr.startsWith("127.")
+                || remoteAddr.startsWith("10.") || remoteAddr.startsWith("192.")) {
+            if (StringUtils.isNotEmpty(xForwardedFor)) {
+                int pos = xForwardedFor.indexOf(',');
+                if (pos == -1) {
+                    remoteAddr = xForwardedFor.trim();
+                } else {
+                    remoteAddr = xForwardedFor.substring(0, pos).trim();
+                }
+            }
+        }
+
+        return remoteAddr;
     }
 }

@@ -39,7 +39,7 @@ public class Signer {
 
         SignLevelEnum signLevel = fsServer.getSignLevel();
         String signingText;
-        long timestamp;
+        long timestamp = fsFile.getTimestamp() != null ? fsFile.getTimestamp() : System.currentTimeMillis();
         switch (signLevel) {
             case nn:
                 return signLevel.name();
@@ -53,8 +53,6 @@ public class Signer {
                         + FsConstants.VERTICAL_LINE + fsServer.getSecret();
                 return signLevel.name() + FsConstants.PATH_SEPARATOR + md5(signingText);
             case stt:
-                timestamp = System.currentTimeMillis();
-                timestamp = timestamp / 1800000 * 1800000 + 280000;
                 signingText = fsServer.getSecret()
                         + FsConstants.VERTICAL_LINE + timestamp
                         + FsConstants.VERTICAL_LINE + fsServer.getHost()
@@ -70,8 +68,6 @@ public class Signer {
                 return signLevel.name() + FsConstants.PATH_SEPARATOR + session;
             case sts:
                 Assert.hasText(session, "Session is empty!");
-                timestamp = System.currentTimeMillis();
-                timestamp = timestamp / 1800000 * 1800000 + 280000;
                 signingText = fsServer.getSecret()
                         + FsConstants.VERTICAL_LINE + timestamp
                         + FsConstants.VERTICAL_LINE + session

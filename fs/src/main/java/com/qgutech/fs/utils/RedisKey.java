@@ -13,4 +13,5 @@ public interface RedisKey {
     String FS_DOING_LIST_SUFFIX = "_doing";
     String FS_DOING_LIST_LOCK_SUFFIX = "_lock";
     String FS_FILE_CONTENT_PREFIX = "fs_file_content_prefix_";
+    String FS_CHECK_SESSION_RESULT = "fs_check_session_result_";
 }

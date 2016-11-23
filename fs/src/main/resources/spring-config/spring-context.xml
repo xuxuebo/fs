@@ -50,6 +50,10 @@
         <property name="backUri" value="${fs.backUri}"/>
         <property name="httpProtocol" value="${fs.httpProtocol}"/>
         <property name="canOutputDocumentDomain" value="${fs.canOutputDocumentDomain}"/>
+        <property name="checkSessionUrl" value="${fs.checkSessionUrl}"/>
+        <property name="checkSessionSecret" value="${fs.checkSessionSecret}"/>
+        <property name="checkSessionCorrectResult" value="${fs.checkSessionCorrectResult}"/>
+        <property name="checkSessionCacheTime" value="${fs.checkSessionCacheTime}"/>
     </bean>
 
     <!-- jedis连接池 -->

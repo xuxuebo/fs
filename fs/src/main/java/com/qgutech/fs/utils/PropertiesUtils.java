@@ -28,7 +28,11 @@ public class PropertiesUtils {
     private static int getFileMaxExecuteCnt;
     private static int saveFileMaxExecuteCnt;
     private static int deleteFileMaxExecuteCnt;
-    private static int updateFileMaxExecuteCnt ;
+    private static int updateFileMaxExecuteCnt;
+    private static String checkSessionUrl;
+    private static String checkSessionSecret;
+    private static String checkSessionCorrectResult;
+    private static int checkSessionCacheTime;
 
     public static String getServerCode() {
         return serverCode;
@@ -244,5 +248,37 @@ public class PropertiesUtils {
 
     public void setUpdateFileMaxExecuteCnt(int updateFileMaxExecuteCnt) {
         PropertiesUtils.updateFileMaxExecuteCnt = updateFileMaxExecuteCnt;
+    }
+
+    public static String getCheckSessionUrl() {
+        return checkSessionUrl;
+    }
+
+    public void setCheckSessionUrl(String checkSessionUrl) {
+        PropertiesUtils.checkSessionUrl = checkSessionUrl;
+    }
+
+    public static String getCheckSessionSecret() {
+        return checkSessionSecret;
+    }
+
+    public void setCheckSessionSecret(String checkSessionSecret) {
+        PropertiesUtils.checkSessionSecret = checkSessionSecret;
+    }
+
+    public static String getCheckSessionCorrectResult() {
+        return checkSessionCorrectResult;
+    }
+
+    public void setCheckSessionCorrectResult(String checkSessionCorrectResult) {
+        PropertiesUtils.checkSessionCorrectResult = checkSessionCorrectResult;
+    }
+
+    public static int getCheckSessionCacheTime() {
+        return checkSessionCacheTime;
+    }
+
+    public void setCheckSessionCacheTime(int checkSessionCacheTime) {
+        PropertiesUtils.checkSessionCacheTime = checkSessionCacheTime;
     }
 }

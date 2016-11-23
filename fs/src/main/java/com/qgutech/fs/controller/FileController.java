@@ -113,25 +113,39 @@ public class FileController {
 
     @RequestMapping("/getFile/**")
     public void getFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        getFile(request, response, false);
+    }
+
+
+    @RequestMapping("/downloadFile/**")
+    public void downloadFile(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        getFile(request, response, true);
+    }
+
+    private void getFile(HttpServletRequest request, HttpServletResponse response
+            , boolean download) throws Exception {
         if (!PropertiesUtils.isDownload()) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         String requestURI = URL_CODEC.decode(request.getRequestURI());
-        if (!checkAuth(requestURI, request)) {
+        FsFile fsFile = new FsFile();
+        if (!checkAuth(download, requestURI, fsFile, request)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         String signLevel = PropertiesUtils.getSignLevel();
-        String checkSeg = FsConstants.FILE_URL_COMMON + signLevel + FsConstants.PATH_SEPARATOR;
+        String checkSeg = (download ? FsConstants.FILE_URL_DOWNLOAD_FILE : FsConstants.FILE_URL_GET_FILE)
+                + signLevel + FsConstants.PATH_SEPARATOR;
         int pos = requestURI.indexOf(checkSeg) + checkSeg.length();
         if (!SignLevelEnum.nn.name().equals(signLevel)) {
             pos = requestURI.indexOf(FsConstants.PATH_SEPARATOR, pos);
         }
 
-        File file = new File(PropertiesUtils.getFileStoreDir(), requestURI.substring(pos));
+        String path = requestURI.substring(pos);
+        File file = new File(PropertiesUtils.getFileStoreDir(), path);
         String extension = FilenameUtils.getExtension(file.getName());
         if (!file.exists() || StringUtils.isEmpty(extension)) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -139,19 +153,38 @@ public class FileController {
         }
 
         response.setContentType(MimeUtils.getContentTypeByExt(extension));
+        response.setContentLength((int) file.length());
+        if (download) {
+            String srcFile = FsConstants.PATH_SEPARATOR + FsConstants.FILE_DIR_SRC
+                    + FsConstants.PATH_SEPARATOR;
+            String filename = file.getName();
+            if (path.contains(srcFile)) {
+                FsFile originFsFile = HttpUtils.getFsFile(fsFile.getId());
+                if (originFsFile == null) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+
+                filename = originFsFile.getStoredFileName();
+            }
+
+            response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+        }
+
         InputStream inputStream = null;
         try {
             inputStream = new FileInputStream(file);
-            response.setContentLength((int) file.length());
             IOUtils.copy(inputStream, response.getOutputStream());
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
     }
 
-    private boolean checkAuth(String requestURI, HttpServletRequest request) {
+    private boolean checkAuth(boolean download, String requestURI, FsFile fsFile
+            , HttpServletRequest request) {
         String signLevel = PropertiesUtils.getSignLevel();
-        String checkSeg = FsConstants.FILE_URL_COMMON + signLevel + FsConstants.PATH_SEPARATOR;
+        String checkSeg = (download ? FsConstants.FILE_URL_DOWNLOAD_FILE : FsConstants.FILE_URL_GET_FILE)
+                + signLevel + FsConstants.PATH_SEPARATOR;
         int pos = requestURI.indexOf(checkSeg) + checkSeg.length();
         if (pos < 0 || pos >= requestURI.length()) {
             return false;
@@ -177,11 +210,9 @@ public class FileController {
             return false;
         }
 
-        FsFile fsFile = new FsFile();
         fsFile.setCorpCode(matcher.group(1));
         fsFile.setAppCode(matcher.group(2));
         fsFile.setId(matcher.group(3));
-
         long timestamp;
         String session = null;
         SignLevelEnum signLevelEnum = SignLevelEnum.valueOf(signLevel);
@@ -265,16 +296,6 @@ public class FileController {
         }
 
         return checkSessionResult;
-    }
-
-    @RequestMapping("/downloadFile/*")
-    public String downloadFile(FsFile fsFile, HttpServletResponse response) {
-        if (!PropertiesUtils.isDownload()) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
-        }
-
-        return null;
     }
 
     @RequestMapping("/cutImage")

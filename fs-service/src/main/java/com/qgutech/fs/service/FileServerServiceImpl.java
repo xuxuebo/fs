@@ -89,7 +89,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             String fsFileId = fsFile.getId();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_SRC);
@@ -161,7 +161,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             StringBuilder sb = new StringBuilder();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
@@ -257,7 +257,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             StringBuilder sb = new StringBuilder();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
@@ -343,7 +343,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             String fsFileId = fsFile.getId();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
@@ -406,7 +406,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             StringBuilder sb = new StringBuilder();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
@@ -449,7 +449,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             StringBuilder builder = new StringBuilder();
             FsServer fsServer = fileIdFsServerMap.get(fsFileId);
             builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PropertiesUtils.getServerName()).append(PATH_SEPARATOR)
+                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
                     .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
                     .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
                     .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)

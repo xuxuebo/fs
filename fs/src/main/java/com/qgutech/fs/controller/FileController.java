@@ -2,6 +2,7 @@ package com.qgutech.fs.controller;
 
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.FsServer;
+import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.SignLevelEnum;
 import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
@@ -59,6 +60,11 @@ public class FileController {
             LOG.error("Exception occurred when processing upload file[" + fsFile + "]!", e);
         }
 
+        responseResult(fsFile, request, response);
+    }
+
+    private void responseResult(FsFile fsFile, HttpServletRequest request
+            , HttpServletResponse response) throws Exception {
         response.setContentType(MediaType.TEXT_HTML_VALUE + ";charset=utf-8");
         String responseFormat = fsFile.getResponseFormat();
         if (FsConstants.RESPONSE_FORMAT_HTML.equals(responseFormat)) {
@@ -69,6 +75,7 @@ public class FileController {
             response.getWriter().write(fsFile.toJson());
         }
     }
+
 
     private String getDomain(HttpServletRequest request) {
         if (!PropertiesUtils.isCanOutputDocumentDomain()) {
@@ -300,16 +307,66 @@ public class FileController {
     }
 
     @RequestMapping("/cutImage")
-    public String cutImage(FsFile fsFile, HttpServletResponse response) {
+    public void cutImage(FsFile fsFile, HttpServletRequest request
+            , HttpServletResponse response) throws Exception {
         if (!PropertiesUtils.isUpload()) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return null;
+            return;
         }
 
         String fsFileId = fsFile.getId();
+        Integer x = fsFile.getX();
+        Integer y = fsFile.getY();
+        Integer w = fsFile.getW();
+        Integer h = fsFile.getH();
+        if (StringUtils.isEmpty(fsFileId)
+                || x == null || y == null || w == null || h == null) {
+            LOG.error("Param[id:" + fsFileId + ",x:" + x + ",y:" + y
+                    + ",w:" + w + ",h:" + h + "] is illegally when cutting image!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param is illegally!");
+            responseResult(fsFile, request, response);
+            return;
+        }
 
+        FsFile dbFsFile = HttpUtils.getFsFile(fsFileId);
+        if (dbFsFile == null) {
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("File not exist!");
+            responseResult(fsFile, request, response);
+            return;
+        }
 
-        return null;
+        String imagePath = PathUtils.getImagePath(dbFsFile);
+        if (StringUtils.isEmpty(imagePath)) {
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("File not an image!");
+            responseResult(fsFile, request, response);
+            return;
+        }
+
+        File originImageFile = new File(PropertiesUtils.getFileStoreDir(), imagePath);
+        if (!originImageFile.exists()) {
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Image not exist!");
+            responseResult(fsFile, request, response);
+            return;
+        }
+
+        String imageName = x + "*" + y + "*" + w + "*" + h
+                + "*" + FsConstants.DEFAULT_IMAGE_SUFFIX;
+        fsFile.setStoredFileName(imageName);
+        File imageFile = new File(originImageFile.getParent(), imageName);
+        if (!imageFile.exists()) {
+            FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i"
+                    , originImageFile.getAbsolutePath(), "-vf"
+                    , "crop=" + w + ":" + h + ":" + x + ":" + y, "-y"
+                    , imageFile.getAbsolutePath()});
+        }
+
+        fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+        fsFile.setProcessMsg("Cutting image successfully!");
+        responseResult(fsFile, request, response);
     }
 
     @RequestMapping("/reprocessFile")

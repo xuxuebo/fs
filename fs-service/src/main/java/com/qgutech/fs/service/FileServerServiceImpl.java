@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service("fileServerService")
-public class FileServerServiceImpl implements FileServerService, FsConstants {
+public class FileServerServiceImpl implements FileServerService {
 
     @Resource
     private FsFileService fsFileService;
@@ -40,7 +40,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         for (FsServer fsServer : serverList) {
             String corpCode = fsServer.getCorpCode();
             String serverCode = fsServer.getServerCode();
-            String corpServerCodeKey = corpCode + VERTICAL_LINE + serverCode;
+            String corpServerCodeKey = corpCode + FsConstants.VERTICAL_LINE + serverCode;
             List<FsServer> fsServers = corpServerCodeFsServersMap.get(corpServerCodeKey);
             if (fsServers == null) {
                 fsServers = new ArrayList<FsServer>();
@@ -54,10 +54,11 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         for (FsFile fsFile : fsFiles) {
             String corpCode = fsFile.getCorpCode();
             String serverCode = fsFile.getServerCode();
-            String corpServerCodeKey = corpCode + VERTICAL_LINE + serverCode;
+            String corpServerCodeKey = corpCode + FsConstants.VERTICAL_LINE + serverCode;
             List<FsServer> fsServers = corpServerCodeFsServersMap.get(corpServerCodeKey);
             if (CollectionUtils.isEmpty(fsServers)) {
-                fsServers = corpServerCodeFsServersMap.get(DEFAULT_CORP_CODE + VERTICAL_LINE + serverCode);
+                fsServers = corpServerCodeFsServersMap.get(FsConstants.DEFAULT_CORP_CODE
+                        + FsConstants.VERTICAL_LINE + serverCode);
             }
 
             Assert.notEmpty(fsServers, "Both default and " + corpCode +
@@ -195,13 +196,13 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, String> batchAudioUrlMap = new HashMap<String, String>(batchAudioUrlsMap.size());
-        for (String storedFileId : fsFileIdList) {
-            List<String> audioUrls = batchAudioUrlsMap.get(storedFileId);
+        for (String fsFileId : fsFileIdList) {
+            List<String> audioUrls = batchAudioUrlsMap.get(fsFileId);
             if (CollectionUtils.isEmpty(audioUrls)) {
                 continue;
             }
 
-            batchAudioUrlMap.put(storedFileId, audioUrls.get(0));
+            batchAudioUrlMap.put(fsFileId, audioUrls.get(0));
         }
 
         return batchAudioUrlMap;
@@ -216,44 +217,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        Map<String, List<String>> batchAudioUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
-        for (FsFile fsFile : fsFiles) {
-            ProcessorTypeEnum processor = fsFile.getProcessor();
-            if (!ProcessorTypeEnum.AUD.equals(processor)
-                    && !ProcessorTypeEnum.ZAUD.equals(processor)) {
-                continue;
-            }
-
-            StringBuilder sb = new StringBuilder();
-            String fsFileId = fsFile.getId();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
-                    .append(PATH_SEPARATOR).append(DEFAULT_AUDIO_TYPE).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(fsFileId);
-            Integer subFileCount = fsFile.getSubFileCount();
-            subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
-            List<String> audioUrls = new ArrayList<String>(subFileCount);
-            for (int i = 0; i < subFileCount; i++) {
-                StringBuilder builder = new StringBuilder();
-                if (ProcessorTypeEnum.ZAUD.equals(processor)) {
-                    builder.append(PATH_SEPARATOR).append(i + 1);
-                }
-
-                builder.append(PATH_SEPARATOR).append(DEFAULT_AUDIO_NAME);
-                audioUrls.add(sb.toString() + builder.toString());
-                builder.delete(0, builder.length());
-            }
-
-            sb.delete(0, sb.length());
-            batchAudioUrlsMap.put(fsFileId, audioUrls);
-        }
-
-        return batchAudioUrlsMap;
+        return PathUtils.getBatchAudioUrlsMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
     }
 
     @Override
@@ -313,9 +278,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         List<FsFile> zips = new ArrayList<FsFile>();
         List<FsFile> images = new ArrayList<FsFile>();
         List<FsFile> videos = new ArrayList<FsFile>();
-        List<String> audios = new ArrayList<String>();
+        List<FsFile> audios = new ArrayList<FsFile>();
         for (FsFile fsFile : fsFiles) {
-            String fsFileId = fsFile.getId();
             switch (fsFile.getProcessor()) {
                 case FILE:
                     files.add(fsFile);
@@ -342,10 +306,10 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                     videos.add(fsFile);
                     break;
                 case AUD:
-                    audios.add(fsFileId);
+                    audios.add(fsFile);
                     break;
                 case ZAUD:
-                    audios.add(fsFileId);
+                    audios.add(fsFile);
                     break;
             }
         }
@@ -396,7 +360,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         if (CollectionUtils.isNotEmpty(audios)) {
-            Map<String, String> batchAudioUrlMap = getBatchAudioUrlMap(audios);
+            Map<String, String> batchAudioUrlMap = PathUtils.getBatchAudioUrlMap(audios
+                    , fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchAudioUrlMap)) {
                 batchFileUrlMap.putAll(batchAudioUrlMap);
             }
@@ -461,7 +426,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
                 continue;
             }
 
-            String[] subFileCountList = subFileCounts.split(VERTICAL_LINE_REGEX);
+            String[] subFileCountList = subFileCounts.split(FsConstants.VERTICAL_LINE_REGEX);
             List<Long> subCounts = new ArrayList<Long>(subFileCountList.length);
             for (String subCount : subFileCountList) {
                 subCounts.add(Long.parseLong(subCount));

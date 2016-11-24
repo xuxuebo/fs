@@ -534,4 +534,148 @@ public class PathUtils implements UriUtils, FsConstants {
 
         return batchVideoCoverUrlsMap;
     }
+
+    public static String getAudioPath(FsFile fsFile) {
+        List<String> audioPaths = getAudioPaths(fsFile);
+        if (CollectionUtils.isEmpty(audioPaths)) {
+            return null;
+        }
+
+        return audioPaths.get(0);
+    }
+
+    public static List<String> getAudioPaths(FsFile fsFile) {
+        return getBatchAudioPathsMap(Arrays.asList(fsFile)).get(fsFile.getId());
+    }
+
+    public static Map<String, String> getBatchAudioPathMap(List<FsFile> fsFiles) {
+        Map<String, List<String>> batchAudioPathsMap = getBatchAudioPathsMap(fsFiles);
+        if (MapUtils.isEmpty(batchAudioPathsMap)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchAudioPathMap = new HashMap<String, String>(batchAudioPathsMap.size());
+        for (Map.Entry<String, List<String>> entry : batchAudioPathsMap.entrySet()) {
+            List<String> audioPaths = entry.getValue();
+            if (CollectionUtils.isEmpty(audioPaths)) {
+                continue;
+            }
+
+            batchAudioPathMap.put(entry.getKey(), audioPaths.get(0));
+        }
+
+        return batchAudioPathMap;
+    }
+
+    public static Map<String, List<String>> getBatchAudioPathsMap(List<FsFile> fsFiles) {
+        Map<String, List<String>> batchAudioPathsMap = new HashMap<String, List<String>>(fsFiles.size());
+        for (FsFile fsFile : fsFiles) {
+            ProcessorTypeEnum processor = fsFile.getProcessor();
+            if (!ProcessorTypeEnum.AUD.equals(processor)
+                    && !ProcessorTypeEnum.ZAUD.equals(processor)) {
+                continue;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            String fsFileId = fsFile.getId();
+            sb.append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
+                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
+                    .append(PATH_SEPARATOR).append(DEFAULT_AUDIO_TYPE).append(PATH_SEPARATOR)
+                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
+                    .append(PATH_SEPARATOR).append(fsFileId);
+            Integer subFileCount = fsFile.getSubFileCount();
+            subFileCount = subFileCount == null || subFileCount <= 0 ? 1 : subFileCount;
+            List<String> audioPaths = new ArrayList<String>(subFileCount);
+            for (int i = 0; i < subFileCount; i++) {
+                StringBuilder builder = new StringBuilder();
+                if (ProcessorTypeEnum.ZAUD.equals(processor)) {
+                    builder.append(PATH_SEPARATOR).append(i + 1);
+                }
+
+                builder.append(PATH_SEPARATOR).append(DEFAULT_AUDIO_NAME);
+                audioPaths.add(sb.toString() + builder.toString());
+                builder.delete(0, builder.length());
+            }
+
+            sb.delete(0, sb.length());
+            batchAudioPathsMap.put(fsFileId, audioPaths);
+        }
+
+        return batchAudioPathsMap;
+    }
+
+    public static String getAudioUrl(FsFile fsFile, FsServer fsServer
+            , String httpProtocol, String session) {
+        List<String> audioUrls = getAudioUrls(fsFile, fsServer, httpProtocol, session);
+        if (CollectionUtils.isEmpty(audioUrls)) {
+            return null;
+        }
+
+        return audioUrls.get(0);
+    }
+
+    public static List<String> getAudioUrls(FsFile fsFile, FsServer fsServer
+            , String httpProtocol, String session) {
+        List<FsFile> fsFiles = new ArrayList<FsFile>(1);
+        fsFiles.add(fsFile);
+        Map<String, FsServer> fileIdFsServerMap = new HashMap<String, FsServer>(1);
+        fileIdFsServerMap.put(fsFile.getId(), fsServer);
+
+        return getBatchAudioUrlsMap(fsFiles, fileIdFsServerMap, httpProtocol, session).get(fsFile.getId());
+    }
+
+    public static Map<String, String> getBatchAudioUrlMap(List<FsFile> fsFiles
+            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(fsFiles
+                , fileIdFsServerMap, httpProtocol, session);
+        if (MapUtils.isEmpty(batchAudioUrlsMap)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchAudioUrlMap = new HashMap<String, String>(batchAudioUrlsMap.size());
+        for (Map.Entry<String, List<String>> entry : batchAudioUrlsMap.entrySet()) {
+            List<String> audioUrls = entry.getValue();
+            if (CollectionUtils.isEmpty(audioUrls)) {
+                continue;
+            }
+
+            batchAudioUrlMap.put(entry.getKey(), audioUrls.get(0));
+        }
+
+        return batchAudioUrlMap;
+    }
+
+    public static Map<String, List<String>> getBatchAudioUrlsMap(List<FsFile> fsFiles
+            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+        Map<String, List<String>> batchAudioPathsMap = getBatchAudioPathsMap(fsFiles);
+        if (MapUtils.isEmpty(batchAudioPathsMap)) {
+            return new HashMap<String, List<String>>(0);
+        }
+
+        Map<String, List<String>> batchAudioUrlsMap =
+                new HashMap<String, List<String>>(batchAudioPathsMap.size());
+        for (FsFile fsFile : fsFiles) {
+            String fsFileId = fsFile.getId();
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            if (fsServer == null) {
+                continue;
+            }
+
+            List<String> audioPaths = batchAudioPathsMap.get(fsFileId);
+            if (CollectionUtils.isEmpty(audioPaths)) {
+                continue;
+            }
+
+            List<String> audioUrls = new ArrayList<String>(audioPaths.size());
+            for (String audioPath : audioPaths) {
+                String audioUrl = httpProtocol + HTTP_COLON + fsServer.getHost()
+                        + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + audioPath;
+                audioUrls.add(audioUrl);
+            }
+
+            batchAudioUrlsMap.put(fsFileId, audioUrls);
+        }
+
+        return batchAudioUrlsMap;
+    }
 }

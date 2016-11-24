@@ -1,5 +1,7 @@
 package com.qgutech.fs.domain;
 
+import com.qgutech.fs.utils.FsConstants;
+
 public enum ImageTypeEnum {
     /**
      * 高分辨率图
@@ -43,7 +45,7 @@ public enum ImageTypeEnum {
     }
 
     public String getImageName() {
-        return x + "*" + y + "*" + w + "*" + h;
+        return x + FsConstants.UNDERLINE + y + FsConstants.UNDERLINE + w + FsConstants.UNDERLINE + h;
     }
 
     public int getX() {

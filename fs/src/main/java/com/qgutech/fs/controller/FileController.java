@@ -360,7 +360,8 @@ public class FileController {
             return;
         }
 
-        String imageName = x + "*" + y + "*" + w + "*" + h + FsConstants.DEFAULT_IMAGE_SUFFIX;
+        String imageName = x + FsConstants.UNDERLINE + y + FsConstants.UNDERLINE
+                + w + FsConstants.UNDERLINE + h + FsConstants.DEFAULT_IMAGE_SUFFIX;
         fsFile.setStoredFileName(imageName);
         File imageFile = new File(originImageFile.getParent(), imageName);
         if (!imageFile.exists()) {
@@ -374,7 +375,7 @@ public class FileController {
         }
 
         dbFsFile.setSession(session);
-        fsFile.setFileUrl(FsPathUtils.getImageUrl(dbFsFile));
+        fsFile.setFileUrl(FsPathUtils.getImageUrl(dbFsFile, imageName));
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setProcessMsg("Cutting image successfully!");
         responseResult(fsFile, request, response);

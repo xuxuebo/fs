@@ -50,7 +50,7 @@
         <property name="maxInMemorySize" value="20"/>
     </bean>
 
-    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+<!--    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
         <property name="exceptionMappings">
             <props>
                 <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">
@@ -59,7 +59,7 @@
                 <prop key="java.lang.Exception">error/error</prop>
             </props>
         </property>
-    </bean>
+    </bean>-->
 
     <mvc:resources mapping="/pages/**" location="/pages/"/>
 </beans>

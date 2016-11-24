@@ -23,12 +23,6 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     @Resource
     private FsServerService fsServerService;
 
-    @Override
-    public String getOriginFileUrl(String fsFileId) {
-        Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchOriginFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
-    }
-
     private Map<String, FsServer> getFileIdFsServerMap(List<FsFile> fsFiles) {
         Set<String> corpCodes = new HashSet<String>();
         Set<String> serverCodes = new HashSet<String>();
@@ -75,6 +69,12 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
+    public String getOriginFileUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchOriginFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+    }
+
+    @Override
     public Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
@@ -83,41 +83,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(fsFiles.size());
-        StringBuilder builder = new StringBuilder();
-        for (FsFile fsFile : fsFiles) {
-            String fsFileId = fsFile.getId();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_SRC);
-            String businessDir = fsFile.getBusinessDir();
-            if (StringUtils.isNotEmpty(businessDir)) {
-                builder.append(PATH_SEPARATOR).append(businessDir);
-            }
-
-            ProcessorTypeEnum processor = fsFile.getProcessor();
-            if (ProcessorTypeEnum.DOC.equals(processor)
-                    || ProcessorTypeEnum.AUD.equals(processor)
-                    || ProcessorTypeEnum.VID.equals(processor)
-                    || ProcessorTypeEnum.IMG.equals(processor)
-                    || ProcessorTypeEnum.FILE.equals(processor)
-                    || ProcessorTypeEnum.ZIP.equals(processor)) {
-                builder.append(PATH_SEPARATOR).append(processor.name().toLowerCase());
-            } else {
-                builder.append(PATH_SEPARATOR).append(ProcessorTypeEnum.ZIP.name().toLowerCase());
-            }
-
-            builder.append(PATH_SEPARATOR).append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(fsFile.getBusinessId())
-                    .append(PATH_SEPARATOR).append(fsFileId).append(POINT).append(fsFile.getSuffix());
-            batchOriginFileUrlMap.put(fsFileId, builder.toString());
-            builder.delete(0, builder.length());
-        }
-
-        return batchOriginFileUrlMap;
+        return PathUtils.getBatchOriginFileUrlMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
     }
 
     @Override
@@ -392,42 +359,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        Map<String, String> batchImageUrlMap = new HashMap<String, String>(fsFiles.size());
-        for (FsFile fsFile : fsFiles) {
-            ProcessorTypeEnum processor = fsFile.getProcessor();
-            if (!ProcessorTypeEnum.IMG.equals(processor)
-                    && !ProcessorTypeEnum.ZIMG.equals(processor)
-                    && !ProcessorTypeEnum.DOC.equals(processor)
-                    && !ProcessorTypeEnum.ZDOC.equals(processor)) {
-                continue;
-            }
-
-            String fsFileId = fsFile.getId();
-            StringBuilder sb = new StringBuilder();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
-                    .append(PATH_SEPARATOR).append(FILE_DIR_IMG).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(fsFileId);
-            if (ProcessorTypeEnum.IMG.equals(processor)) {
-                sb.append(PATH_SEPARATOR).append(ORIGIN_IMAGE_NAME);
-            } else if (ProcessorTypeEnum.DOC.equals(processor)
-                    || ProcessorTypeEnum.ZIMG.equals(processor)) {
-                sb.append(PATH_SEPARATOR).append(FIRST).append(ORIGIN_IMAGE_NAME);
-            } else {
-                sb.append(PATH_SEPARATOR).append(FIRST).append(PATH_SEPARATOR)
-                        .append(FIRST).append(ORIGIN_IMAGE_NAME);
-            }
-
-            batchImageUrlMap.put(fsFileId, sb.toString());
-            sb.delete(0, sb.length());
-        }
-
-        return batchImageUrlMap;
+        return PathUtils.getBatchImageUrlMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
     }
 
     @Override

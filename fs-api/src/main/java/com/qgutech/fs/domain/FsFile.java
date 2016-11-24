@@ -202,6 +202,12 @@ public class FsFile extends BaseEntity {
     @Transient
     private Integer h;
 
+    /**
+     * 登录的sessionId
+     */
+    @Transient
+    private String session;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -416,6 +422,14 @@ public class FsFile extends BaseEntity {
 
     public void setH(Integer h) {
         this.h = h;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     @Override

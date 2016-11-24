@@ -2,14 +2,12 @@ package com.qgutech.fs.utils;
 
 
 import com.qgutech.fs.domain.FsFile;
+import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PathUtils implements UriUtils, FsConstants {
 
@@ -56,6 +54,49 @@ public class PathUtils implements UriUtils, FsConstants {
         return batchOriginFilePathMap;
     }
 
+    public static String getOriginFileUrl(FsFile fsFile, FsServer fsServer
+            , String httpProtocol, String session) {
+        List<FsFile> fsFiles = new ArrayList<FsFile>(1);
+        fsFiles.add(fsFile);
+        Map<String, FsServer> fileIdFsServerMap = new HashMap<String, FsServer>(1);
+        fileIdFsServerMap.put(fsFile.getId(), fsServer);
+        Map<String, String> batchOriginFileUrlMap = getBatchOriginFileUrlMap(fsFiles
+                , fileIdFsServerMap, httpProtocol, session);
+        if (MapUtils.isEmpty(batchOriginFileUrlMap)) {
+            return null;
+        }
+
+        return batchOriginFileUrlMap.get(fsFile.getId());
+    }
+
+    public static Map<String, String> getBatchOriginFileUrlMap(List<FsFile> fsFiles
+            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+        Map<String, String> batchOriginFilePathMap = getBatchOriginFilePathMap(fsFiles);
+        if (MapUtils.isEmpty(batchOriginFilePathMap)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchOriginFileUrlMap = new HashMap<String, String>(batchOriginFilePathMap.size());
+        for (FsFile fsFile : fsFiles) {
+            String fsFileId = fsFile.getId();
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            if (fsServer == null) {
+                continue;
+            }
+
+            String originFilePath = batchOriginFilePathMap.get(fsFileId);
+            if (StringUtils.isEmpty(originFilePath)) {
+                continue;
+            }
+
+            String originFileUrl = httpProtocol + HTTP_COLON + fsServer.getHost()
+                    + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + originFilePath;
+            batchOriginFileUrlMap.put(fsFileId, originFileUrl);
+        }
+
+        return batchOriginFileUrlMap;
+    }
+
     public static String getImagePath(FsFile fsFile) {
         Map<String, String> batchImagePathMap = getBatchImagePathMap(Arrays.asList(fsFile));
         if (MapUtils.isEmpty(batchImagePathMap)) {
@@ -98,6 +139,49 @@ public class PathUtils implements UriUtils, FsConstants {
         }
 
         return batchImagePathMap;
+    }
+
+    public static String getImageUrl(FsFile fsFile, FsServer fsServer
+            , String httpProtocol, String session) {
+        List<FsFile> fsFiles = new ArrayList<FsFile>(1);
+        fsFiles.add(fsFile);
+        Map<String, FsServer> fileIdFsServerMap = new HashMap<String, FsServer>(1);
+        fileIdFsServerMap.put(fsFile.getId(), fsServer);
+        Map<String, String> batchImageUrlMap = getBatchImageUrlMap(fsFiles
+                , fileIdFsServerMap, httpProtocol, session);
+        if (MapUtils.isEmpty(batchImageUrlMap)) {
+            return null;
+        }
+
+        return batchImageUrlMap.get(fsFile.getId());
+    }
+
+    public static Map<String, String> getBatchImageUrlMap(List<FsFile> fsFiles
+            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+        Map<String, String> batchImagePathMap = getBatchImagePathMap(fsFiles);
+        if (MapUtils.isEmpty(batchImagePathMap)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, String> batchImageUrlMap = new HashMap<String, String>(batchImagePathMap.size());
+        for (FsFile fsFile : fsFiles) {
+            String fsFileId = fsFile.getId();
+            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
+            if (fsServer == null) {
+                continue;
+            }
+
+            String imagePath = batchImagePathMap.get(fsFileId);
+            if (StringUtils.isEmpty(imagePath)) {
+                continue;
+            }
+
+            String imageUrl = httpProtocol + HTTP_COLON + fsServer.getHost()
+                    + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + imagePath;
+            batchImageUrlMap.put(fsFileId, imageUrl);
+        }
+
+        return batchImageUrlMap;
     }
 
 }

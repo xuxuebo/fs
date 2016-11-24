@@ -364,6 +364,7 @@ public class FileController {
                     , imageFile.getAbsolutePath()});
         }
 
+        fsFile.setFileUrl(FsPathUtils.getImageUrl(dbFsFile, fsFile.getSession()));
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setProcessMsg("Cutting image successfully!");
         responseResult(fsFile, request, response);

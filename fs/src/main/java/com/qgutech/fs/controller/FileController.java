@@ -315,14 +315,15 @@ public class FileController {
         }
 
         String fsFileId = fsFile.getId();
+        String session = fsFile.getSession();
         Integer x = fsFile.getX();
         Integer y = fsFile.getY();
         Integer w = fsFile.getW();
         Integer h = fsFile.getH();
-        if (StringUtils.isEmpty(fsFileId)
+        if (StringUtils.isEmpty(fsFileId) || StringUtils.isEmpty(session)
                 || x == null || y == null || w == null || h == null) {
-            LOG.error("Param[id:" + fsFileId + ",x:" + x + ",y:" + y
-                    + ",w:" + w + ",h:" + h + "] is illegally when cutting image!");
+            LOG.error("Param[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
+                    + ",w:" + w + ",h:" + h + "] is null or empty when cutting image!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param is illegally!");
             responseResult(fsFile, request, response);
@@ -331,6 +332,8 @@ public class FileController {
 
         FsFile dbFsFile = HttpUtils.getFsFile(fsFileId);
         if (dbFsFile == null) {
+            LOG.error("File[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
+                    + ",w:" + w + ",h:" + h + "] not exist when cutting image!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("File not exist!");
             responseResult(fsFile, request, response);
@@ -339,6 +342,8 @@ public class FileController {
 
         String imagePath = PathUtils.getImagePath(dbFsFile);
         if (StringUtils.isEmpty(imagePath)) {
+            LOG.error("File[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
+                    + ",w:" + w + ",h:" + h + "] is not an image when cutting image!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("File not an image!");
             responseResult(fsFile, request, response);
@@ -347,24 +352,28 @@ public class FileController {
 
         File originImageFile = new File(PropertiesUtils.getFileStoreDir(), imagePath);
         if (!originImageFile.exists()) {
+            LOG.error("Image[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
+                    + ",w:" + w + ",h:" + h + ",imagePath:" + imagePath + "] not exist when cutting image!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Image not exist!");
             responseResult(fsFile, request, response);
             return;
         }
 
-        String imageName = x + "*" + y + "*" + w + "*" + h
-                + "*" + FsConstants.DEFAULT_IMAGE_SUFFIX;
+        String imageName = x + "*" + y + "*" + w + "*" + h + FsConstants.DEFAULT_IMAGE_SUFFIX;
         fsFile.setStoredFileName(imageName);
         File imageFile = new File(originImageFile.getParent(), imageName);
         if (!imageFile.exists()) {
-            FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i"
+            String[] commands = {FsConstants.FFMPEG, "-i"
                     , originImageFile.getAbsolutePath(), "-vf"
                     , "crop=" + w + ":" + h + ":" + x + ":" + y, "-y"
-                    , imageFile.getAbsolutePath()});
+                    , imageFile.getAbsolutePath()};
+            LOG.info("Start executing command[" + FsUtils.toString(commands) + "]!");
+            FsUtils.executeCommand(commands);
+            LOG.info("End executing command[" + FsUtils.toString(commands) + "]!");
         }
 
-        dbFsFile.setSession(fsFile.getSession());
+        dbFsFile.setSession(session);
         fsFile.setFileUrl(FsPathUtils.getImageUrl(dbFsFile));
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         fsFile.setProcessMsg("Cutting image successfully!");

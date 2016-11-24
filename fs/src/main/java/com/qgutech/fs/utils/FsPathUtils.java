@@ -15,12 +15,12 @@ public class FsPathUtils extends PathUtils {
         return fsServer;
     }
 
-    public static String getOriginFileUrl(FsFile fsFile, String session) {
-        return getOriginFileUrl(fsFile, getFsServer(), PropertiesUtils.getHttpProtocol(), session);
+    public static String getOriginFileUrl(FsFile fsFile) {
+        return getOriginFileUrl(fsFile, getFsServer(), PropertiesUtils.getHttpProtocol(), fsFile.getSession());
     }
 
-    public static String getImageUrl(FsFile fsFile, String session) {
-        return getImageUrl(fsFile, getFsServer(), PropertiesUtils.getHttpProtocol(), session);
+    public static String getImageUrl(FsFile fsFile) {
+        return getImageUrl(fsFile, getFsServer(), PropertiesUtils.getHttpProtocol(), fsFile.getSession());
     }
 
 

@@ -101,6 +101,7 @@ public abstract class AbstractProcessor implements Processor {
             }
         }
 
+        fsFile.setFileUrl(FsPathUtils.getOriginFileUrl(fsFile));
         return fsFile;
     }
 

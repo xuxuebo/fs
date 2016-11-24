@@ -8,7 +8,6 @@ import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -395,6 +394,18 @@ public class FileController {
     public void backUploadFile(FsFile fsFile) throws Exception {
         MultipartFile file = fsFile.getFile();
         if (file == null || file.getInputStream() == null) {
+            LOG.error("FsFile's file is null or it's inputStream is null!");
+            return;
+        }
+
+        if (StringUtils.isEmpty(fsFile.getCorpCode())
+                || StringUtils.isEmpty(fsFile.getAppCode())
+                || fsFile.getProcessor() == null
+                || fsFile.getCreateTime() == null
+                || StringUtils.isEmpty(fsFile.getId())) {
+            LOG.error("Param[corpCode:" + fsFile.getCorpCode() + ",appCode:" + fsFile.getAppCode()
+                    + ",processor:" + fsFile.getProcessor() + ",createTime:" + fsFile.getCreateTime()
+                    + ",id:" + fsFile.getId() + "] is null or empty!");
             return;
         }
 

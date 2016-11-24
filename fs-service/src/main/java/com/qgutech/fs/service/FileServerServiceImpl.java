@@ -112,55 +112,9 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
             return new HashMap<String, List<Map<String, String>>>(0);
         }
 
-        Map<String, List<Map<String, String>>> batchVideoUrlsMap =
-                new HashMap<String, List<Map<String, String>>>(fsFiles.size());
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        for (FsFile fsFile : fsFiles) {
-            ProcessorTypeEnum processor = fsFile.getProcessor();
-            String videoLevels = fsFile.getVideoLevels();
-            if ((!ProcessorTypeEnum.VID.equals(processor)
-                    && !ProcessorTypeEnum.ZVID.equals(processor))
-                    || StringUtils.isEmpty(videoLevels)) {
-                continue;
-            }
-
-            String fsFileId = fsFile.getId();
-            StringBuilder sb = new StringBuilder();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
-                    .append(PATH_SEPARATOR).append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(fsFileId);
-            String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
-            List<Map<String, String>> videoUrls = new ArrayList<Map<String, String>>(vLevels.length);
-            for (int i = 0; i < vLevels.length; i++) {
-                VideoTypeEnum videoTypeEnum = VideoTypeEnum.valueOf(vLevels[i]);
-                VideoTypeEnum[] videoTypeEnums = VideoTypeEnum.getVideoTypeEnums(videoTypeEnum);
-                Map<String, String> videoTypeUrlMap = new HashMap<String, String>(videoTypeEnums.length);
-                videoUrls.add(videoTypeUrlMap);
-                StringBuilder builder = new StringBuilder();
-                for (VideoTypeEnum typeEnum : videoTypeEnums) {
-                    if (ProcessorTypeEnum.ZVID.equals(processor)) {
-                        builder.append(PATH_SEPARATOR).append(i + 1);
-                    }
-
-                    String videoType = typeEnum.name();
-                    builder.append(PATH_SEPARATOR).append(videoType.toLowerCase()).append(PATH_SEPARATOR)
-                            .append(videoType.toLowerCase()).append(DEFAULT_VIDEO_SUFFIX);
-                    videoTypeUrlMap.put(videoType, sb.toString() + builder.toString());
-                    builder.delete(0, builder.length());
-                }
-            }
-
-            sb.delete(0, sb.length());
-            batchVideoUrlsMap.put(fsFileId, videoUrls);
-        }
-
-        return batchVideoUrlsMap;
+        return PathUtils.getBatchVideoUrlsMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
     }
 
     @Override
@@ -187,6 +141,7 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         if (MapUtils.isEmpty(batchVideoCoverUrlsMap)) {
             return new HashMap<String, String>(0);
         }
+
         Map<String, String> batchVideoCoverUrlMap =
                 new HashMap<String, String>(batchVideoCoverUrlsMap.size());
         for (Map.Entry<String, List<String>> entry : batchVideoCoverUrlsMap.entrySet()) {
@@ -210,45 +165,8 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        Map<String, List<String>> batchVideoCoverUrlsMap = new HashMap<String, List<String>>(fsFiles.size());
-        for (FsFile fsFile : fsFiles) {
-            ProcessorTypeEnum processor = fsFile.getProcessor();
-            String videoLevels = fsFile.getVideoLevels();
-            if ((!ProcessorTypeEnum.VID.equals(processor)
-                    && !ProcessorTypeEnum.ZVID.equals(processor))
-                    || StringUtils.isEmpty(videoLevels)) {
-                continue;
-            }
-
-            String fsFileId = fsFile.getId();
-            StringBuilder sb = new StringBuilder();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            sb.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
-                    .append(PATH_SEPARATOR).append(DEFAULT_VIDEO_TYPE).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime()))
-                    .append(PATH_SEPARATOR).append(fsFileId);
-            String[] vLevels = videoLevels.split(VERTICAL_LINE_REGEX);
-            List<String> videoCoverUrls = new ArrayList<String>(vLevels.length);
-            for (int i = 0; i < vLevels.length; i++) {
-                StringBuilder builder = new StringBuilder();
-                if (ProcessorTypeEnum.ZVID.equals(processor)) {
-                    builder.append(PATH_SEPARATOR).append(i + 1);
-                }
-
-                builder.append(PATH_SEPARATOR).append(VIDEO_COVER);
-                videoCoverUrls.add(sb.toString() + builder.toString());
-                builder.delete(0, builder.length());
-            }
-
-            sb.delete(0, sb.length());
-            batchVideoCoverUrlsMap.put(fsFileId, videoCoverUrls);
-        }
-
-        return batchVideoCoverUrlsMap;
+        return PathUtils.getBatchVideoCoverUrlsMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
     }
 
     @Override
@@ -345,6 +263,19 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
+    public Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
+        return PathUtils.getBatchZipUrlMap(fsFiles, fileIdFsServerMap
+                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+    }
+
+    @Override
     public String getImageUrl(String fsFileId) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
         return getBatchImageUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
@@ -364,39 +295,6 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
     }
 
     @Override
-    public Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList) {
-        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
-        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
-        if (CollectionUtils.isEmpty(fsFiles)) {
-            return new HashMap<String, String>(0);
-        }
-
-        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
-        Map<String, String> batchZipUrlMap = new HashMap<String, String>(fsFiles.size());
-        for (FsFile fsFile : fsFiles) {
-            if (!ProcessorTypeEnum.ZIP.equals(fsFile.getProcessor())) {
-                continue;
-            }
-
-            String fsFileId = fsFile.getId();
-            StringBuilder builder = new StringBuilder();
-            FsServer fsServer = fileIdFsServerMap.get(fsFileId);
-            builder.append(PropertiesUtils.getHttpProtocol()).append(HTTP_COLON).append(fsServer.getHost())
-                    .append(PATH_SEPARATOR).append(PropertiesUtils.getServerName()).append(FILE_URL_GET_FILE)
-                    .append(Signer.sign(fsServer, fsFile, ExecutionContext.getSession()))
-                    .append(PATH_SEPARATOR).append(fsFile.getCorpCode()).append(PATH_SEPARATOR)
-                    .append(fsFile.getAppCode()).append(PATH_SEPARATOR).append(FILE_DIR_GEN)
-                    .append(PATH_SEPARATOR).append(FILE_DIR_UNZIP).append(PATH_SEPARATOR)
-                    .append(FsUtils.formatDateToYYMM(fsFile.getCreateTime())).append(PATH_SEPARATOR)
-                    .append(fsFileId).append(PATH_SEPARATOR).append(ZIP_INDEX_FILE);
-            batchZipUrlMap.put(fsFileId, builder.toString());
-            builder.delete(0, builder.length());
-        }
-
-        return batchZipUrlMap;
-    }
-
-    @Override
     public String getFileUrl(String fsFileId) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
         return getBatchFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
@@ -411,80 +309,87 @@ public class FileServerServiceImpl implements FileServerService, FsConstants {
         }
 
         Map<String, String> batchFileUrlMap = new HashMap<String, String>(fsFiles.size());
-        List<String> files = new ArrayList<String>();
-        List<String> zips = new ArrayList<String>();
-        List<String> images = new ArrayList<String>();
-        List<String> videos = new ArrayList<String>();
+        List<FsFile> files = new ArrayList<FsFile>();
+        List<FsFile> zips = new ArrayList<FsFile>();
+        List<FsFile> images = new ArrayList<FsFile>();
+        List<FsFile> videos = new ArrayList<FsFile>();
         List<String> audios = new ArrayList<String>();
         for (FsFile fsFile : fsFiles) {
-            String storedFileId = fsFile.getId();
+            String fsFileId = fsFile.getId();
             switch (fsFile.getProcessor()) {
                 case FILE:
-                    files.add(storedFileId);
+                    files.add(fsFile);
                     break;
                 case ZIP:
-                    zips.add(storedFileId);
+                    zips.add(fsFile);
                     break;
                 case DOC:
-                    images.add(storedFileId);
+                    images.add(fsFile);
                     break;
                 case ZDOC:
-                    images.add(storedFileId);
+                    images.add(fsFile);
                     break;
                 case IMG:
-                    images.add(storedFileId);
+                    images.add(fsFile);
                     break;
                 case ZIMG:
-                    images.add(storedFileId);
+                    images.add(fsFile);
                     break;
                 case VID:
-                    videos.add(storedFileId);
+                    videos.add(fsFile);
                     break;
                 case ZVID:
-                    videos.add(storedFileId);
+                    videos.add(fsFile);
                     break;
                 case AUD:
-                    audios.add(storedFileId);
+                    audios.add(fsFileId);
                     break;
                 case ZAUD:
-                    audios.add(storedFileId);
+                    audios.add(fsFileId);
                     break;
             }
         }
 
+        String httpProtocol = PropertiesUtils.getHttpProtocol();
+        String session = ExecutionContext.getSession();
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         if (CollectionUtils.isNotEmpty(files)) {
-            Map<String, String> batchOriginFileUrlMap = getBatchOriginFileUrlMap(files);
+            Map<String, String> batchOriginFileUrlMap = PathUtils.getBatchOriginFileUrlMap(files
+                    , fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchOriginFileUrlMap)) {
                 batchFileUrlMap.putAll(batchOriginFileUrlMap);
             }
         }
 
         if (CollectionUtils.isNotEmpty(zips)) {
-            Map<String, String> batchZipUrlMap = getBatchZipUrlMap(zips);
+            Map<String, String> batchZipUrlMap = PathUtils.getBatchZipUrlMap(zips
+                    , fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchZipUrlMap)) {
                 batchFileUrlMap.putAll(batchZipUrlMap);
             }
         }
 
         if (CollectionUtils.isNotEmpty(images)) {
-            Map<String, String> batchImageUrlMap = getBatchImageUrlMap(images);
+            Map<String, String> batchImageUrlMap = PathUtils.getBatchImageUrlMap(images
+                    , fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchImageUrlMap)) {
                 batchFileUrlMap.putAll(batchImageUrlMap);
             }
         }
 
         if (CollectionUtils.isNotEmpty(videos)) {
-            Map<String, List<Map<String, String>>> batchVideoUrlsMap = getBatchVideoUrlsMap(videos);
+            Map<String, List<Map<String, String>>> batchVideoUrlsMap = PathUtils.getBatchVideoUrlsMap(videos
+                    , fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchVideoUrlsMap)) {
-                for (String video : videos) {
-                    List<Map<String, String>> videoUrls = batchVideoUrlsMap.get(video);
+                for (FsFile video : videos) {
+                    List<Map<String, String>> videoUrls = batchVideoUrlsMap.get(video.getId());
                     if (CollectionUtils.isEmpty(videoUrls) || videoUrls.get(0) == null) {
                         continue;
                     }
 
                     String originVideoUrl = videoUrls.get(0).get(VideoTypeEnum.O.name());
                     if (StringUtils.isNotEmpty(originVideoUrl)) {
-                        batchFileUrlMap.put(video, originVideoUrl);
+                        batchFileUrlMap.put(video.getId(), originVideoUrl);
                     }
                 }
             }

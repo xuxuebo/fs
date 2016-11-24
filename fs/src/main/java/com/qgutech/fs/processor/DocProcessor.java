@@ -36,7 +36,7 @@ public class DocProcessor extends AbstractDocProcessor {
         String pdfTmpDirPath = tmpDirFile.getAbsolutePath() + File.separator;
         int docPage = processDoc(fsFile.getTmpFilePath(), imageTmpDirPath, pdfTmpDirPath, genFilePath);
         if (docPage <= 0) {
-            deleteFile(getGenFilePath(fsFile));
+            FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             HttpUtils.updateFsFile(fsFile);
         } else {

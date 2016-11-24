@@ -67,7 +67,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             int docPage = processDoc(srcFilePath, nextImageTmpDirPath
                     , pdfTmpDirPath, nextGenFileDirPath);
             if (docPage <= 0) {
-                deleteFile(getGenFilePath(fsFile));
+                FsUtils.deleteFile(getGenFilePath(fsFile));
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 HttpUtils.updateFsFile(fsFile);
                 return;

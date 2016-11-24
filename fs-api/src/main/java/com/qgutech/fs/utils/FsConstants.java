@@ -12,6 +12,7 @@ public interface FsConstants {
     String FILE_DIR_GEN = "gen";
     String FILE_DIR_TMP = "tmp";
     String FILE_DIR_IMPT = "impt";
+    String FILE_DIR_EXPT = "expt";
     String FILE_DIR_UNZIP = "unzip";
     String FILE_DIR_IMG = "img";
     String PATH_SEPARATOR = "/";

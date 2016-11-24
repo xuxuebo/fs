@@ -8,6 +8,7 @@ import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -18,14 +19,13 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.JedisCommands;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -392,7 +392,41 @@ public class FileController {
     }
 
     @RequestMapping("/backUploadFile")
-    public String backUploadFile(FsFile fsFile) {
-        return null;
+    public void backUploadFile(FsFile fsFile) throws Exception {
+        MultipartFile file = fsFile.getFile();
+        if (file == null || file.getInputStream() == null) {
+            return;
+        }
+
+        OutputStream outputStream = null;
+        InputStream inputStream = null;
+        String tmpDirPath = FsPathUtils.getImportTmpDirPath();
+        try {
+            File tmpDirFile = new File(tmpDirPath);
+            if (!tmpDirFile.exists() && !tmpDirFile.mkdirs()) {
+                return;
+            }
+
+            File tmpFile = new File(tmpDirFile, file.getOriginalFilename());
+            if (!tmpFile.exists() && !tmpFile.createNewFile()) {
+                return;
+            }
+
+            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+            String genFilePath = processor.getGenFilePath(fsFile);
+            File genFile = new File(genFilePath);
+            if (!genFile.exists() && !genFile.mkdirs()) {
+                return;
+            }
+
+            outputStream = new FileOutputStream(tmpFile);
+            inputStream = file.getInputStream();
+            IOUtils.copy(inputStream, outputStream);
+            FsUtils.decompress(tmpFile.getAbsolutePath(), genFilePath);
+        } finally {
+            FsUtils.deleteFile(tmpDirPath);
+            IOUtils.closeQuietly(outputStream);
+            IOUtils.closeQuietly(inputStream);
+        }
     }
 }

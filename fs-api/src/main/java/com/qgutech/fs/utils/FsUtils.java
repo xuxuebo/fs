@@ -12,6 +12,7 @@ import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +32,22 @@ import java.util.regex.Pattern;
 public class FsUtils {
 
     private static final Log LOG = LogFactory.getLog(FsUtils.class);
+
+    public static void deleteFile(String filePath) {
+        if (StringUtils.isNotEmpty(filePath)) {
+            deleteFile(new File(filePath));
+        }
+    }
+
+    public static void deleteFile(File file) {
+        try {
+            if (file != null && file.exists()) {
+                FileUtils.forceDelete(file);
+            }
+        } catch (Exception e) {
+            //not need process
+        }
+    }
 
     public static String formatDateToYYMM(Date date) {
         Assert.notNull(date, "Date is null!");

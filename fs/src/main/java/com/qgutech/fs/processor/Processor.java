@@ -9,4 +9,6 @@ public interface Processor {
 
     void process(FsFile fsFile) throws Exception;
 
+    String getGenFilePath(FsFile fsFile);
+
 }

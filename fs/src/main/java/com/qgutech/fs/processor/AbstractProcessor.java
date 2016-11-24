@@ -8,7 +8,6 @@ import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -24,7 +23,6 @@ import redis.clients.jedis.JedisCommands;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -50,8 +48,7 @@ public abstract class AbstractProcessor implements Processor {
         }
 
         String tmp = FsUtils.generateUUID();
-        String tmpDirPath = PropertiesUtils.getFileStoreDir() + FsConstants.FILE_DIR_TMP
-                + File.separator + FsConstants.FILE_DIR_IMPT + File.separator + tmp;
+        String tmpDirPath = FsPathUtils.getImportTmpDirPath(tmp);
         File tmpDir = new File(tmpDirPath);
         if (!tmpDir.exists() && !tmpDir.mkdirs()) {
             throw new IOException("Creating directory[" + tmpDirPath + "] failed!");
@@ -88,37 +85,21 @@ public abstract class AbstractProcessor implements Processor {
             }
         } catch (Exception e) {
             needAsync = true;
-            deleteFile(originFilePath);
-            deleteFile(tmpDir);
-            deleteFile(getGenFilePath(fsFile));
+            FsUtils.deleteFile(originFilePath);
+            FsUtils.deleteFile(tmpDir);
+            FsUtils.deleteFile(getGenFilePath(fsFile));
             HttpUtils.deleteFsFile(fsFileId);//todo redis
             throw e;
         } finally {
             IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(outputStream);
             if (!needAsync) {
-                deleteFile(tmpDir);
+                FsUtils.deleteFile(tmpDir);
             }
         }
 
         fsFile.setFileUrl(FsPathUtils.getOriginFileUrl(fsFile));
         return fsFile;
-    }
-
-    protected final void deleteFile(String filePath) {
-        if (StringUtils.isNotEmpty(filePath)) {
-            deleteFile(new File(filePath));
-        }
-    }
-
-    protected final void deleteFile(File file) {
-        try {
-            if (file != null && file.exists()) {
-                FileUtils.forceDelete(file);
-            }
-        } catch (Exception e) {
-            //not need process
-        }
     }
 
     protected final boolean validateParams(FsFile fsFile) throws Exception {
@@ -331,7 +312,8 @@ public abstract class AbstractProcessor implements Processor {
         return builder.toString();
     }
 
-    protected String getGenFilePath(FsFile fsFile) {
+    @Override
+    public String getGenFilePath(FsFile fsFile) {
         return PropertiesUtils.getFileStoreDir() + fsFile.getCorpCode()
                 + File.separator + fsFile.getAppCode()
                 + File.separator + FsConstants.FILE_DIR_GEN

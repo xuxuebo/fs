@@ -48,13 +48,13 @@ public class AudioProcessor extends AbstractProcessor {
             if (needAsync) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 fsFile.setCreateTime(null);
-                deleteFile(genFilePath);
+                FsUtils.deleteFile(genFilePath);
                 HttpUtils.updateFsFile(fsFile);
             }
 
             throw e;
         } finally {
-            deleteFile(new File(tmpFilePath).getParentFile());
+            FsUtils.deleteFile(new File(tmpFilePath).getParentFile());
         }
     }
 

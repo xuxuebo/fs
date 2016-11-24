@@ -94,13 +94,13 @@ public class ZipAudioProcessor extends AbstractProcessor {
             fsFile.setDurations(durations.substring(0, durations.length() - 1));
             afterProcess(fsFile);
         } catch (Exception e) {
-            deleteFile(getGenFilePath(fsFile));
+            FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             HttpUtils.updateFsFile(fsFile);
 
             throw e;
         } finally {
-            deleteFile(parentFile);
+            FsUtils.deleteFile(parentFile);
         }
     }
 }

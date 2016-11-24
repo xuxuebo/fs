@@ -6,7 +6,28 @@ import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.domain.SignLevelEnum;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
+import java.util.Date;
+
 public class FsPathUtils extends PathUtils {
+
+    public static String getImportTmpDirPath() {
+        return getImportTmpDirPath(FsUtils.generateUUID());
+    }
+
+    public static String getImportTmpDirPath(String filename) {
+        return PropertiesUtils.getFileStoreDir() + FsConstants.FILE_DIR_TMP
+                + File.separator + FsConstants.FILE_DIR_IMPT
+                + File.separator + FsUtils.formatDateToYYMM(new Date())
+                + File.separator + filename;
+    }
+
+    public static String getExportTmpDirPath() {
+        return PropertiesUtils.getFileStoreDir() + FsConstants.FILE_DIR_TMP
+                + File.separator + FsConstants.FILE_DIR_EXPT
+                + File.separator + FsUtils.formatDateToYYMM(new Date())
+                + File.separator + FsUtils.generateUUID();
+    }
 
     public static FsServer getFsServer() {
         FsServer fsServer = new FsServer();

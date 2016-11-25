@@ -5,6 +5,7 @@ import com.qgutech.fs.domain.FsFile;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -62,7 +63,8 @@ public class HttpUtils {
                 if (MapUtils.isNotEmpty(paramMap)) {
                     for (Map.Entry<String, String> entry : paramMap.entrySet()) {
                         builder.addPart(entry.getKey()
-                                , new StringBody(entry.getValue(), ContentType.TEXT_PLAIN));
+                                , new StringBody(entry.getValue()
+                                , ContentType.create("text/plain", Consts.UTF_8)));
                     }
                 }
 

@@ -94,9 +94,8 @@ public abstract class AbstractProcessor implements Processor {
                 process(fsFile);
             }
         } catch (Exception e) {
-            needAsync = true;
+            needAsync = false;
             FsUtils.deleteFile(originFilePath);
-            FsUtils.deleteFile(tmpDir);
             FsUtils.deleteFile(getGenFilePath(fsFile));
             HttpUtils.deleteFsFile(fsFileId);//todo redis
             throw e;

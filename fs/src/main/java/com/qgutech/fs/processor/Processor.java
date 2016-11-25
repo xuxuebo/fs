@@ -11,4 +11,6 @@ public interface Processor {
 
     String getGenFilePath(FsFile fsFile);
 
+    void submitToReprocess(FsFile fsFile) throws Exception;
+
 }

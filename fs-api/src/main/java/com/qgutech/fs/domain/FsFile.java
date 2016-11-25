@@ -619,6 +619,10 @@ public class FsFile extends BaseEntity {
         return builder.toString();
     }
 
+    public String toJsonp() {
+        return "jsonp(" + toJson() + ")";
+    }
+
     public String toHtml(String domain) {
         StringBuilder builder = new StringBuilder();
         builder.append("<html>\n");

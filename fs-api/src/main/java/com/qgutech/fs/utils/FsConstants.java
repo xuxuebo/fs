@@ -41,6 +41,7 @@ public interface FsConstants {
     String RESPONSE_FORMAT_JSON = "json";
     String RESPONSE_FORMAT_HTML = "html";
     String RESPONSE_FORMAT_XML = "xml";
+    String RESPONSE_FORMAT_JSONP = "jsonp";
     String FILE_URL_GET_FILE = "/file/getFile/";
     String FILE_URL_DOWNLOAD_FILE = "/file/downloadFile/";
 }

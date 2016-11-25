@@ -341,6 +341,48 @@ public abstract class AbstractProcessor implements Processor {
         }
     }
 
+    @Override
+    public void submitToReprocess(FsFile fsFile) throws Exception {
+        String tmp = FsUtils.generateUUID();
+        String tmpDirPath = FsPathUtils.getImportTmpDirPath(tmp);
+        File tmpDir = new File(tmpDirPath);
+        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+            throw new IOException("Creating directory[" + tmpDirPath + "] failed!");
+        }
+
+        String tmpFilePath = tmpDirPath + File.separator
+                + tmp + FsConstants.POINT + fsFile.getSuffix();
+        fsFile.setTmpFilePath(tmpFilePath);
+        boolean needAsync = true;
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            inputStream = new FileInputStream(getOriginFilePath(fsFile));
+            outputStream = new FileOutputStream(fsFile.getTmpFilePath());
+            IOUtils.copy(inputStream, outputStream);
+            needAsync = needAsync(fsFile);
+            if (needAsync) {
+                fsFile.setStatus(ProcessStatusEnum.PROCESSING);
+                submit(fsFile, 0);
+            } else {
+                process(fsFile);
+            }
+
+            fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+        } catch (Exception e) {
+            FsUtils.deleteFile(tmpDir);
+            needAsync = true;
+
+            throw e;
+        } finally {
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(outputStream);
+            if (!needAsync) {
+                FsUtils.deleteFile(tmpDir);
+            }
+        }
+    }
+
     protected String getProcessQueueName() {
         return null;
     }

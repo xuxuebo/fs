@@ -70,6 +70,8 @@ public class FileController {
             response.getWriter().write(fsFile.toHtml(getDomain(request)));
         } else if (FsConstants.RESPONSE_FORMAT_XML.equals(responseFormat)) {
             response.getWriter().write(fsFile.toXml());
+        } else if (FsConstants.RESPONSE_FORMAT_JSONP.equals(responseFormat)) {
+            response.getWriter().write(fsFile.toJsonp());
         } else {
             response.getWriter().write(fsFile.toJson());
         }
@@ -381,31 +383,72 @@ public class FileController {
     }
 
     @RequestMapping("/reprocessFile")
-    public String reprocessFile(FsFile fsFile) {
-        return null;
-    }
-
-    @RequestMapping("/asyncProcess")
-    public String asyncProcess(FsFile fsFile) {
-        return null;
-    }
-
-    @RequestMapping("/backUploadFile")
-    public void backUploadFile(FsFile fsFile) throws Exception {
-        MultipartFile file = fsFile.getFile();
-        if (file == null || file.getInputStream() == null) {
-            LOG.error("FsFile's file is null or it's inputStream is null!");
+    public void reprocessFile(String id, HttpServletRequest request
+            , HttpServletResponse response) throws Exception {
+        if (StringUtils.isEmpty(id)) {
+            LOG.error("Param[id:" + id + "] is illegally!");
+            FsFile fsFile = new FsFile();
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param is illegally!");
+            responseResult(fsFile, request, response);
             return;
         }
 
+        FsFile fsFile = HttpUtils.getFsFile(id);
+        if (fsFile == null) {
+            LOG.error("FsFile[id:" + id + "] not exist!");
+            fsFile = new FsFile();
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("File not exist!");
+            responseResult(fsFile, request, response);
+            return;
+        }
+
+        try {
+            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+            processor.submitToReprocess(fsFile);
+        } catch (Exception e) {
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg(e.getMessage());
+            LOG.error("Exception occurred when reprocessing the fsFile[" + fsFile + "]!", e);
+        }
+
+        responseResult(fsFile, request, response);
+    }
+
+    @RequestMapping("/asyncProcess")
+    public void asyncProcess(FsFile fsFile) throws Exception {//todo sign
+        Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+        processor.submit(fsFile);
+    }
+
+    @RequestMapping("/backUploadFile")
+    public void backUploadFile(FsFile fsFile, HttpServletResponse response) throws Exception {
+        MultipartFile file = fsFile.getFile();
+        if (file == null || file.getInputStream() == null) {
+            LOG.error("FsFile's file is null or it's inputStream is null!");
+            response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
+            return;
+        }
+
+        String sign = fsFile.getSign();
         if (StringUtils.isEmpty(fsFile.getCorpCode())
                 || StringUtils.isEmpty(fsFile.getAppCode())
                 || fsFile.getProcessor() == null
                 || fsFile.getCreateTime() == null
-                || StringUtils.isEmpty(fsFile.getId())) {
-            LOG.error("Param[corpCode:" + fsFile.getCorpCode() + ",appCode:" + fsFile.getAppCode()
+                || StringUtils.isEmpty(fsFile.getId())
+                || StringUtils.isEmpty(sign)) {
+            LOG.error("One of the param[corpCode:" + fsFile.getCorpCode() + ",appCode:" + fsFile.getAppCode()
                     + ",processor:" + fsFile.getProcessor() + ",createTime:" + fsFile.getCreateTime()
-                    + ",id:" + fsFile.getId() + "] is null or empty!");
+                    + ",id:" + fsFile.getId() + ",sign:" + sign + "] is null or empty!");
+            response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
+            return;
+        }
+
+        String newSign = Signer.sign(fsFile);
+        if (!sign.equals(newSign)) {
+            LOG.error("The generating sign[" + sign + "] is not equal the param sign[" + sign + "]!");
+            response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
             return;
         }
 
@@ -415,11 +458,17 @@ public class FileController {
         try {
             File tmpDirFile = new File(tmpDirPath);
             if (!tmpDirFile.exists() && !tmpDirFile.mkdirs()) {
+                LOG.error("Creating directory[" + tmpDirPath
+                        + "] failed when back uploading the fsFile[" + fsFile + "]!");
+                response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
                 return;
             }
 
             File tmpFile = new File(tmpDirFile, file.getOriginalFilename());
             if (!tmpFile.exists() && !tmpFile.createNewFile()) {
+                LOG.error("Creating file[" + tmpFile.getAbsolutePath()
+                        + "] failed when back uploading the fsFile[" + fsFile + "]!");
+                response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
                 return;
             }
 
@@ -427,6 +476,9 @@ public class FileController {
             String genFilePath = processor.getGenFilePath(fsFile);
             File genFile = new File(genFilePath);
             if (!genFile.exists() && !genFile.mkdirs()) {
+                LOG.error("Creating directory[" + genFilePath
+                        + "] failed when back uploading the fsFile[" + fsFile + "]!");
+                response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
                 return;
             }
 
@@ -434,6 +486,9 @@ public class FileController {
             inputStream = file.getInputStream();
             IOUtils.copy(inputStream, outputStream);
             FsUtils.decompress(tmpFile.getAbsolutePath(), genFilePath);
+        } catch (Exception e) {
+            LOG.error("Exception occurred when back uploading the fsFile[" + fsFile + "]!", e);
+            response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
         } finally {
             FsUtils.deleteFile(tmpDirPath);
             IOUtils.closeQuietly(outputStream);

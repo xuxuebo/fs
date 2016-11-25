@@ -141,6 +141,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             File compressFile = new File(parentFile, FsUtils.generateUUID()
                     + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP);
             FsUtils.compress(genFilePath, compressFile.getAbsolutePath());
+            fsFile.setSign(Signer.sign(fsFile));
             HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
         }
 

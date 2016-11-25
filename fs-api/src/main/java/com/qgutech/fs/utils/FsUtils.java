@@ -55,7 +55,7 @@ public class FsUtils {
     }
 
     public static String generateUUID() {
-        return UUID.randomUUID().toString().replace("_", "");
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     public static String toString(String[] array) {

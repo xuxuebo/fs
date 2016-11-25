@@ -74,6 +74,16 @@ public abstract class AbstractProcessor implements Processor {
             fsFile.setId(fsFileId);
             inputStream = new FileInputStream(tmpFilePath);
             originFilePath = getOriginFilePath(fsFile);
+            File originFile = new File(originFilePath);
+            File parentFile = originFile.getParentFile();
+            if (!parentFile.exists() && !parentFile.mkdirs()) {
+                throw new IOException("Creating directory[" + parentFile.getAbsolutePath() + "] failed!");
+            }
+
+            if (!originFile.exists() && !originFile.createNewFile()) {
+                throw new IOException("Creating file[" + originFilePath + "] failed!");
+            }
+
             outputStream = new FileOutputStream(originFilePath);
             IOUtils.copy(inputStream, outputStream);
 
@@ -125,6 +135,7 @@ public abstract class AbstractProcessor implements Processor {
                 if (MapUtils.isNotEmpty(fileMap)) {
                     for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
                         fsFile.setFile(entry.getValue());
+                        file = entry.getValue();
                     }
                 }
             }

@@ -18,6 +18,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import redis.clients.jedis.JedisCommands;
 
@@ -51,6 +53,8 @@ public class FileController {
             return;
         }
 
+        ServletRequestAttributes attributes = new ServletRequestAttributes(request);
+        RequestContextHolder.setRequestAttributes(attributes);
         try {
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             fsFile = processor.submit(fsFile);
@@ -323,7 +327,7 @@ public class FileController {
         Integer h = fsFile.getH();
         if (StringUtils.isEmpty(fsFileId) || StringUtils.isEmpty(session)
                 || x == null || y == null || w == null || h == null) {
-            LOG.error("Param[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
+            LOG.error("One of the param[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
                     + ",w:" + w + ",h:" + h + "] is null or empty when cutting image!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param is illegally!");

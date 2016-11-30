@@ -43,23 +43,27 @@
     </bean>
 
     <!-- 文件上传 视图解析器-->
-    <bean id="multipartResolver"
-          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="defaultEncoding" value="utf-8"/>
-        <property name="maxUploadSize" value="10240000000"/>
-        <property name="maxInMemorySize" value="20"/>
+    <!--  <bean id="multipartResolver"
+            class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+          <property name="defaultEncoding" value="utf-8"/>
+          <property name="maxUploadSize" value="10240000000"/>
+          <property name="maxInMemorySize" value="20"/>
+      </bean>-->
+
+    <bean id="multipartResolver" class="com.qgutech.fs.utils.FsMultipartResolver">
+        <property name="saveDirectory" value="d://"/>
     </bean>
 
-<!--    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
-        <property name="exceptionMappings">
-            <props>
-                <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">
-                    forward:/file/handleMaxUploadSizeException
-                </prop>
-                <prop key="java.lang.Exception">error/error</prop>
-            </props>
-        </property>
-    </bean>-->
+    <!--    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+            <property name="exceptionMappings">
+                <props>
+                    <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">
+                        forward:/file/handleMaxUploadSizeException
+                    </prop>
+                    <prop key="java.lang.Exception">error/error</prop>
+                </props>
+            </property>
+        </bean>-->
 
     <mvc:resources mapping="/pages/**" location="/pages/"/>
 </beans>

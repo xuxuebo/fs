@@ -51,7 +51,6 @@
       </bean>-->
 
     <bean id="multipartResolver" class="com.qgutech.fs.utils.FsMultipartResolver">
-        <property name="saveDirectory" value="d://"/>
     </bean>
 
     <!--    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">

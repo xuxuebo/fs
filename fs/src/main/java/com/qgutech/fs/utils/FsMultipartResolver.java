@@ -2,7 +2,6 @@ package com.qgutech.fs.utils;
 
 
 import com.oreilly.servlet.MultipartRequest;
-import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -15,6 +14,7 @@ import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +23,6 @@ import java.util.Map;
 public class FsMultipartResolver implements MultipartResolver {
 
     private boolean resolveLazily = false;
-    private String saveDirectory;
     private int maxPostSize = 1024 * 1024 * 1024;
 
     @Override
@@ -61,11 +60,23 @@ public class FsMultipartResolver implements MultipartResolver {
         }
     }
 
+    private String getFileMD5(HttpServletRequest request) {
+        return request.getParameter("md5");
+    }
+
     protected MultipartParsingResult parseRequest(HttpServletRequest request) {
         try {
+            String fileMD5 = getFileMD5(request);
+            String saveDirectory = FsPathUtils.getImportTmpDirPath(fileMD5);
+            File saveDirFile = new File(saveDirectory);
+            if (!saveDirFile.exists() && !saveDirFile.mkdirs()) {
+                throw new IOException("Creating directory[" + saveDirectory + "] failed!");
+            }
+
             MultipartRequest multipartRequest =
                     new MultipartRequest(request, saveDirectory, maxPostSize
-                            , determineEncoding(request), new DefaultFileRenamePolicy());
+                            , determineEncoding(request)
+                            , new SpecifyFileRenamePolicy(fileMD5));
             MultiValueMap<String, MultipartFile> multipartFiles =
                     new LinkedMultiValueMap<String, MultipartFile>();
             Map<String, String[]> multipartParameters = new HashMap<String, String[]>();
@@ -164,13 +175,5 @@ public class FsMultipartResolver implements MultipartResolver {
 
     public void setMaxPostSize(int maxPostSize) {
         this.maxPostSize = maxPostSize;
-    }
-
-    public String getSaveDirectory() {
-        return saveDirectory;
-    }
-
-    public void setSaveDirectory(String saveDirectory) {
-        this.saveDirectory = saveDirectory;
     }
 }

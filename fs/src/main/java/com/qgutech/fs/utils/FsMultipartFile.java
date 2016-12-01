@@ -83,6 +83,6 @@ public class FsMultipartFile implements MultipartFile {
     public void cleanup() {
         IOUtils.closeQuietly(inputStream);
         //todo 是否需要删除文件
-        file.delete();
+        //file.delete();
     }
 }

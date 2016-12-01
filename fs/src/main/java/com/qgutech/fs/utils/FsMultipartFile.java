@@ -9,15 +9,15 @@ import java.io.*;
 
 
 public class FsMultipartFile implements MultipartFile {
-    private String fileName;
+    private String name;
     private File file;
     private String originalFileName;
     private String contentType;
     private InputStream inputStream;
 
-    public FsMultipartFile(String fileName, File file
+    public FsMultipartFile(String name, File file
             , String originalFileName, String contentType) {
-        this.fileName = fileName;
+        this.name = name;
         this.file = file;
         this.originalFileName = originalFileName;
         this.contentType = contentType;
@@ -25,7 +25,7 @@ public class FsMultipartFile implements MultipartFile {
 
     @Override
     public String getName() {
-        return this.fileName;
+        return this.name;
     }
 
     @Override

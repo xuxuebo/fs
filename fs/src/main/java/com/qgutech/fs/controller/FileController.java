@@ -73,148 +73,237 @@ public class FileController {
 
     private boolean breakpointResume(FsFile fsFile) {
         String resumeType = fsFile.getResumeType();
-
-        //FAILED表示参数错误或者程序执行错误，不需要上传文件
-        //SUCCESS表示文件已存在并且处理正确，不需要上传文件
-        //为空表示文件不存在，需要上传文件
         if (FsConstants.RESUME_TYPE_MD5_CHECK.equals(resumeType)) {
-            String md5 = fsFile.getMd5();
-            if (StringUtils.isEmpty(md5)) {
-                LOG.error("Md5 check is failed because of param[md5:" + md5 + "] error!");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("File md5 is necessary!");
-                return false;
-            }
-
-            File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
-            if (md5File.exists()) {//表示已经上传完成并且完成合并
-                fsFile.setTmpFilePath(md5File.getAbsolutePath());
-                return true;
-            }
-
-            return false;
+            return checkMd5(fsFile);
         }
 
-        //FAILED表示参数错误，不需要上传分片，结束文件上传
-        //SUCCESS表示分片已存在，不需要上传分片
-        //为空表示分片不存在，需要上传分片
         if (FsConstants.RESUME_TYPE_CHUNK_CHECK.equals(resumeType)) {
-            String md5 = fsFile.getMd5();
-            Long chunkIndex = fsFile.getChunkIndex();
-            Long chunkSize = fsFile.getChunkSize();
-            if (StringUtils.isEmpty(md5) || chunkIndex == null
-                    || chunkIndex < 0 || chunkSize == null || chunkSize < 0) {
-                LOG.error("Chunk check is failed because of param[md5:"
-                        + md5 + "chunkIndex:" + chunkIndex + "chunkSize:" + chunkSize + "] error!");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("Param Error!");
-                return false;
-            }
+            return checkChunk(fsFile);
+        }
 
-            File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
-            if (md5File.exists()) {//表示已经上传完成并且完成合并
-                fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-                return false;
-            }
+        if (FsConstants.RESUME_TYPE_CHUNKS_MERGE.equals(resumeType)) {
+            return mergeChunks(fsFile);
+        }
 
-            String chunkFileDir = PropertiesUtils.getChunkFileDir();
-            File chunkFile = new File(chunkFileDir, DigestUtils.md5Hex(md5 + chunkSize)
-                    + File.separator + chunkIndex);
-            if (chunkFile.exists() && chunkFile.length() == chunkSize) {
-                fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-            }
+        return !FsConstants.RESUME_TYPE_CHUNK_UPLOAD.equals(resumeType) || uploadChunk(fsFile);
+    }
 
+    //FAILED表示参数错误或者程序执行错误，不需要上传文件
+    //SUCCESS表示文件已存在并且处理正确，不需要上传文件
+    //为空表示文件不存在，需要上传文件
+    private boolean checkMd5(FsFile fsFile) {
+        String md5 = fsFile.getMd5();
+        if (StringUtils.isEmpty(md5)) {
+            LOG.error("Md5 check is failed because of param[md5:" + md5 + "] error!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("File md5 is necessary!");
             return false;
         }
 
-        //FAILED表示参数错误(包括实际分片总数和前台传来的分片总数不一致)或者程序执行错误，上传失败
-        //SUCCESS表示分片已合并完成并且正确处理
-        //为空表示文件正在合并或者合并失败
-        if (FsConstants.RESUME_TYPE_CHUNKS_MERGE.equals(resumeType)) {
-            String md5 = fsFile.getMd5();
-            Long chunkSize = fsFile.getChunkSize();
-            Long chunks = fsFile.getChunks();
-            if (StringUtils.isEmpty(md5) || chunkSize == null || chunkSize < 0
-                    || chunks == null || chunks < 0) {
-                LOG.error("Chunks merge is failed because of param[md5:"
-                        + md5 + "chunks:" + chunks + "chunkSize:" + chunkSize + "] is error!");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("Param Error!");
-                return false;
-            }
+        File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
+        if (md5File.exists()) {//表示已经上传完成并且完成合并
+            fsFile.setTmpFilePath(md5File.getAbsolutePath());
+            return true;
+        }
 
-            File chunkDir = new File(PropertiesUtils.getChunkFileDir()
-                    , DigestUtils.md5Hex(md5 + chunkSize));
-            int chunkNum = getChunkNum(chunkDir.getAbsolutePath());
-            if (chunks == chunkNum) {
-                String key = RedisKey.FS_CHUNK_MERGE_LOCK_ + chunkDir.getName();
-                boolean lock = getLock(key, 5 * 60 * 1000);
-                if (!lock) {
-                    fsFile.setProcessMsg("File merging!");
-                    return false;
-                }
+        return false;
+    }
 
-                FileChannel outChannel = null;
-                try {
-                    List<File> files = Arrays.asList(getChunks(chunkDir.getAbsolutePath()));
-                    Collections.sort(files, new Comparator<File>() {
-                        @Override
-                        public int compare(File f1, File f2) {
-                            return Integer.valueOf(f1.getName()) - Integer.valueOf(f2.getName());
-                        }
-                    });
-
-                    String md5FileDir = PropertiesUtils.getMd5FileDir();
-                    File md5TmpFile = new File(md5FileDir, md5 + FsConstants.TMM_FILE_SUFFIX);
-                    FsUtils.deleteFile(md5TmpFile);
-                    if (!md5TmpFile.createNewFile()) {
-                        fsFile.setProcessMsg("File Merging failed!");
-                        return false;
-                    }
-
-                    outChannel = new FileOutputStream(md5TmpFile).getChannel();
-                    FileChannel inChannel = null;
-                    for (File file : files) {
-                        try {
-                            inChannel = new FileInputStream(file).getChannel();
-                            inChannel.transferTo(0, inChannel.size(), outChannel);
-                        } finally {
-                            closeChannel(inChannel);
-                        }
-                    }
-
-                    File md5File = new File(md5FileDir, md5);
-                    if (!md5TmpFile.renameTo(md5File)) {
-                        fsFile.setProcessMsg("File Merging failed!");
-                        return false;
-                    }
-
-                    FsUtils.deleteFile(chunkDir);
-                    return true;
-                } catch (Exception e) {
-                    LOG.error("Exception occurred when merging file["
-                            + chunkDir.getAbsolutePath() + "]!", e);
-                    fsFile.setProcessMsg("File Merging failed!");
-                    return false;
-                } finally {
-                    closeChannel(outChannel);
-                    FsRedis.getCommonJedis().expire(key, 0);
-                }
-            }
-
-            File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
-            if (md5File.exists()) {
-                fsFile.setTmpFilePath(md5File.getAbsolutePath());
-                return true;
-            }
-
-            LOG.error("The param total chunks[" + chunks
-                    + "] is not equal the actual chunks[" + chunkNum + "]!");
+    //FAILED表示参数错误，不需要上传分片，结束文件上传
+    //SUCCESS表示分片已存在，不需要上传分片
+    //为空表示分片不存在，需要上传分片
+    private boolean checkChunk(FsFile fsFile) {
+        String md5 = fsFile.getMd5();
+        Long chunkIndex = fsFile.getChunkIndex();
+        Long chunkSize = fsFile.getChunkSize();
+        if (StringUtils.isEmpty(md5) || chunkIndex == null
+                || chunkIndex < 0 || chunkSize == null || chunkSize < 0) {
+            LOG.error("Chunk check is failed because of param[md5:"
+                    + md5 + "chunkIndex:" + chunkIndex + "chunkSize:" + chunkSize + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
+            return false;
         }
 
-        return true;
+        File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
+        if (md5File.exists()) {//表示已经上传完成并且完成合并
+            fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+            return false;
+        }
+
+        String chunkFileDir = PropertiesUtils.getChunkFileDir();
+        File chunkFile = new File(chunkFileDir, DigestUtils.md5Hex(md5 + chunkSize)
+                + File.separator + chunkIndex);
+        if (chunkFile.exists() && chunkFile.length() == chunkSize) {
+            fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+        }
+
+        return false;
+    }
+
+    //FAILED表示参数错误(包括实际分片总数和前台传来的分片总数不一致)或者程序执行错误，上传失败
+    //SUCCESS表示分片已合并完成并且正确处理
+    //为空表示文件正在合并或者合并失败
+    private boolean mergeChunks(FsFile fsFile) {
+        String md5 = fsFile.getMd5();
+        Long chunkSize = fsFile.getChunkSize();
+        Long chunks = fsFile.getChunks();
+        if (StringUtils.isEmpty(md5) || chunkSize == null || chunkSize < 0
+                || chunks == null || chunks < 0) {
+            LOG.error("Chunks merge is failed because of param[md5:"
+                    + md5 + "chunks:" + chunks + "chunkSize:" + chunkSize + "] is error!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
+        File chunkDir = new File(PropertiesUtils.getChunkFileDir()
+                , DigestUtils.md5Hex(md5 + chunkSize));
+        int chunkNum = getChunkNum(chunkDir.getAbsolutePath());
+        if (chunks == chunkNum) {
+            String key = RedisKey.FS_CHUNK_MERGE_LOCK_ + chunkDir.getName();
+            boolean lock = getLock(key, 5 * 60 * 1000);
+            if (!lock) {
+                fsFile.setProcessMsg("File merging!");
+                return false;
+            }
+
+            FileChannel outChannel = null;
+            try {
+                List<File> files = Arrays.asList(getChunks(chunkDir.getAbsolutePath()));
+                Collections.sort(files, new Comparator<File>() {
+                    @Override
+                    public int compare(File f1, File f2) {
+                        return Integer.valueOf(f1.getName()) - Integer.valueOf(f2.getName());
+                    }
+                });
+
+                String md5FileDir = PropertiesUtils.getMd5FileDir();
+                File md5Dir = new File(md5FileDir);
+                if (!md5Dir.exists() && !md5Dir.mkdirs() && !md5Dir.exists()) {
+                    fsFile.setProcessMsg("File Merging failed!");
+                    return false;
+                }
+
+                File md5TmpFile = new File(md5FileDir, md5 + FsConstants.TMM_FILE_SUFFIX);
+                FsUtils.deleteFile(md5TmpFile);
+                if (!md5TmpFile.createNewFile()) {
+                    fsFile.setProcessMsg("File Merging failed!");
+                    return false;
+                }
+
+                outChannel = new FileOutputStream(md5TmpFile).getChannel();
+                FileChannel inChannel = null;
+                for (File file : files) {
+                    try {
+                        inChannel = new FileInputStream(file).getChannel();
+                        inChannel.transferTo(0, inChannel.size(), outChannel);
+                    } finally {
+                        closeChannel(inChannel);
+                    }
+                }
+
+                File md5File = new File(md5FileDir, md5);
+                if (!md5TmpFile.renameTo(md5File)) {
+                    fsFile.setProcessMsg("File Merging failed!");
+                    return false;
+                }
+
+                FsUtils.deleteFile(chunkDir);
+                return true;
+            } catch (Exception e) {
+                LOG.error("Exception occurred when merging file["
+                        + chunkDir.getAbsolutePath() + "]!", e);
+                fsFile.setProcessMsg("File Merging failed!");
+                return false;
+            } finally {
+                closeChannel(outChannel);
+                FsRedis.getCommonJedis().expire(key, 0);
+            }
+        }
+
+        File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
+        if (md5File.exists()) {
+            fsFile.setTmpFilePath(md5File.getAbsolutePath());
+            return true;
+        }
+
+        LOG.error("The param total chunks[" + chunks
+                + "] is not equal the actual chunks[" + chunkNum + "]!");
+        fsFile.setStatus(ProcessStatusEnum.FAILED);
+        fsFile.setProcessMsg("Param Error!");
+        return false;
+    }
+
+    //FAILED表示参数错误或者程序执行错误，上传失败
+    //SUCCESS表示单分片文件上传并处理完成
+    //为空表示分片上传成功
+    private boolean uploadChunk(FsFile fsFile) {
+        MultipartFile file = fsFile.getFile();
+        Long chunks = fsFile.getChunks();
+        String md5 = fsFile.getMd5();
+        Long chunkIndex = fsFile.getChunkIndex();
+        Long chunkSize = fsFile.getChunkSize();
+        if (file == null || file.isEmpty() || chunks == null || chunks < 0
+                || StringUtils.isEmpty(md5) || chunkIndex == null || chunkIndex < 0
+                || chunkSize == null || chunkSize < 0) {
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
+        if (chunks == 1) {
+            File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
+            File md5DirFile = md5File.getParentFile();
+            if (!md5DirFile.exists() && !md5DirFile.mkdirs() && !md5DirFile.exists()) {
+                LOG.error("Creating md5 file directory[" + md5DirFile.getAbsolutePath() + "] failed!");
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setProcessMsg("Upload Error!");
+                return false;
+            }
+
+            if (!md5File.exists() && !createNewFile(md5File, file) && !md5File.exists()) {
+                LOG.error("Creating md5 file[" + md5File.getAbsolutePath() + "] failed!");
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setProcessMsg("Upload Error!");
+                return false;
+            }
+
+            fsFile.setTmpFilePath(md5File.getAbsolutePath());
+            return true;
+        }
+
+        String chunkFileDir = PropertiesUtils.getChunkFileDir();
+        File chunkFile = new File(chunkFileDir, DigestUtils.md5Hex(md5 + chunkSize)
+                + File.separator + chunkIndex);
+        File parentFile = chunkFile.getParentFile();
+        if (!parentFile.exists() && !parentFile.mkdirs() && !parentFile.exists()) {
+            LOG.error("Creating chunk file directory[" + parentFile.getAbsolutePath() + "] failed!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Upload Error!");
+        } else {
+            if (!chunkFile.exists() && !createNewFile(chunkFile, file) && !chunkFile.exists()) {
+                LOG.error("Creating chunk file[" + chunkFile.getAbsolutePath() + "] failed!");
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setProcessMsg("Upload Error!");
+            }
+        }
+
+        return false;
+    }
+
+    private boolean createNewFile(File file, MultipartFile multipartFile) {
+        try {
+            if (file.createNewFile()) {
+                multipartFile.transferTo(file);
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+            LOG.error("Creating file[" + file.getAbsolutePath() + "] failed!", e);
+            return false;
+        }
     }
 
     private void closeChannel(FileChannel channel) {

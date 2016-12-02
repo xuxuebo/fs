@@ -54,6 +54,8 @@
         <property name="checkSessionSecret" value="${fs.checkSessionSecret}"/>
         <property name="checkSessionCorrectResult" value="${fs.checkSessionCorrectResult}"/>
         <property name="checkSessionCacheTime" value="${fs.checkSessionCacheTime}"/>
+        <property name="chunkFileDir" value="${fs.chunkFileDir}"/>
+        <property name="md5FileDir" value="${fs.md5FileDir}"/>
     </bean>
 
     <!-- jedis连接池 -->

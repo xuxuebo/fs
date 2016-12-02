@@ -27,21 +27,50 @@ public interface FsConstants {
     String ZIP_INDEX_FILE = "index.html";
     String UNDERLINE = "_";
     String DEFAULT_CORP_CODE = "default";
+
     String RESPONSE_RESULT_ERROR = "error";
     String RESPONSE_RESULT_PARAM_ILLEGAL = "param_illegal";
     String RESPONSE_RESULT_TIME_OUT = "time_out";
     String RESPONSE_RESULT_SERVER_NOT_EXIST = "server_not_exist";
     String RESPONSE_RESULT_SIGN_ERROR = "sign_error";
     String RESPONSE_RESULT_FS_FILE_NOT_EXIST = "fs_file_not_exist";
+
     String COMPRESS_FILE_SUFFIX_ZIP = "zip";
     String COMPRESS_FILE_SUFFIX_7Z = "7z";
     String COMPRESS_FILE_SUFFIX_RAR = "rar";
+
     String DECOMPRESS = "decompress";
     String FFMPEG = "ffmpeg";
+
     String RESPONSE_FORMAT_JSON = "json";
     String RESPONSE_FORMAT_HTML = "html";
     String RESPONSE_FORMAT_XML = "xml";
     String RESPONSE_FORMAT_JSONP = "jsonp";
+
     String FILE_URL_GET_FILE = "/file/getFile/";
     String FILE_URL_DOWNLOAD_FILE = "/file/downloadFile/";
+
+    /**
+     * 断点续传处理类型：验证md5，判断文件是否已经上传过
+     */
+    String RESUME_TYPE_MD5_CHECK = "md5Check";
+
+    /**
+     * 断点续传处理类型：验证分片是否存在
+     */
+    String RESUME_TYPE_CHUNK_CHECK = "chunkCheck";
+
+    /**
+     * 断点续传处理类型：分片合并
+     */
+    String RESUME_TYPE_CHUNKS_MERGE = "chunksMerge";
+
+    /**
+     * 断点续传处理类型：分片上传
+     */
+    String RESUME_TYPE_CHUNK_UPLOAD = "chunkUpload";
+    /**
+     * 临时文件的后缀
+     */
+    String TMM_FILE_SUFFIX = ".tmp";
 }

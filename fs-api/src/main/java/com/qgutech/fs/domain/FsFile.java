@@ -208,6 +208,36 @@ public class FsFile extends BaseEntity {
     @Transient
     private String session;
 
+    /**
+     * 文件的md5值
+     */
+    @Transient
+    private String md5;
+
+    /**
+     * 断点续传的类型
+     */
+    @Transient
+    private String resumeType;
+
+    /**
+     * 文件分块的每块大小
+     */
+    @Transient
+    private Long chunkSize;
+
+    /**
+     * 文件分块的序号
+     */
+    @Transient
+    private Long chunkIndex;
+
+    /**
+     * 文件分块数量
+     */
+    @Transient
+    private Long chunks;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -432,6 +462,46 @@ public class FsFile extends BaseEntity {
         this.session = session;
     }
 
+    public String getMd5() {
+        return md5;
+    }
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+    public String getResumeType() {
+        return resumeType;
+    }
+
+    public void setResumeType(String resumeType) {
+        this.resumeType = resumeType;
+    }
+
+    public Long getChunkIndex() {
+        return chunkIndex;
+    }
+
+    public void setChunkIndex(Long chunkIndex) {
+        this.chunkIndex = chunkIndex;
+    }
+
+    public Long getChunkSize() {
+        return chunkSize;
+    }
+
+    public void setChunkSize(Long chunkSize) {
+        this.chunkSize = chunkSize;
+    }
+
+    public Long getChunks() {
+        return chunks;
+    }
+
+    public void setChunks(Long chunks) {
+        this.chunks = chunks;
+    }
+
     @Override
     public String toString() {
         return "FsFile{" +
@@ -448,6 +518,7 @@ public class FsFile extends BaseEntity {
                 ", videoLevels='" + videoLevels + '\'' +
                 ", durations='" + durations + '\'' +
                 ", status=" + status +
+                ", processMsg='" + processMsg + '\'' +
                 ", serverCode='" + serverCode + '\'' +
                 ", file=" + file +
                 ", timestamp=" + timestamp +
@@ -455,6 +526,15 @@ public class FsFile extends BaseEntity {
                 ", serverHost='" + serverHost + '\'' +
                 ", tmpFilePath='" + tmpFilePath + '\'' +
                 ", backUrl='" + backUrl + '\'' +
+                ", responseFormat='" + responseFormat + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", x=" + x +
+                ", y=" + y +
+                ", w=" + w +
+                ", h=" + h +
+                ", session='" + session + '\'' +
+                ", md5='" + md5 + '\'' +
+                ", resumeType='" + resumeType + '\'' +
                 '}';
     }
 

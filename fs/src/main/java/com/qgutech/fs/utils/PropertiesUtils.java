@@ -33,6 +33,8 @@ public class PropertiesUtils {
     private static String checkSessionSecret;
     private static String checkSessionCorrectResult;
     private static int checkSessionCacheTime;
+    private static String md5FileDir;
+    private static String chunkFileDir;
 
     public static String getServerCode() {
         return serverCode;
@@ -280,5 +282,21 @@ public class PropertiesUtils {
 
     public void setCheckSessionCacheTime(int checkSessionCacheTime) {
         PropertiesUtils.checkSessionCacheTime = checkSessionCacheTime;
+    }
+
+    public static String getMd5FileDir() {
+        return md5FileDir;
+    }
+
+    public void setMd5FileDir(String md5FileDir) {
+        PropertiesUtils.md5FileDir = md5FileDir;
+    }
+
+    public static String getChunkFileDir() {
+        return chunkFileDir;
+    }
+
+    public void setChunkFileDir(String chunkFileDir) {
+        PropertiesUtils.chunkFileDir = chunkFileDir;
     }
 }

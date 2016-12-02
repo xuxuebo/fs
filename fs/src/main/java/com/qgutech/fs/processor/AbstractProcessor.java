@@ -50,7 +50,7 @@ public abstract class AbstractProcessor implements Processor {
         String tmp = FsUtils.generateUUID();
         String tmpDirPath = FsPathUtils.getImportTmpDirPath(tmp);
         File tmpDir = new File(tmpDirPath);
-        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+        if (!tmpDir.exists() && !tmpDir.mkdirs() && !tmpDir.exists()) {
             throw new IOException("Creating directory[" + tmpDirPath + "] failed!");
         }
 
@@ -112,6 +112,41 @@ public abstract class AbstractProcessor implements Processor {
         return fsFile;
     }
 
+    protected final boolean validateResumeParams(FsFile fsFile) throws Exception {
+        String storedFileName = fsFile.getStoredFileName();
+        if (StringUtils.isEmpty(storedFileName)) {
+            LOG.error("Upload file originalFilename is empty!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
+        String extension = FilenameUtils.getExtension(storedFileName);
+        fsFile.setSuffix(extension.toLowerCase());
+        if (StringUtils.isEmpty(extension)) {
+            LOG.error("Upload file[fileName:" + storedFileName + "]'s extension is empty!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
+        Long fileSize = fsFile.getFileSize();
+        if (fileSize == null || fileSize <= 0) {
+            LOG.error("Upload file[fileName:" + storedFileName + "]'s size[" + fileSize + "] is illegal!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param error!");
+            return false;
+        }
+
+        fsFile.setServerCode(PropertiesUtils.getServerCode());
+        fsFile.setServerHost(PropertiesUtils.getServerHost());
+        if (StringUtils.isEmpty(fsFile.getId())) {
+            fsFile.setCreateTime(new Date());
+        }
+
+        return true;
+    }
+
     protected final boolean validateParams(FsFile fsFile) throws Exception {
         if (fsFile == null) {
             return false;
@@ -122,7 +157,13 @@ public abstract class AbstractProcessor implements Processor {
                     + ",businessId:" + fsFile.getBusinessId() + ",processor:" + fsFile.getProcessor()
                     + "] of fsFile must be not empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
             return false;
+        }
+
+        if (StringUtils.isNotEmpty(fsFile.getResumeType())
+                && StringUtils.isNotEmpty(fsFile.getMd5())) {
+            return validateResumeParams(fsFile);
         }
 
         MultipartFile file = fsFile.getFile();
@@ -141,10 +182,10 @@ public abstract class AbstractProcessor implements Processor {
             }
         }
 
-        if (file == null || StringUtils.isEmpty(file.getOriginalFilename())
-                || file.getInputStream() == null) {
+        if (file == null || file.isEmpty() || StringUtils.isEmpty(file.getOriginalFilename())) {
             LOG.error("Upload file not exist or originalFilename is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
             return false;
         }
 
@@ -154,11 +195,13 @@ public abstract class AbstractProcessor implements Processor {
         if (StringUtils.isEmpty(extension)) {
             LOG.error("Upload file[fileName:" + originalFilename + "]'s extension is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
             return false;
         }
 
         fsFile.setSuffix(extension.toLowerCase());
         fsFile.setFileSize(file.getSize());
+
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
         if (StringUtils.isEmpty(fsFile.getId())) {

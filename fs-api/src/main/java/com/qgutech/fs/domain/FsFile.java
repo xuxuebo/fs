@@ -535,6 +535,9 @@ public class FsFile extends BaseEntity {
                 ", session='" + session + '\'' +
                 ", md5='" + md5 + '\'' +
                 ", resumeType='" + resumeType + '\'' +
+                ", chunkSize=" + chunkSize +
+                ", chunkIndex=" + chunkIndex +
+                ", chunks=" + chunks +
                 '}';
     }
 

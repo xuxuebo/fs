@@ -377,6 +377,7 @@ public class FileController {
         } else if (FsConstants.RESPONSE_FORMAT_JSONP.equals(responseFormat)) {
             response.getWriter().write(fsFile.toJsonp());
         } else {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=utf-8");
             response.getWriter().write(fsFile.toJson());
         }
     }

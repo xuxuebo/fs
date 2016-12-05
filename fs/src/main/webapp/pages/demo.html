@@ -57,18 +57,15 @@
                         business.storedFileName=file.name;
                         business.fileSize=file.size;
                         business.suffix=file.ext;
-                        console.log(business);
                         var md5Check= $.extend(true,{resumeType:"md5Check"},business);
                         $.ajax({
                             type: "POST",
                             url: uploadFileUrl,
                             data:md5Check,
                             cache: false,
-                           // timeout: 1000 ,//todo 超时的话，只能认为该文件不曾上传过
                             dataType: "json"
                         }).then(function(data, textStatus, jqXHR){
-                                    console.log("md5Check:"+data);
-                                    alert("md5Check1");
+                                    console.log(data);
                                   if(data.status=="FAILED"){//FAILED表示参数错误或者程序执行错误，不需要上传文件
                                       task.reject();
                                       uploader.skipFile(file);
@@ -83,10 +80,6 @@
                                       task.resolve();
                                   }
                         }, function(jqXHR, textStatus, errorThrown){ //任何形式的验证失败，都触发重新上传
-                                    alert("md5Check1");
-                                    console.log("md5Check jqXHR:"+jqXHR);
-                                    console.log("md5Check textStatus:"+textStatus);
-                                    console.log("md5Check errorThrown:"+errorThrown);
                                     task.resolve();
                         });
                     });
@@ -103,11 +96,9 @@
                         url: uploadFileUrl ,
                         data: $.extend(true,chunkCheck,business),
                         cache: false ,
-                        //timeout: 1000 ,//todo 超时的话，只能认为该分片未上传过
                         dataType: "json"
                     }).then(function(data, textStatus, jqXHR){
-                                alert("chunkCheck1");
-                                console.log("chunkCheck:"+data);
+                                console.log(data);
                                 if(data.status=="FAILED"){//FAILED表示参数错误，不需要上传分片，结束文件上传
                                     task.reject();
                                     uploader.skipFile(file);
@@ -118,10 +109,6 @@
                                     task.resolve();
                                 }
                     }, function(jqXHR, textStatus, errorThrown){    //任何形式的验证失败，都触发重新上传
-                                alert("chunkCheck2");
-                                console.log("chunkCheck jqXHR:"+jqXHR);
-                                console.log("chunkCheck textStatus:"+textStatus);
-                                console.log("chunkCheck errorThrown:"+errorThrown);
                                 task.resolve();
                     });
 
@@ -139,9 +126,7 @@
                             cache: false,
                             dataType: "json"
                         }).then(function(data, textStatus, jqXHR){
-                                    //todo 检查响应是否正常
-                                    alert("chunksMerge1");
-                                    console.log("chunksMerge:"+data);
+                                    console.log(data);
                                     //FAILED表示参数错误(包括实际分片总数和前台传来的分片总数不一致)或者程序执行错误，上传失败
                                     if(data.status=="FAILED"){
                                         task.reject();
@@ -158,10 +143,6 @@
                                     }
 
                         }, function(jqXHR, textStatus, errorThrown){
-                                    console.log("chunksMerge jqXHR:"+jqXHR);
-                                    console.log("chunksMerge textStatus:"+textStatus);
-                                    console.log("chunksMerge errorThrown:"+errorThrown);
-                                    alert("chunksMerge2");
                                     task.reject();
                         });
 

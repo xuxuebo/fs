@@ -1,140 +1,183 @@
 (function ($) {
     $(function () {
-        WebUploader.create({
-            swf: '/fs/flash/Uploader.swf',
-            server: '/fs/file/uploadFile',
-            pick: {id: "#picker", multiple: false},
-            formData: {"corpCode": "ladeng.com", appCode: "km", "businessId": "1111"}
-        }).on('fileQueued', function (file) {
-                console.log("=======")
+        var business = {};
+        var uploader = null;
+
+        WebUploader.Uploader.register({
+            "before-send-file": "beforeSendFile",
+            "before-send": "beforeSend",
+            "after-send-file": "afterSendFile"
+        }, {
+            beforeSendFile: function (file) {
+                //秒传验证
+                var task = new $.Deferred();
+                (new WebUploader.Uploader())
+                    .md5File(file, 0, 10 * 1024 * 1024).progress(function (percentage) {
+                        //console.log(percentage);
+                    }).then(function (val) {
+                        business.md5 = val;
+                        business.chunks = Math.ceil(file.size / business.chunkSize);
+                        business.storedFileName = file.name;
+                        business.fileSize = file.size;
+                        business.suffix = file.ext;
+                        $.ajax({
+                            type: "POST",
+                            url: business.uploadFileUrl,
+                            data: $.extend(true, {resumeType: "md5Check"}, business),
+                            cache: false,
+                            dataType: "json"
+                        }).then(function (data, textStatus, jqXHR) {
+                                console.log(data);
+                                if (data.status == "FAILED") {
+                                    //FAILED表示参数错误或者程序执行错误，不需要上传文件
+                                    task.reject();
+                                    uploader.skipFile(file);
+                                    alert(data.processMsg);
+                                } else if (data.status == "SUCCESS"
+                                    || data.status == "PROCESSING") {
+                                    //表示文件已存在并且处理正确或者处理中，不需要上传文件
+                                    task.reject();
+                                    uploader.skipFile(file);
+                                    file.data = data;
+                                    business.uploadCompleted(file);
+                                } else {
+                                    //表示文件不存在，需要上传文件
+                                    task.resolve();
+                                }
+                            }, function (jqXHR, textStatus, errorThrown) {
+                                //任何形式的验证失败，都触发重新上传
+                                task.resolve();
+                            });
+                    });
+                return $.when(task);
+            }, beforeSend: function (block) {
+                //分片验证是否已传过，用于断点续传
+                var task = new $.Deferred();
+                var chunkCheck = {
+                    resumeType: "chunkCheck",
+                    chunk: block.chunk,
+                    blockSize: (block.end - block.start)
+                };
+                $.ajax({
+                    type: "POST",
+                    url: business.uploadFileUrl,
+                    data: $.extend(true, chunkCheck, business),
+                    cache: false,
+                    dataType: "json"
+                }).then(function (data, textStatus, jqXHR) {
+                        console.log(data);
+                        if (data.status == "FAILED") {
+                            //FAILED表示参数错误，不需要上传分片，结束文件上传
+                            task.reject();
+                            uploader.skipFile(file);
+                            alert(data.processMsg);
+                        } else if (data.status == "SUCCESS") {
+                            //SUCCESS表示分片已存在，不需要上传分片
+                            task.reject();
+                        } else {
+                            //表示分片不存在，需要上传分片
+                            task.resolve();
+                        }
+                    }, function (jqXHR, textStatus, errorThrown) {
+                        //任何形式的验证失败，都触发重新上传
+                        task.resolve();
+                    });
+
+                return $.when(task);
+            }, afterSendFile: function (file) {
+                var chunksTotal = Math.ceil(file.size / business.chunkSize);
+                if (chunksTotal > 1) {
+                    //合并请求
+                    var task = new $.Deferred();
+                    $.ajax({
+                        type: "POST",
+                        url: business.uploadFileUrl,
+                        data: $.extend(true, {"resumeType": "chunksMerge"}, business),
+                        cache: false,
+                        dataType: "json"
+                    }).then(function (data, textStatus, jqXHR) {
+                            console.log(data);
+                            if (data.status == "FAILED") {
+                                //FAILED表示参数错误(包括实际分片总数和前台传来的分片总数不一致)或者程序执行错误，上传失败
+                                task.reject();
+                                alert(data.processMsg);
+                            } else if (data.status == "SUCCESS"
+                                || data.status == "PROCESSING") {
+                                //SUCCESS表示分片已合并完成并且正确处理
+                                task.resolve();
+                                file.data = data;
+                                business.uploadCompleted(file);
+                            } else {
+                                //表示文件正在合并或者合并失败
+                                task.resolve();
+                            }
+
+                        }, function (jqXHR, textStatus, errorThrown) {
+                            task.reject();
+                        });
+
+                    return $.when(task);
+                } else {
+                    business.uploadCompleted(file);
+                }
+            }
+        });
+
+        window.uploadFile = function (wu, param) {
+            business = $.extend(true, business, param);
+            business.uploadFileUrl = wu.server;
+            business.chunkSize = wu.chunkSize || 5000 * 1024;
+            business.responseFormat = param.responseFormat || "json";
+            wu.formData = function () {
+                return $.extend(true, {resumeType: "chunkUpload"}, business);
+            };
+
+            uploader = WebUploader.create(wu);
+
+            uploader.on("fileQueued", function (file) {
+                $("#theList").append('<li id="' + file.id + '">'
+                    + '<img /><span>' + file.name
+                    + '</span><span class="itemUpload">上传</span><span class="itemStop">'
+                    + '暂停</span><span class="itemDel">删除</span>'
+                    + '<div class="percentage"></div>' + '</li>');
+
+                var $img = $("#" + file.id).find("img");
+                uploader.makeThumb(file, function (error, src) {
+                    if (error) {
+                        $img.replaceWith("<span>不能预览</span>");
+                    }
+
+                    $img.attr("src", src);
+                });
             });
+
+            $("#theList").on("click", ".itemUpload", function () {
+                uploader.upload();
+
+                //"上传"-->"暂停"
+                $(this).hide();
+                $(".itemStop").show();
+            });
+
+            $("#theList").on("click", ".itemStop", function () {
+                uploader.stop(true);
+
+                //"暂停"-->"上传"
+                $(this).hide();
+                $(".itemUpload").show();
+            });
+
+            $("#theList").on("click", ".itemDel", function () {
+                uploader.removeFile($(this).parent().attr("id"));	//从上传文件列表中删除
+
+                $(this).parent().remove();	//从上传列表dom中删除
+            });
+
+            uploader.on("uploadProgress", function (file, percentage) {
+                $("#" + file.id + " .percentage").text(percentage * 100 + "%");
+            });
+
+            return uploader;
+        };
     });
 })(jQuery);
-
-
-/*        // 当有文件被添加进队列的时候
- uploader.on('fileQueued', function (file) {
- $list.append('<div id="' + file.id + '" class="item">' +
- '<h4 class="info">' + file.name + '</h4>' +
- '<p class="state">等待上传...</p>' +
- '</div>');
- });
-
- // 文件上传过程中创建进度条实时显示。
- uploader.on('uploadProgress', function (file, percentage) {
- var $li = $('#' + file.id),
- $percent = $li.find('.progress .progress-bar');
-
- // 避免重复创建
- if (!$percent.length) {
- $percent = $('<div class="progress progress-striped active">' +
- '<div class="progress-bar" role="progressbar" style="width: 0%">' +
- '</div>' +
- '</div>').appendTo($li).find('.progress-bar');
- }
-
- $li.find('p.state').text('上传中');
- $percent.css('width', percentage * 100 + '%');
- });
-
- uploader.on('uploadSuccess', function (file) {
- $('#' + file.id).find('p.state').text('已上传');
- });
-
- uploader.on('uploadError', function (file) {
- $('#' + file.id).find('p.state').text('上传出错');
- });
-
- uploader.on('uploadComplete', function (file) {
- $('#' + file.id).find('.progress').fadeOut();
- });
-
- WebUploader.Uploader.register({
- "before-send-file": "beforeSendFile",  // 整个文件上传前
- "before-send": "beforeSend",           // 每个分片上传前
- "after-send-file": "afterSendFile"     // 分片上传完毕
- }, {
- beforeSendFile: function (file) {
- var task = new $.Deferred();
- var start = new Date().getTime();
-
- //拿到上传文件的唯一名称，用于断点续传
- uniqueFileName = md5(file.name + file.size);
-
- $.ajax({
- type: "POST",
- url: check_url,   // 后台url地址
- data: {
- type: "init",
- uniqueFileName: uniqueFileName
- },
- cache: false,
- async: false,  // 同步
- timeout: 1000,
- dataType: "json"
- }).then(function (data, textStatus, jqXHR) {
- if (data.complete) { //若存在，这返回失败给WebUploader，表明该文件不需要上传
- task.reject();
- // 业务逻辑...
-
- } else {
- task.resolve();
- }
- }, function (jqXHR, textStatus, errorThrown) { //任何形式的验证失败，都触发重新上传
- task.resolve();
- });
-
- return $.when(task);
- }, beforeSend: function (block) {
- //分片验证是否已传过，用于断点续传
- var task = new $.Deferred();
- $.ajax({
- type: "POST",
- url: check_url,
- data: {
- type: "block",
- chunk: block.chunk,
- size: block.end - block.start
- },
- cache: false,
- async: false,  // 同步
- timeout: 1000,
- dataType: "json"
- }).then(function (data, textStatus, jqXHR) {
- if (data.is_exists) { //若存在，返回失败给WebUploader，表明该分块不需要上传
- task.reject();
- } else {
- task.resolve();
- }
- }, function (jqXHR, textStatus, errorThrown) { //任何形式的验证失败，都触发重新上传
- task.resolve();
- });
- return $.when(task);
- }, afterSendFile: function (file) {
- var chunksTotal = Math.ceil(file.size / chunkSize);
- if (chunksTotal > 1) {
- //合并请求
- var task = new $.Deferred();
- $.ajax({
- type: "POST",
- url: check_url,
- data: {
- type: "merge",
- name: file.name,
- chunks: chunksTotal,
- size: file.size
- },
- cache: false,
- async: false,  // 同步
- dataType: "json"
- }).then(function (data, textStatus, jqXHR) {
- // 业务逻辑...
-
- }, function (jqXHR, textStatus, errorThrown) {
- uploader.trigger('uploadError');
- task.reject();
- });
- return $.when(task);
- }
- }
- });*/

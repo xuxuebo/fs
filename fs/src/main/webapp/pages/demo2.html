@@ -41,16 +41,14 @@
             fileSingleSizeLimit: 10 * 1024 * 1024 * 1024,
             duplicate: true
         }, {
-            uploadCompleted: function (file) {
-                if (file == undefined || file == null) {
-                    return
+            uploadCompleted: function (data) {
+                if (data == undefined || data == null) {
+                    return;
                 }
 
-                console.log(file);
-                $("#" + file.id + " .percentage").text("上传完毕");
-                $(".itemStop").hide();
-                $(".itemUpload").hide();
-                $(".itemDel").hide();
+                console.log("--------");
+                console.log(data);
+                window.open(data.fileUrl);
             },
             appCode: "km",
             processor: "VID",

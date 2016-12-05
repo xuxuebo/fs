@@ -13,3 +13,26 @@
 #theList .itemStop {
     display: none;
 }
+
+.progressBar {
+    width: 800px;
+    height: 40px;
+    border: 1px solid #98AFB7;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#bar {
+    position: relative;
+    width: 0px;
+    height: 40px;
+    border-radius: 5px;
+    background: #5EC4EA;
+}
+
+.percent {
+    position: relative;
+    display: block;
+    left: 390px;
+    top: 15px;
+}

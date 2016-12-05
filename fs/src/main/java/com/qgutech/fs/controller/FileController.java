@@ -162,6 +162,19 @@ public class FileController {
             return false;
         }
 
+        if (chunks == 1) {
+            File md5File = new File(PropertiesUtils.getMd5FileDir(), md5);
+            if (md5File.exists()) {
+                fsFile.setTmpFilePath(md5File.getAbsolutePath());
+                return true;
+            }
+
+            LOG.error("File[" + md5File.getAbsolutePath() + ",md5:" + md5 + "] not exist!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
         File chunkDir = new File(PropertiesUtils.getChunkFileDir()
                 , DigestUtils.md5Hex(md5 + chunkSize));
         int chunkNum = getChunkNum(chunkDir.getAbsolutePath());
@@ -277,8 +290,8 @@ public class FileController {
                 return false;
             }
 
-            fsFile.setTmpFilePath(md5File.getAbsolutePath());
-            return true;
+            //fsFile.setTmpFilePath(md5File.getAbsolutePath());
+            return false;
         }
 
         Long chunk = fsFile.getChunk();

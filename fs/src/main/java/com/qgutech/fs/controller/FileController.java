@@ -56,6 +56,7 @@ public class FileController {
 
         if (!breakpointResume(fsFile)) {
             responseResult(fsFile, request, response);
+            return;
         }
 
         ServletRequestAttributes attributes = new ServletRequestAttributes(request);
@@ -65,6 +66,7 @@ public class FileController {
             fsFile = processor.submit(fsFile);
         } catch (Exception e) {
             fsFile.setProcessMsg(e.getMessage());
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
             LOG.error("Exception occurred when processing upload file[" + fsFile + "]!", e);
         }
 
@@ -114,12 +116,15 @@ public class FileController {
     //为空表示分片不存在，需要上传分片
     private boolean checkChunk(FsFile fsFile) {
         String md5 = fsFile.getMd5();
-        Long chunkIndex = fsFile.getChunkIndex();
+        Long chunk = fsFile.getChunk();
         Long chunkSize = fsFile.getChunkSize();
-        if (StringUtils.isEmpty(md5) || chunkIndex == null
-                || chunkIndex < 0 || chunkSize == null || chunkSize < 0) {
+        Long blockSize = fsFile.getBlockSize();
+        if (StringUtils.isEmpty(md5) || chunk == null
+                || chunk < 0 || chunkSize == null || chunkSize < 0
+                || blockSize == null || blockSize < 0) {
             LOG.error("Chunk check is failed because of param[md5:"
-                    + md5 + "chunkIndex:" + chunkIndex + "chunkSize:" + chunkSize + "] error!");
+                    + md5 + ",chunk:" + chunk + ",chunkSize:" + chunkSize
+                    + ",blockSize:" + blockSize + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -133,8 +138,8 @@ public class FileController {
 
         String chunkFileDir = PropertiesUtils.getChunkFileDir();
         File chunkFile = new File(chunkFileDir, DigestUtils.md5Hex(md5 + chunkSize)
-                + File.separator + chunkIndex);
-        if (chunkFile.exists() && chunkFile.length() == chunkSize) {
+                + File.separator + chunk);
+        if (chunkFile.exists() && chunkFile.length() == blockSize) {
             fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         }
 
@@ -203,12 +208,14 @@ public class FileController {
                     }
                 }
 
+                closeChannel(outChannel);
                 File md5File = new File(md5FileDir, md5);
                 if (!md5TmpFile.renameTo(md5File)) {
                     fsFile.setProcessMsg("File Merging failed!");
                     return false;
                 }
 
+                fsFile.setTmpFilePath(md5File.getAbsolutePath());
                 FsUtils.deleteFile(chunkDir);
                 return true;
             } catch (Exception e) {
@@ -242,11 +249,12 @@ public class FileController {
         MultipartFile file = fsFile.getFile();
         Long chunks = fsFile.getChunks();
         String md5 = fsFile.getMd5();
-        Long chunkIndex = fsFile.getChunkIndex();
+
         Long chunkSize = fsFile.getChunkSize();
         if (file == null || file.isEmpty() || chunks == null || chunks < 0
-                || StringUtils.isEmpty(md5) || chunkIndex == null || chunkIndex < 0
-                || chunkSize == null || chunkSize < 0) {
+                || StringUtils.isEmpty(md5) || chunkSize == null || chunkSize < 0) {
+            LOG.error("Upload chunk is failed because of param[md5:"
+                    + md5 + ",chunks:" + chunks + ",chunkSize:" + chunkSize + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -273,9 +281,17 @@ public class FileController {
             return true;
         }
 
+        Long chunk = fsFile.getChunk();
+        if (chunk == null || chunk < 0) {
+            LOG.error("Upload chunk is failed because of param[chunk:" + chunk + "] error!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("Param Error!");
+            return false;
+        }
+
         String chunkFileDir = PropertiesUtils.getChunkFileDir();
         File chunkFile = new File(chunkFileDir, DigestUtils.md5Hex(md5 + chunkSize)
-                + File.separator + chunkIndex);
+                + File.separator + chunk);
         File parentFile = chunkFile.getParentFile();
         if (!parentFile.exists() && !parentFile.mkdirs() && !parentFile.exists()) {
             LOG.error("Creating chunk file directory[" + parentFile.getAbsolutePath() + "] failed!");

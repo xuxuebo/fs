@@ -8,6 +8,7 @@ import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -56,14 +57,14 @@ public abstract class AbstractProcessor implements Processor {
 
         String tmpFilePath = tmpDirPath + File.separator
                 + tmp + FsConstants.POINT + fsFile.getSuffix();
-        fsFile.setTmpFilePath(tmpFilePath);
+        //fsFile.setTmpFilePath(tmpFilePath);
         InputStream inputStream = null;
         OutputStream outputStream = null;
         String fsFileId = null;
         String originFilePath = null;
         boolean needAsync = true;
         try {
-            saveTmpFile(fsFile);
+            saveTmpFile(fsFile, tmpFilePath);
             if (!validateFile(fsFile)) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 return fsFile;
@@ -211,7 +212,17 @@ public abstract class AbstractProcessor implements Processor {
         return true;
     }
 
-    protected final void saveTmpFile(FsFile fsFile) throws Exception {
+    protected final void saveTmpFile(FsFile fsFile, String tmpFilePath) throws Exception {
+        String fsFileTmpFilePath = fsFile.getTmpFilePath();
+        if (StringUtils.isNotEmpty(fsFileTmpFilePath)) {
+            File srcFile = new File(fsFileTmpFilePath);
+            if (srcFile.exists()) {
+                FileUtils.copyFile(srcFile, new File(tmpFilePath));
+                fsFile.setTmpFilePath(tmpFilePath);
+                return;
+            }
+        }
+
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {

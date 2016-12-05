@@ -227,10 +227,16 @@ public class FsFile extends BaseEntity {
     private Long chunkSize;
 
     /**
+     * 文件当前分块的大小
+     */
+    @Transient
+    private Long blockSize;
+
+    /**
      * 文件分块的序号
      */
     @Transient
-    private Long chunkIndex;
+    private Long chunk;
 
     /**
      * 文件分块数量
@@ -478,12 +484,12 @@ public class FsFile extends BaseEntity {
         this.resumeType = resumeType;
     }
 
-    public Long getChunkIndex() {
-        return chunkIndex;
+    public Long getChunk() {
+        return chunk;
     }
 
-    public void setChunkIndex(Long chunkIndex) {
-        this.chunkIndex = chunkIndex;
+    public void setChunk(Long chunk) {
+        this.chunk = chunk;
     }
 
     public Long getChunkSize() {
@@ -492,6 +498,14 @@ public class FsFile extends BaseEntity {
 
     public void setChunkSize(Long chunkSize) {
         this.chunkSize = chunkSize;
+    }
+
+    public Long getBlockSize() {
+        return blockSize;
+    }
+
+    public void setBlockSize(Long blockSize) {
+        this.blockSize = blockSize;
     }
 
     public Long getChunks() {
@@ -536,7 +550,8 @@ public class FsFile extends BaseEntity {
                 ", md5='" + md5 + '\'' +
                 ", resumeType='" + resumeType + '\'' +
                 ", chunkSize=" + chunkSize +
-                ", chunkIndex=" + chunkIndex +
+                ", blockSize=" + blockSize +
+                ", chunk=" + chunk +
                 ", chunks=" + chunks +
                 '}';
     }
@@ -696,7 +711,7 @@ public class FsFile extends BaseEntity {
             builder.append(",\n");
         }
 
-        builder.delete(builder.length() - 1, builder.length());
+        builder.delete(builder.length() - 2, builder.length());
         builder.append("\n}");
 
         return builder.toString();

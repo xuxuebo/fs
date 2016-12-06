@@ -24,6 +24,12 @@ public class PdfToImageConverter extends AbstractConverter {
     private static final int DEFAULT_PDF_SPLIT_SIZE = 100;
     private static final int DEFAULT_SEMAPHORE_CNT = Runtime.getRuntime().availableProcessors() / 2 + 1;
 
+    protected String[] getCommands(String srcFilePath, String targetFilePath) {
+        return new String[]{convertToolPath, "-srcFile"
+                , srcFilePath.replace("\\", "\\\\"), "-tarFile"
+                , (targetFilePath + File.separator).replace("\\", "\\\\")};
+    }
+
     @Override
     protected File windowsConvert(String inputFilePath, final String targetFileDirPath) throws Exception {
         List<String> pdfFilePathList = splitPdf(inputFilePath);

@@ -156,16 +156,19 @@
             } else if (processor == "IMG") {
                 wu.accept = {
                     title: "不支持的图片类型",
+                    mimeTypes: "image/bmp,image/png,image/gif,image/jpeg,image/tiff",
                     extensions: 'bmp,png,gif,jpg,jpeg,tif'
                 };
             } else if (processor == "DOC") {
                 wu.accept = {
                     title: "不支持的文档类型",
+                    mimeTypes: "application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-excel,pplication/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,text/plain",
                     extensions: 'doc,docx,ppt,pptx,xls,xlsx,pdf,txt'
                 };
             } else if (processor != "FILE") {
                 wu.accept = {
                     title: "不支持的压缩类型",
+                    //mimeTypes: "application/zip,application/x-rar-compressed,application/application/x-7z-compressed",
                     extensions: 'zip,rar,7z'
                 };
             }

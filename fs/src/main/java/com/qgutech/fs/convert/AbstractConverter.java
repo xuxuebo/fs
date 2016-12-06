@@ -51,9 +51,9 @@ public abstract class AbstractConverter implements Converter {
         File targetFile = getTargetFile(targetFileDirPath);
         String[] commands = getCommands(inputFilePath, targetFile.getAbsolutePath());
         String result = FsUtils.executeCommand(commands);
-        if (result.length() > 0) {
+       /* if (result.length() > 0) {
             throw new RuntimeException("Execute command[" + FsUtils.toString(commands) + "] failed! " + result);
-        }
+        }*/
 
         return targetFile;
     }

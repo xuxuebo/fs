@@ -4,6 +4,7 @@
         var uploader = null;
 
         function uploadCompleted(file) {
+            uploader.reset();
             $("#" + file.id + " .percentage").text("上传完毕");
             $(".itemStop").hide();
             $(".itemUpload").hide();
@@ -175,6 +176,7 @@
             uploader = WebUploader.create(wu);
 
             uploader.on("fileQueued", function (file) {
+                $("#theList").html('');
                 $("#theList").append('<li id="' + file.id + '">'
                     + '<img /><span>' + file.name
                     + '</span><span class="itemUpload">上传</span><span class="itemStop">'

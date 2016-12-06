@@ -141,6 +141,19 @@
             business.uploadFileUrl = wu.server;
             business.chunkSize = wu.chunkSize || 5000 * 1024;
             business.responseFormat = param.responseFormat || "json";
+            var processor = business.processor;
+            if (processor == "VID") {
+                wu.accept = {extensions: 'wmv,flv,mp4,rmvb,mkv,mov,avi,m4v,asf'};
+            } else if (processor == "AUD") {
+                wu.accept = {extensions: 'mp3,ape'};
+            } else if (processor == "IMG") {
+                wu.accept = {extensions: 'bmp,png,gif,jpg,jpeg,tif'};
+            } else if (processor == "DOC") {
+                wu.accept = {extensions: 'doc,docx,ppt,pptx,xls,xlsx,pdf,txt'};
+            } else if (processor != "FILE") {
+                wu.accept = {extensions: 'zip,rar,7z'};
+            }
+
             wu.formData = function () {
                 return $.extend(true, {resumeType: "chunkUpload"}, business);
             };

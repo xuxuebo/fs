@@ -96,7 +96,7 @@ public class FileController {
     private boolean checkMd5(FsFile fsFile) {
         String md5 = fsFile.getMd5();
         if (StringUtils.isEmpty(md5)) {
-            LOG.error("Md5 check is failed because of param[md5:" + md5 + "] error!");
+            LOG.error("Checking MD5 is failed because of param[md5:" + md5 + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("File md5 is necessary!");
             return false;
@@ -122,7 +122,7 @@ public class FileController {
         if (StringUtils.isEmpty(md5) || chunk == null
                 || chunk < 0 || chunkSize == null || chunkSize < 0
                 || blockSize == null || blockSize < 0) {
-            LOG.error("Chunk check is failed because of param[md5:"
+            LOG.error("Checking chunk is failed because of param[md5:"
                     + md5 + ",chunk:" + chunk + ",chunkSize:" + chunkSize
                     + ",blockSize:" + blockSize + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
@@ -155,8 +155,8 @@ public class FileController {
         Long chunks = fsFile.getChunks();
         if (StringUtils.isEmpty(md5) || chunkSize == null || chunkSize < 0
                 || chunks == null || chunks < 0) {
-            LOG.error("Chunks merge is failed because of param[md5:"
-                    + md5 + "chunks:" + chunks + "chunkSize:" + chunkSize + "] is error!");
+            LOG.error("Merging chunks is failed because of param[md5:"
+                    + md5 + ",chunks:" + chunks + ",chunkSize:" + chunkSize + "] is error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -169,7 +169,8 @@ public class FileController {
                 return true;
             }
 
-            LOG.error("File[" + md5File.getAbsolutePath() + ",md5:" + md5 + "] not exist!");
+            LOG.error("Merging single chunks is failed because of file["
+                    + md5File.getAbsolutePath() + ",md5:" + md5 + "] not exist!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -262,11 +263,10 @@ public class FileController {
         MultipartFile file = fsFile.getFile();
         Long chunks = fsFile.getChunks();
         String md5 = fsFile.getMd5();
-
         Long chunkSize = fsFile.getChunkSize();
         if (file == null || file.isEmpty() || chunks == null || chunks < 0
                 || StringUtils.isEmpty(md5) || chunkSize == null || chunkSize < 0) {
-            LOG.error("Upload chunk is failed because of param[md5:"
+            LOG.error("Uploading chunk is failed because of param[file:" + file + ",md5:"
                     + md5 + ",chunks:" + chunks + ",chunkSize:" + chunkSize + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
@@ -290,13 +290,12 @@ public class FileController {
                 return false;
             }
 
-            //fsFile.setTmpFilePath(md5File.getAbsolutePath());
             return false;
         }
 
         Long chunk = fsFile.getChunk();
         if (chunk == null || chunk < 0) {
-            LOG.error("Upload chunk is failed because of param[chunk:" + chunk + "] error!");
+            LOG.error("Uploading chunk is failed because of param[chunk:" + chunk + "] error!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;

@@ -57,7 +57,6 @@ public abstract class AbstractProcessor implements Processor {
 
         String tmpFilePath = tmpDirPath + File.separator
                 + tmp + FsConstants.POINT + fsFile.getSuffix();
-        //fsFile.setTmpFilePath(tmpFilePath);
         InputStream inputStream = null;
         OutputStream outputStream = null;
         String fsFileId = null;
@@ -66,6 +65,8 @@ public abstract class AbstractProcessor implements Processor {
         try {
             saveTmpFile(fsFile, tmpFilePath);
             if (!validateFile(fsFile)) {
+                LOG.error("Uploading file[" + fsFile + "] is illegally!");
+                fsFile.setProcessMsg("File is illegally!");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 return fsFile;
             }
@@ -77,17 +78,16 @@ public abstract class AbstractProcessor implements Processor {
             originFilePath = getOriginFilePath(fsFile);
             File originFile = new File(originFilePath);
             File parentFile = originFile.getParentFile();
-            if (!parentFile.exists() && !parentFile.mkdirs()) {
+            if (!parentFile.exists() && !parentFile.mkdirs() && !parentFile.exists()) {
                 throw new IOException("Creating directory[" + parentFile.getAbsolutePath() + "] failed!");
             }
 
-            if (!originFile.exists() && !originFile.createNewFile()) {
+            if (!originFile.exists() && !originFile.createNewFile() && !originFile.exists()) {
                 throw new IOException("Creating file[" + originFilePath + "] failed!");
             }
 
             outputStream = new FileOutputStream(originFilePath);
             IOUtils.copy(inputStream, outputStream);
-
             needAsync = needAsync(fsFile);
             if (needAsync) {
                 submit(fsFile, 0);
@@ -116,7 +116,7 @@ public abstract class AbstractProcessor implements Processor {
     protected final boolean validateResumeParams(FsFile fsFile) throws Exception {
         String storedFileName = fsFile.getStoredFileName();
         if (StringUtils.isEmpty(storedFileName)) {
-            LOG.error("Upload file originalFilename is empty!");
+            LOG.error("Uploading file's originalFilename is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -125,7 +125,7 @@ public abstract class AbstractProcessor implements Processor {
         String extension = FilenameUtils.getExtension(storedFileName);
         fsFile.setSuffix(extension.toLowerCase());
         if (StringUtils.isEmpty(extension)) {
-            LOG.error("Upload file[fileName:" + storedFileName + "]'s extension is empty!");
+            LOG.error("Uploading file[fileName:" + storedFileName + "]'s extension is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -133,9 +133,9 @@ public abstract class AbstractProcessor implements Processor {
 
         Long fileSize = fsFile.getFileSize();
         if (fileSize == null || fileSize <= 0) {
-            LOG.error("Upload file[fileName:" + storedFileName + "]'s size[" + fileSize + "] is illegal!");
+            LOG.error("Uploading file[fileName:" + storedFileName + "]'s size[" + fileSize + "] is illegal!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            fsFile.setProcessMsg("Param error!");
+            fsFile.setProcessMsg("Param Error!");
             return false;
         }
 
@@ -150,6 +150,7 @@ public abstract class AbstractProcessor implements Processor {
 
     protected final boolean validateParams(FsFile fsFile) throws Exception {
         if (fsFile == null) {
+            LOG.error("The param fsFile is null!");
             return false;
         }
 
@@ -184,7 +185,7 @@ public abstract class AbstractProcessor implements Processor {
         }
 
         if (file == null || file.isEmpty() || StringUtils.isEmpty(file.getOriginalFilename())) {
-            LOG.error("Upload file not exist or originalFilename is empty!");
+            LOG.error("Uploading file not exist or originalFilename is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -194,7 +195,7 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setStoredFileName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
         if (StringUtils.isEmpty(extension)) {
-            LOG.error("Upload file[fileName:" + originalFilename + "]'s extension is empty!");
+            LOG.error("Uploading file[fileName:" + originalFilename + "]'s extension is empty!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param Error!");
             return false;
@@ -202,7 +203,6 @@ public abstract class AbstractProcessor implements Processor {
 
         fsFile.setSuffix(extension.toLowerCase());
         fsFile.setFileSize(file.getSize());
-
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
         if (StringUtils.isEmpty(fsFile.getId()) || fsFile.getCreateTime() == null) {
@@ -213,9 +213,8 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected final void saveTmpFile(FsFile fsFile, String tmpFilePath) throws Exception {
-        String fsFileTmpFilePath = fsFile.getTmpFilePath();
-        if (StringUtils.isNotEmpty(fsFileTmpFilePath)) {
-            File srcFile = new File(fsFileTmpFilePath);
+        if (StringUtils.isNotEmpty(fsFile.getTmpFilePath())) {
+            File srcFile = new File(fsFile.getTmpFilePath());
             if (srcFile.exists()) {
                 FileUtils.copyFile(srcFile, new File(tmpFilePath));
                 fsFile.setTmpFilePath(tmpFilePath);

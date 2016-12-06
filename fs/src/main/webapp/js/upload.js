@@ -143,15 +143,30 @@
             business.responseFormat = param.responseFormat || "json";
             var processor = business.processor;
             if (processor == "VID") {
-                wu.accept = {extensions: 'wmv,flv,mp4,rmvb,mkv,mov,avi,m4v,asf'};
+                wu.accept = {
+                    title: "不支持的视频类型",
+                    extensions: 'wmv,flv,mp4,rmvb,mkv,mov,avi,m4v,asf'
+                };
             } else if (processor == "AUD") {
-                wu.accept = {extensions: 'mp3,ape'};
+                wu.accept = {
+                    title: "不支持的音频类型",
+                    extensions: 'mp3,ape'
+                };
             } else if (processor == "IMG") {
-                wu.accept = {extensions: 'bmp,png,gif,jpg,jpeg,tif'};
+                wu.accept = {
+                    title: "不支持的图片类型",
+                    extensions: 'bmp,png,gif,jpg,jpeg,tif'
+                };
             } else if (processor == "DOC") {
-                wu.accept = {extensions: 'doc,docx,ppt,pptx,xls,xlsx,pdf,txt'};
+                wu.accept = {
+                    title: "不支持的文档类型",
+                    extensions: 'doc,docx,ppt,pptx,xls,xlsx,pdf,txt'
+                };
             } else if (processor != "FILE") {
-                wu.accept = {extensions: 'zip,rar,7z'};
+                wu.accept = {
+                    title: "不支持的压缩类型",
+                    extensions: 'zip,rar,7z'
+                };
             }
 
             wu.formData = function () {
@@ -177,8 +192,17 @@
                 });
             });
 
-            uploader.on('uploadSuccess', function (file) {
-
+            uploader.on('beforeFileQueued', function (file) {
+                if (this && this.options && this.options.accept
+                    && this.options.accept instanceof Array
+                    && this.options.accept[0]) {
+                    var accept = this.options.accept[0];
+                    if (accept.extensions) {
+                        if (accept.extensions.indexOf(file.ext) < 0) {
+                            alert(accept.title);
+                        }
+                    }
+                }
             });
 
             uploader.on('uploadError', function (file) {

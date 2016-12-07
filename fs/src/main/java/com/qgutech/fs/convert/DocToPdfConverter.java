@@ -2,16 +2,66 @@ package com.qgutech.fs.convert;
 
 
 import com.qgutech.fs.domain.DocTypeEnum;
-import com.qgutech.fs.utils.ConvertUtils;
-import com.qgutech.fs.utils.FsConstants;
-import com.qgutech.fs.utils.FsUtils;
+import com.qgutech.fs.utils.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class DocToPdfConverter extends AbstractConverter {
+
+    protected long timerPeriod;
+    protected long timerDelay;
+    protected JedisCommands commonJedis;
+
+    public void init() {
+        if (!SERVER_TYPE_WINDOWS.equals(serverType)) {
+            return;
+        }
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                killWindowsWordProcesses(FsConstants.IMAGE_NAME_WIN_WORD_EXE);
+                killWindowsWordProcesses(FsConstants.IMAGE_NAME_POWER_PNT_EXE);
+                killWindowsWordProcesses(FsConstants.IMAGE_NAME_EXCEL_EXE);
+            }
+        }, timerDelay, timerPeriod);
+    }
+
+    private void killWindowsWordProcesses(String imageName) {
+        try {
+            List<String> windowsPids = FsUtils.getWindowsPids(imageName);
+            if (CollectionUtils.isNotEmpty(windowsPids)) {
+                return;
+            }
+
+            for (String windowsPid : windowsPids) {
+                String key = RedisKey.FS_WINDOWS_PID_ + imageName
+                        + PropertiesUtils.getServerHost() + windowsPid;
+                String timestamp = commonJedis.get(key);
+                long currentTimeMillis = System.currentTimeMillis();
+                if (StringUtils.isEmpty(timestamp)) {
+                    commonJedis.setex(key, (int) timerPeriod / 1000 * 10, currentTimeMillis + "");
+                    continue;
+                }
+
+                long executeTime = currentTimeMillis - Long.parseLong(timestamp);
+                if (executeTime >= timerPeriod) {
+                    FsUtils.killWindowsProcess(windowsPid);
+                    commonJedis.expire(key, 0);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error(e);
+        }
+    }
 
     private String getFileExtension(String fileName) {
         String extension = FilenameUtils.getExtension(fileName);
@@ -50,5 +100,29 @@ public class DocToPdfConverter extends AbstractConverter {
     protected File getTargetFile(String targetFilePath) {
         return new File(targetFilePath, FsConstants.PDF_PREFIX
                 + FsUtils.generateUUID() + FsConstants.PDF_SUFFIX);
+    }
+
+    public long getTimerDelay() {
+        return timerDelay;
+    }
+
+    public void setTimerDelay(long timerDelay) {
+        this.timerDelay = timerDelay;
+    }
+
+    public long getTimerPeriod() {
+        return timerPeriod;
+    }
+
+    public void setTimerPeriod(long timerPeriod) {
+        this.timerPeriod = timerPeriod;
+    }
+
+    public JedisCommands getCommonJedis() {
+        return commonJedis;
+    }
+
+    public void setCommonJedis(JedisCommands commonJedis) {
+        this.commonJedis = commonJedis;
     }
 }

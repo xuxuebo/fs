@@ -80,7 +80,11 @@
         <property name="serverType" value="${fs.serverType}"/>
     </bean>
 
-    <bean id="docToPdfConverter" parent="converter" class="com.qgutech.fs.convert.DocToPdfConverter">
+    <bean id="docToPdfConverter" parent="converter" class="com.qgutech.fs.convert.DocToPdfConverter"
+          init-method="init">
+        <property name="timerDelay" value="${fs.pdfToImage.timerDelay}"/>
+        <property name="timerPeriod" value="${fs.pdfToImage.timerPeriod}"/>
+        <property name="commonJedis" ref="commonJedis"/>
     </bean>
 
     <bean id="pdfToImageConverter" parent="converter" class="com.qgutech.fs.convert.PdfToImageConverter">

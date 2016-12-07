@@ -3,6 +3,7 @@ package com.qgutech.fs.utils;
 
 import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -717,21 +718,48 @@ public class FsUtils {
     }
 
     public static List<String> getWindowsWordPids() throws Exception {
-        return getWindowsPids("WINWORD.EXE");
+        return getWindowsPids(FsConstants.IMAGE_NAME_WIN_WORD_EXE);
     }
 
     public static List<String> getWindowsPptPids() throws Exception {
-        return getWindowsPids("POWERPNT.EXE");
+        return getWindowsPids(FsConstants.IMAGE_NAME_POWER_PNT_EXE);
     }
 
     public static List<String> getWindowsExcelPids() throws Exception {
-        return getWindowsPids("EXCEL.EXE");
+        return getWindowsPids(FsConstants.IMAGE_NAME_EXCEL_EXE);
+    }
+
+    public static void killWindowsProcess(String pid) throws Exception {
+        Assert.hasText(pid, "Pid is empty!");
+        Process process = Runtime.getRuntime().exec("tskill " + pid);
+        BufferedReader bufferReader = null;
+        try {
+            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = bufferReader.readLine()) != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(line.trim());
+                }
+            }
+
+            process.waitFor();
+        } finally {
+            IOUtils.closeQuietly(bufferReader);
+            if (process != null) {
+                process.destroy();
+            }
+        }
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println(getWindowsWordPids());
+        List<String> windowsWordPids = getWindowsWordPids();
+        System.out.println(windowsWordPids);
         System.out.println(getWindowsPptPids());
         System.out.println(getWindowsExcelPids());
+        if (CollectionUtils.isNotEmpty(windowsWordPids)) {
+            killWindowsProcess(windowsWordPids.get(0));
+        }
+
        /* System.out.println(getVideo("E:\\1.mkv"));
         executeCommand(new String[]{FsConstants.FFMPEG, "-i", "E:\\1.mkv", "-ss"
                 , "00:10:00", "-y", "E:\\1.png"});*/

@@ -73,4 +73,8 @@ public interface FsConstants {
      * 临时文件的后缀
      */
     String TMM_FILE_SUFFIX = ".tmp";
+
+    String IMAGE_NAME_WIN_WORD_EXE = "WINWORD.EXE";
+    String IMAGE_NAME_POWER_PNT_EXE = "POWERPNT.EXE";
+    String IMAGE_NAME_EXCEL_EXE = "EXCEL.EXE";
 }

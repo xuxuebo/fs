@@ -53,13 +53,13 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             File docFile = docFiles[i];
             String srcFilePath = docFile.getAbsolutePath();
             File nextImageTmpDirFile = new File(imageTmpDirFile, (i + 1) + "");
-            String nextImageTmpDirPath = nextImageTmpDirFile.getAbsolutePath() + File.separator;
+            String nextImageTmpDirPath = nextImageTmpDirFile.getAbsolutePath();
             if (!nextImageTmpDirFile.exists() && !nextImageTmpDirFile.mkdirs()) {
                 throw new IOException("Creating directory[path:" + nextImageTmpDirPath + "] failed!");
             }
 
             File nextGenFileDirFile = new File(genFilePath, (i + 1) + "");
-            String nextGenFileDirPath = nextGenFileDirFile.getAbsolutePath() + File.separator;
+            String nextGenFileDirPath = nextGenFileDirFile.getAbsolutePath();
             if (!nextGenFileDirFile.exists() && !nextGenFileDirFile.mkdirs()) {
                 throw new IOException("Creating directory[path:" + nextGenFileDirPath + "] failed!");
             }

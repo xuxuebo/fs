@@ -28,12 +28,12 @@ public class DocProcessor extends AbstractDocProcessor {
         }
 
         File imageTmpDirFile = new File(tmpDirFile, FsUtils.generateUUID() + FsConstants.FILE_DIR_IMG);
-        String imageTmpDirPath = imageTmpDirFile.getAbsolutePath() + File.separator;
+        String imageTmpDirPath = imageTmpDirFile.getAbsolutePath();
         if (!imageTmpDirFile.exists() && !imageTmpDirFile.mkdirs()) {
             throw new IOException("Creating directory[path:" + imageTmpDirPath + "] failed!");
         }
 
-        String pdfTmpDirPath = tmpDirFile.getAbsolutePath() + File.separator;
+        String pdfTmpDirPath = tmpDirFile.getAbsolutePath();
         int docPage = processDoc(fsFile.getTmpFilePath(), imageTmpDirPath, pdfTmpDirPath, genFilePath);
         if (docPage <= 0) {
             FsUtils.deleteFile(getGenFilePath(fsFile));

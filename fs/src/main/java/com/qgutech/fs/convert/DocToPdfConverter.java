@@ -34,10 +34,10 @@ public class DocToPdfConverter extends AbstractConverter {
             ConvertUtils.wordToPdf(inputFilePath, targetFile.getAbsolutePath());
         } else if (DocTypeEnum.PPT.docType().equalsIgnoreCase(extension)
                 || DocTypeEnum.PPTX.docType().equalsIgnoreCase(extension)) {
-            ConvertUtils.excelToPdf(inputFilePath, targetFile.getAbsolutePath());
+            ConvertUtils.pptToPdf(inputFilePath, targetFile.getAbsolutePath());
         } else if (DocTypeEnum.XLS.docType().equalsIgnoreCase(extension)
                 || DocTypeEnum.XLSX.docType().equalsIgnoreCase(extension)) {
-            ConvertUtils.pptToPdf(inputFilePath, targetFile.getAbsolutePath());
+            ConvertUtils.excelToPdf(inputFilePath, targetFile.getAbsolutePath());
         } else {
             throw new RuntimeException("InputFile[path:" + inputFilePath
                     + "]'s extension[" + extension + "] is not supported!");

@@ -15,7 +15,8 @@ public class ConvertUtils {
         ActiveXComponent app = null;
         Dispatch doc = null;
         try {
-            ComThread.InitSTA();
+            ComThread.InitMTA(true);
+            //ComThread.InitSTA();
             //打开word应用程序
             app = new ActiveXComponent("Word.Application");
             //设置word不可见
@@ -29,7 +30,8 @@ public class ConvertUtils {
         } finally {
             //关闭文档
             if (doc != null) {
-                Dispatch.call(doc, "Close");
+                //Dispatch.call(doc, "Close");
+                doc.safeRelease();
             }
 
             //关闭word应用程序
@@ -54,7 +56,8 @@ public class ConvertUtils {
             Dispatch.call(excel, "ExportAsFixedFormat", XLS_TO_PDF_FORMAT, pdfFile);
         } finally {
             if (excel != null) {
-                Dispatch.call(excel, "Close");
+                //Dispatch.call(excel, "Close");
+                excel.safeRelease();
             }
 
             if (app != null) {
@@ -77,7 +80,8 @@ public class ConvertUtils {
             Dispatch.call(ppt, "SaveAs", pdfFile, PPT_TO_PDF_FORMAT);
         } finally {
             if (ppt != null) {
-                Dispatch.call(ppt, "Close");
+                // Dispatch.call(ppt, "Close");
+                ppt.safeRelease();
             }
             if (app != null) {
                 app.invoke("Quit");
@@ -98,7 +102,8 @@ public class ConvertUtils {
             Dispatch.call(ppt, "SaveAs", pngFile, PPT_TO_PNG_FORMAT);
         } finally {
             if (ppt != null) {
-                Dispatch.call(ppt, "Close");
+                //Dispatch.call(ppt, "Close");
+                ppt.safeRelease();
             }
             if (app != null) {
                 app.invoke("Quit");

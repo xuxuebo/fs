@@ -679,10 +679,62 @@ public class FsUtils {
         return result;
     }
 
+    public static List<String> getWindowsPids(String imageName) throws Exception {
+        Assert.hasText(imageName, "ImageName is empty!");
+        Process process = Runtime.getRuntime().exec("tasklist /nh /FI \"Imagename eq " + imageName + "\"");
+        List<String> pids = new ArrayList<String>();
+        BufferedReader bufferReader = null;
+        try {
+            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = bufferReader.readLine()) != null) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(line.trim());
+                }
+
+                if (!line.contains(imageName)) {
+                    continue;
+                }
+
+                String[] split = line.split(" ");
+                for (int i = 1; i < split.length; i++) {
+                    if (!split[i].trim().isEmpty()) {
+                        pids.add(split[i]);
+                        break;
+                    }
+                }
+            }
+
+            process.waitFor();
+        } finally {
+            IOUtils.closeQuietly(bufferReader);
+            if (process != null) {
+                process.destroy();
+            }
+        }
+
+        return pids;
+    }
+
+    public static List<String> getWindowsWordPids() throws Exception {
+        return getWindowsPids("WINWORD.EXE");
+    }
+
+    public static List<String> getWindowsPptPids() throws Exception {
+        return getWindowsPids("POWERPNT.EXE");
+    }
+
+    public static List<String> getWindowsExcelPids() throws Exception {
+        return getWindowsPids("EXCEL.EXE");
+    }
+
     public static void main(String[] args) throws Exception {
-        System.out.println(getVideo("E:\\1.mkv"));
+        System.out.println(getWindowsWordPids());
+        System.out.println(getWindowsPptPids());
+        System.out.println(getWindowsExcelPids());
+       /* System.out.println(getVideo("E:\\1.mkv"));
         executeCommand(new String[]{FsConstants.FFMPEG, "-i", "E:\\1.mkv", "-ss"
-                , "00:10:00", "-y", "E:\\1.png"});
+                , "00:10:00", "-y", "E:\\1.png"});*/
     /*    decompress("C:/Users/Administrator/Desktop/test/mp41.rar"
                 , "C:/Users/Administrator/Desktop/test/my");*/
        /* compressTo7Z("C:/Users/Administrator/Desktop/test/mp41"

@@ -18,10 +18,11 @@ public class DocToPdfConverter extends AbstractConverter {
 
     protected long timerPeriod;
     protected long timerDelay;
+    protected boolean enableTimer;
     protected JedisCommands commonJedis;
 
     public void init() {
-        if (!SERVER_TYPE_WINDOWS.equals(serverType)) {
+        if (!SERVER_TYPE_WINDOWS.equals(serverType) && enableTimer) {
             return;
         }
 
@@ -38,13 +39,13 @@ public class DocToPdfConverter extends AbstractConverter {
     private void killWindowsWordProcesses(String imageName) {
         try {
             List<String> windowsPids = FsUtils.getWindowsPids(imageName);
-            if (CollectionUtils.isNotEmpty(windowsPids)) {
+            if (CollectionUtils.isEmpty(windowsPids)) {
                 return;
             }
 
             for (String windowsPid : windowsPids) {
-                String key = RedisKey.FS_WINDOWS_PID_ + imageName
-                        + PropertiesUtils.getServerHost() + windowsPid;
+                String key = RedisKey.FS_WINDOWS_PID_ + imageName + FsConstants.UNDERLINE
+                        + PropertiesUtils.getServerHost() + FsConstants.UNDERLINE + windowsPid;
                 String timestamp = commonJedis.get(key);
                 long currentTimeMillis = System.currentTimeMillis();
                 if (StringUtils.isEmpty(timestamp)) {
@@ -116,6 +117,14 @@ public class DocToPdfConverter extends AbstractConverter {
 
     public void setTimerPeriod(long timerPeriod) {
         this.timerPeriod = timerPeriod;
+    }
+
+    public boolean isEnableTimer() {
+        return enableTimer;
+    }
+
+    public void setEnableTimer(boolean enableTimer) {
+        this.enableTimer = enableTimer;
     }
 
     public JedisCommands getCommonJedis() {

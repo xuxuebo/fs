@@ -84,6 +84,7 @@
           init-method="init">
         <property name="timerDelay" value="${fs.pdfToImage.timerDelay}"/>
         <property name="timerPeriod" value="${fs.pdfToImage.timerPeriod}"/>
+        <property name="enableTimer" value="${fs.pdfToImage.enableTimer}"/>
         <property name="commonJedis" ref="commonJedis"/>
     </bean>
 

@@ -79,6 +79,8 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
 
         File[] imageFiles = new File(imageTmpDirPath).listFiles();
         if (imageFiles == null || imageFiles.length == 0) {
+            LOG.error("The images[DirPath:" + imageTmpDirPath
+                    + "] which converting from doc[path:" + srcFilePath + "] is empty!");
             return -1;
         }
 

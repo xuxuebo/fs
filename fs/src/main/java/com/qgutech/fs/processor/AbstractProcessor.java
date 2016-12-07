@@ -336,6 +336,8 @@ public abstract class AbstractProcessor implements Processor {
         try {
             submitToRedis(fsFile);
         } catch (Exception e) {
+            LOG.error("Exception occurred when submitting fsFile[" + fsFile
+                    + "submitCount:" + (count + 1) + "] to redis!", e);
             try {
                 Thread.sleep(submitFailedWaitTime);
             } catch (Exception ex) {

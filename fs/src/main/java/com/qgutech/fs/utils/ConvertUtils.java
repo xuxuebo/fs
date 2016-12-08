@@ -4,6 +4,7 @@ package com.qgutech.fs.utils;
 import com.jacob.activeX.ActiveXComponent;
 import com.jacob.com.ComThread;
 import com.jacob.com.Dispatch;
+import com.jacob.com.Variant;
 
 public class ConvertUtils {
     public static final int WORD_TO_PDF_FORMAT = 17;
@@ -15,8 +16,7 @@ public class ConvertUtils {
         ActiveXComponent app = null;
         Dispatch doc = null;
         try {
-            ComThread.InitMTA(true);
-            //ComThread.InitSTA();
+            ComThread.InitSTA();
             //打开word应用程序
             app = new ActiveXComponent("Word.Application");
             //设置word不可见
@@ -30,8 +30,7 @@ public class ConvertUtils {
         } finally {
             //关闭文档
             if (doc != null) {
-                //Dispatch.call(doc, "Close");
-                doc.safeRelease();
+                Dispatch.call(doc, "Close", new Variant(false));
             }
 
             //关闭word应用程序
@@ -56,8 +55,7 @@ public class ConvertUtils {
             Dispatch.call(excel, "ExportAsFixedFormat", XLS_TO_PDF_FORMAT, pdfFile);
         } finally {
             if (excel != null) {
-                //Dispatch.call(excel, "Close");
-                excel.safeRelease();
+                Dispatch.call(excel, "Close");
             }
 
             if (app != null) {
@@ -80,9 +78,9 @@ public class ConvertUtils {
             Dispatch.call(ppt, "SaveAs", pdfFile, PPT_TO_PDF_FORMAT);
         } finally {
             if (ppt != null) {
-                // Dispatch.call(ppt, "Close");
-                ppt.safeRelease();
+                Dispatch.call(ppt, "Close");
             }
+
             if (app != null) {
                 app.invoke("Quit");
             }
@@ -102,8 +100,7 @@ public class ConvertUtils {
             Dispatch.call(ppt, "SaveAs", pngFile, PPT_TO_PNG_FORMAT);
         } finally {
             if (ppt != null) {
-                //Dispatch.call(ppt, "Close");
-                ppt.safeRelease();
+                Dispatch.call(ppt, "Close");
             }
             if (app != null) {
                 app.invoke("Quit");

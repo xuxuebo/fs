@@ -29,14 +29,14 @@ public class DocToPdfConverter extends AbstractConverter {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                killWindowsWordProcesses(FsConstants.IMAGE_NAME_WIN_WORD_EXE);
-                killWindowsWordProcesses(FsConstants.IMAGE_NAME_POWER_PNT_EXE);
-                killWindowsWordProcesses(FsConstants.IMAGE_NAME_EXCEL_EXE);
+                killWindowsProcesses(FsConstants.IMAGE_NAME_WIN_WORD_EXE);
+                killWindowsProcesses(FsConstants.IMAGE_NAME_POWER_PNT_EXE);
+                killWindowsProcesses(FsConstants.IMAGE_NAME_EXCEL_EXE);
             }
         }, timerDelay, timerPeriod);
     }
 
-    private void killWindowsWordProcesses(String imageName) {
+    private void killWindowsProcesses(String imageName) {
         try {
             List<String> windowsPids = FsUtils.getWindowsPids(imageName);
             if (CollectionUtils.isEmpty(windowsPids)) {
@@ -49,7 +49,7 @@ public class DocToPdfConverter extends AbstractConverter {
                 String timestamp = commonJedis.get(key);
                 long currentTimeMillis = System.currentTimeMillis();
                 if (StringUtils.isEmpty(timestamp)) {
-                    commonJedis.setex(key, (int) timerPeriod / 1000 * 10, currentTimeMillis + "");
+                    commonJedis.setex(key, (int) timerPeriod / 1000 * 2, currentTimeMillis + "");
                     continue;
                 }
 

@@ -40,12 +40,12 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
         File tmpDirFile = new File(fsFile.getTmpFilePath()).getParentFile();
         try {
             process(fsFile, tmpDirFile);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             HttpUtils.updateFsFile(fsFile);
 
-            throw e;
+            throw new Exception(e);
         } finally {
             FsUtils.deleteFile(tmpDirFile);
             if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {

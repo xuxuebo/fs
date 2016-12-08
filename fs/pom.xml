@@ -176,6 +176,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>servlets.com</groupId>
             <artifactId>cos</artifactId>
             <version>05Nov2002</version>

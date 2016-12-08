@@ -55,7 +55,7 @@ public class ConvertUtils {
             Dispatch.call(excel, "ExportAsFixedFormat", XLS_TO_PDF_FORMAT, pdfFile);
         } finally {
             if (excel != null) {
-                Dispatch.call(excel, "Close");
+                Dispatch.call(excel, "Close", new Variant(false));
             }
 
             if (app != null) {

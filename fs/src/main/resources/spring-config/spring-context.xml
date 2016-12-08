@@ -88,6 +88,11 @@
         <property name="commonJedis" ref="commonJedis"/>
     </bean>
 
+    <bean id="doc2PdfConverter" parent="converter" class="com.qgutech.fs.convert.Doc2PdfConverter">
+        <property name="convertToolPath" value="${fs.pdfToPdf.convertToolPath}"/>
+        <property name="converter" ref="docToPdfConverter"/>
+    </bean>
+
     <bean id="pdfToImageConverter" parent="converter" class="com.qgutech.fs.convert.PdfToImageConverter">
         <property name="taskExecutor" ref="taskExecutor"/>
         <property name="semaphoreCnt" value="${fs.pdfToImage.semaphoreCnt}"/>
@@ -130,7 +135,7 @@
 
     <bean id="aDocProcessor" abstract="true" parent="processor"
           class="com.qgutech.fs.processor.AbstractDocProcessor">
-        <property name="docToPdfConverter" ref="docToPdfConverter"/>
+        <property name="docToPdfConverter" ref="doc2PdfConverter"/>
         <property name="pdfToImageConverter" ref="pdfToImageConverter"/>
     </bean>
 

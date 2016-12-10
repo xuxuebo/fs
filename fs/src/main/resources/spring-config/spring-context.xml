@@ -81,8 +81,7 @@
         <property name="serverType" value="${fs.serverType}"/>
     </bean>
 
-    <bean id="docToPdfConverter" parent="converter" class="com.qgutech.fs.convert.DocToPdfConverter"
-          init-method="init">
+    <bean id="docToPdfConverter" parent="converter" class="com.qgutech.fs.convert.DocToPdfConverter">
         <property name="timerDelay" value="${fs.pdfToImage.timerDelay}"/>
         <property name="timerPeriod" value="${fs.pdfToImage.timerPeriod}"/>
         <property name="enableTimer" value="${fs.pdfToImage.enableTimer}"/>
@@ -91,7 +90,16 @@
 
     <bean id="doc2PdfConverter" parent="converter" class="com.qgutech.fs.convert.Doc2PdfConverter">
         <property name="convertToolPath" value="${fs.doc2Pdf.convertToolPath}"/>
-        <property name="converter" ref="docToPdfConverter"/>
+    </bean>
+
+    <bean id="docToPdfConverterChain" parent="converter"
+          class="com.qgutech.fs.convert.DocToPdfConverterChain">
+        <property name="converters">
+            <list>
+                <ref bean="docToPdfConverter"/>
+                <ref bean="doc2PdfConverter"/>
+            </list>
+        </property>
     </bean>
 
     <bean id="pdfToImageConverter" parent="converter" class="com.qgutech.fs.convert.PdfToImageConverter">
@@ -136,7 +144,7 @@
 
     <bean id="aDocProcessor" abstract="true" parent="processor"
           class="com.qgutech.fs.processor.AbstractDocProcessor">
-        <property name="docToPdfConverter" ref="doc2PdfConverter"/>
+        <property name="docToPdfConverter" ref="docToPdfConverterChain"/>
         <property name="pdfToImageConverter" ref="pdfToImageConverter"/>
     </bean>
 

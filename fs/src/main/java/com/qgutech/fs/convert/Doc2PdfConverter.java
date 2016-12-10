@@ -6,9 +6,7 @@ import com.qgutech.fs.utils.FsUtils;
 
 import java.io.File;
 
-public class Doc2PdfConverter extends AbstractDocToPdfConverter {
-
-    protected Converter converter;
+public class Doc2PdfConverter extends AbstractConverter {
 
     @Override
     protected String[] getCommands(String srcFilePath, String targetFilePath) {
@@ -17,29 +15,8 @@ public class Doc2PdfConverter extends AbstractDocToPdfConverter {
     }
 
     @Override
-    protected File doWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
-        try {
-            if (converter != null) {
-                return converter.convert(inputFilePath, targetFileDirPath);
-            }
-        } catch (Exception e) {
-            return super.doWindowsConvert(inputFilePath, targetFileDirPath);
-        }
-
-        return super.doWindowsConvert(inputFilePath, targetFileDirPath);
-    }
-
-    @Override
     protected File getTargetFile(String targetFilePath) {
         return new File(targetFilePath, FsConstants.PDF_PREFIX
                 + FsUtils.generateUUID() + FsConstants.PDF_SUFFIX);
-    }
-
-    public Converter getConverter() {
-        return converter;
-    }
-
-    public void setConverter(Converter converter) {
-        this.converter = converter;
     }
 }

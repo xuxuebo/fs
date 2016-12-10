@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import redis.clients.jedis.JedisCommands;
 
 import java.io.File;
@@ -14,14 +15,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class DocToPdfConverter extends AbstractDocToPdfConverter {
+public class DocToPdfConverter extends AbstractConverter implements InitializingBean {
 
     protected long timerPeriod;
     protected long timerDelay;
     protected boolean enableTimer;
     protected JedisCommands commonJedis;
 
-    public void init() {
+    public void afterPropertiesSet() throws Exception {
         if (!SERVER_TYPE_WINDOWS.equals(serverType) && enableTimer) {
             return;
         }
@@ -74,7 +75,7 @@ public class DocToPdfConverter extends AbstractDocToPdfConverter {
     }
 
     @Override
-    protected File doWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
+    protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         String extension = getFileExtension(inputFilePath);
         File targetFile = getTargetFile(targetFileDirPath);
         if (DocTypeEnum.PDF.docType().equalsIgnoreCase(extension)) {

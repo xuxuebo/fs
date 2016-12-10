@@ -8,8 +8,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.util.List;
 
-public class AbstractDocToPdfConverter extends AbstractConverter {
+public class DocToPdfConverterChain extends AbstractConverter {
+
+    private List<Converter> converters;
 
     protected File beforeConvert(String inputFilePath) throws Exception {
         File officeTrustDir = new File(PropertiesUtils.getOfficeTrustDir());
@@ -29,17 +32,30 @@ public class AbstractDocToPdfConverter extends AbstractConverter {
         FsUtils.deleteFile(beforeFile);
     }
 
+    @Override
     protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
+        Exception exception = null;
         File beforeFile = beforeConvert(inputFilePath);
         try {
-            return doWindowsConvert(beforeFile.getAbsolutePath(), targetFileDirPath);
+            for (Converter converter : converters) {
+                try {
+                    return converter.convert(beforeFile.getAbsolutePath(), targetFileDirPath);
+                } catch (Exception e) {
+                    exception = e;
+                }
+            }
         } finally {
             afterConvert(beforeFile);
         }
+
+        throw exception;
     }
 
-    protected File doWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
-        return super.windowsConvert(inputFilePath, targetFileDirPath);
+    public List<Converter> getConverters() {
+        return converters;
     }
 
+    public void setConverters(List<Converter> converters) {
+        this.converters = converters;
+    }
 }

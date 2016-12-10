@@ -6,7 +6,7 @@ import com.qgutech.fs.utils.FsUtils;
 
 import java.io.File;
 
-public class Doc2PdfConverter extends AbstractConverter {
+public class Doc2PdfConverter extends AbstractDocToPdfConverter {
 
     protected Converter converter;
 
@@ -17,16 +17,16 @@ public class Doc2PdfConverter extends AbstractConverter {
     }
 
     @Override
-    protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
+    protected File doWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         try {
             if (converter != null) {
                 return converter.convert(inputFilePath, targetFileDirPath);
             }
         } catch (Exception e) {
-            return super.windowsConvert(inputFilePath, targetFileDirPath);
+            return super.doWindowsConvert(inputFilePath, targetFileDirPath);
         }
 
-        return super.windowsConvert(inputFilePath, targetFileDirPath);
+        return super.doWindowsConvert(inputFilePath, targetFileDirPath);
     }
 
     @Override

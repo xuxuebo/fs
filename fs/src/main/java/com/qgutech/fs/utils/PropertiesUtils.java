@@ -35,6 +35,7 @@ public class PropertiesUtils {
     private static int checkSessionCacheTime;
     private static String md5FileDir;
     private static String chunkFileDir;
+    private static String officeTrustDir;
 
     public static String getServerCode() {
         return serverCode;
@@ -298,5 +299,13 @@ public class PropertiesUtils {
 
     public void setChunkFileDir(String chunkFileDir) {
         PropertiesUtils.chunkFileDir = chunkFileDir;
+    }
+
+    public static String getOfficeTrustDir() {
+        return officeTrustDir;
+    }
+
+    public void setOfficeTrustDir(String officeTrustDir) {
+        PropertiesUtils.officeTrustDir = officeTrustDir;
     }
 }

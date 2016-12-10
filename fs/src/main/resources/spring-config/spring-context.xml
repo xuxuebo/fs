@@ -56,6 +56,7 @@
         <property name="checkSessionCacheTime" value="${fs.checkSessionCacheTime}"/>
         <property name="chunkFileDir" value="${fs.chunkFileDir}"/>
         <property name="md5FileDir" value="${fs.md5FileDir}"/>
+        <property name="officeTrustDir" value="${fs.officeTrustDir}"/>
     </bean>
 
     <!-- jedis连接池 -->
@@ -89,7 +90,7 @@
     </bean>
 
     <bean id="doc2PdfConverter" parent="converter" class="com.qgutech.fs.convert.Doc2PdfConverter">
-        <property name="convertToolPath" value="${fs.pdfToPdf.convertToolPath}"/>
+        <property name="convertToolPath" value="${fs.doc2Pdf.convertToolPath}"/>
         <property name="converter" ref="docToPdfConverter"/>
     </bean>
 

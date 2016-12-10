@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class DocToPdfConverter extends AbstractConverter {
+public class DocToPdfConverter extends AbstractDocToPdfConverter {
 
     protected long timerPeriod;
     protected long timerDelay;
@@ -74,7 +74,7 @@ public class DocToPdfConverter extends AbstractConverter {
     }
 
     @Override
-    protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
+    protected File doWindowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
         String extension = getFileExtension(inputFilePath);
         File targetFile = getTargetFile(targetFileDirPath);
         if (DocTypeEnum.PDF.docType().equalsIgnoreCase(extension)) {

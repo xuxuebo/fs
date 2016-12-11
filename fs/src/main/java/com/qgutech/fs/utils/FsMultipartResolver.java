@@ -2,6 +2,7 @@ package com.qgutech.fs.utils;
 
 
 import com.oreilly.servlet.MultipartRequest;
+import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -60,23 +61,18 @@ public class FsMultipartResolver implements MultipartResolver {
         }
     }
 
-    private String getFileMD5(HttpServletRequest request) {
-        return request.getParameter("md5");
-    }
-
     protected MultipartParsingResult parseRequest(HttpServletRequest request) {
         try {
-            String fileMD5 = getFileMD5(request);
-            String saveDirectory = FsPathUtils.getImportTmpDirPath(fileMD5);
+            String saveDirectory = FsPathUtils.getImportTmpDirPath();
             File saveDirFile = new File(saveDirectory);
-            if (!saveDirFile.exists() && !saveDirFile.mkdirs()) {
+            if (!saveDirFile.exists() && !saveDirFile.mkdirs() && !saveDirFile.exists()) {
                 throw new IOException("Creating directory[" + saveDirectory + "] failed!");
             }
 
             MultipartRequest multipartRequest =
                     new MultipartRequest(request, saveDirectory, maxPostSize
                             , determineEncoding(request)
-                            , new SpecifyFileRenamePolicy(fileMD5));
+                            , new DefaultFileRenamePolicy());
             MultiValueMap<String, MultipartFile> multipartFiles =
                     new LinkedMultiValueMap<String, MultipartFile>();
             Map<String, String[]> multipartParameters = new HashMap<String, String[]>();

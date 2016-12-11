@@ -454,6 +454,7 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     protected void submitToRedis(FsFile fsFile) {
+        fsFile.setFile(null);
         commonJedis.sadd(RedisKey.FS_QUEUE_NAME_LIST, getProcessQueueName());
         String fsFileId = fsFile.getId();
         //当重复提交时，防止重复处理

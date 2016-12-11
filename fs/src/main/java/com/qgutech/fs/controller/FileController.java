@@ -750,9 +750,16 @@ public class FileController {
     }
 
     @RequestMapping("/asyncProcess")
-    public void asyncProcess(FsFile fsFile) throws Exception {//todo sign
-        Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
-        processor.submit(fsFile);
+    public void asyncProcess(FsFile fsFile, HttpServletResponse response) throws Exception {//todo sign
+        PrintWriter writer = response.getWriter();
+        try {
+            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+            processor.submit(fsFile);
+        } catch (Exception e) {
+            writer.write(FsConstants.RESPONSE_RESULT_ERROR);
+        } finally {
+            IOUtils.closeQuietly(writer);
+        }
     }
 
     @RequestMapping("/backUploadFile")

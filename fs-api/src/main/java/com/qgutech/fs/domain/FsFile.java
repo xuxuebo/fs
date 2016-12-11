@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -592,7 +593,8 @@ public class FsFile extends BaseEntity {
         }
 
         if (getCreateTime() != null) {
-            resultMap.put(_createTime, getCreateTime().toString());
+            resultMap.put(_createTime, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+                    .format(getCreateTime()));
         }
 
         Field[] fields = getClass().getDeclaredFields();

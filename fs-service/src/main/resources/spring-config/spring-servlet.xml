@@ -10,7 +10,11 @@
 	 http://www.springframework.org/schema/context
 	 http://www.springframework.org/schema/context/spring-context-4.1.xsd">
 
-    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="com.qgutech.fs.utils.FsWebBindingInitializer"/>
+        </property>
+    </bean>
 
     <mvc:annotation-driven/>
 

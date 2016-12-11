@@ -830,9 +830,9 @@ public class FileController {
             LOG.error("Exception occurred when back uploading the fsFile[" + fsFile + "]!", e);
             response.getWriter().write(FsConstants.RESPONSE_RESULT_ERROR);
         } finally {
-            FsUtils.deleteFile(tmpDirPath);
-            IOUtils.closeQuietly(outputStream);
             IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(outputStream);
+            FsUtils.deleteFile(tmpDirPath);
         }
     }
 }

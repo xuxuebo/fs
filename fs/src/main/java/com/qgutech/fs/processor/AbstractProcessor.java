@@ -88,6 +88,7 @@ public abstract class AbstractProcessor implements Processor {
 
             outputStream = new FileOutputStream(originFilePath);
             IOUtils.copy(inputStream, outputStream);
+            IOUtils.closeQuietly(inputStream);//为了能够删除临时文件需要在这儿关闭流
             needAsync = needAsync(fsFile);
             if (needAsync) {
                 submit(fsFile, 0);

@@ -32,6 +32,8 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             fsFile.setBackUrl(backUrl);
             HttpUtils.doPost(PropertiesUtils.getAsyncUrl(), fsFile.toMap()
                     , fsFile.getTmpFilePath(), fsFile.getStoredFileName());
+            //转发到文档转化服务器后，删除临时文件
+            FsUtils.deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
         }
     }
 

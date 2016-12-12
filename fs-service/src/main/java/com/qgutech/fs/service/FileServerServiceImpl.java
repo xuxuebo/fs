@@ -70,14 +70,16 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public String getOriginFileUrl(String fsFileId) {
+    public String getOriginFileUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchOriginFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchOriginFileUrlMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
@@ -85,19 +87,20 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchOriginFileUrlMap(fsFiles, fileIdFsServerMap
-                , UriUtils.GET_FILE_URI, PropertiesUtils.getHttpProtocol()
-                , ExecutionContext.getSession());
+                , UriUtils.GET_FILE_URI, PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public String getOriginDownloadUrl(String fsFileId) {
+    public String getOriginDownloadUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchOriginDownloadUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchOriginDownloadUrlMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchOriginDownloadUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchOriginDownloadUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
@@ -105,20 +108,21 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchOriginFileUrlMap(fsFiles, fileIdFsServerMap
-                , UriUtils.DOWNLOAD_FILE_URI, PropertiesUtils.getHttpProtocol()
-                , ExecutionContext.getSession());
+                , UriUtils.DOWNLOAD_FILE_URI, PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public List<Map<String, String>> getVideoUrls(String fsFileId) {
+    public List<Map<String, String>> getVideoUrls(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchVideoUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchVideoUrlsMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getVideoTypeUrlMap(String fsFileId) {
+    public Map<String, String> getVideoTypeUrlMap(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        List<Map<String, String>> videoUrls = getVideoUrls(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        List<Map<String, String>> videoUrls = getVideoUrls(fsFileId, session);
         if (CollectionUtils.isEmpty(videoUrls)) {
             return new HashMap<String, String>(0);
         }
@@ -127,8 +131,10 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> fsFileIdList) {
+    public Map<String, List<Map<String, String>>> getBatchVideoUrlsMap(List<String> fsFileIdList
+            , String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<Map<String, String>>>(0);
@@ -136,19 +142,21 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchVideoUrlsMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public List<String> getVideoCoverUrls(String fsFileId) {
+    public List<String> getVideoCoverUrls(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchVideoCoverUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchVideoCoverUrlsMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public String getVideoCoverUrl(String fsFileId) {
+    public String getVideoCoverUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        List<String> videoCoverUrls = getVideoCoverUrls(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        List<String> videoCoverUrls = getVideoCoverUrls(fsFileId, session);
         if (CollectionUtils.isEmpty(videoCoverUrls)) {
             return null;
         }
@@ -157,9 +165,10 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Map<String, String> getBatchVideoCoverUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchVideoCoverUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
-        Map<String, List<String>> batchVideoCoverUrlsMap = getBatchVideoCoverUrlsMap(fsFileIdList);
+        Assert.hasText(session, "Session is empty!");
+        Map<String, List<String>> batchVideoCoverUrlsMap = getBatchVideoCoverUrlsMap(fsFileIdList, session);
         if (MapUtils.isEmpty(batchVideoCoverUrlsMap)) {
             return new HashMap<String, String>(0);
         }
@@ -179,8 +188,9 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> fsFileIdList) {
+    public Map<String, List<String>> getBatchVideoCoverUrlsMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<String>>(0);
@@ -188,13 +198,14 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchVideoCoverUrlsMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public String getAudioUrl(String fsFileId) {
+    public String getAudioUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        List<String> audioUrls = getAudioUrls(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        List<String> audioUrls = getAudioUrls(fsFileId, session);
         if (CollectionUtils.isEmpty(audioUrls)) {
             return null;
         }
@@ -203,15 +214,17 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public List<String> getAudioUrls(String fsFileId) {
+    public List<String> getAudioUrls(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchAudioUrlsMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchAudioUrlsMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchAudioUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchAudioUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
-        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(fsFileIdList);
+        Assert.hasText(session, "Session is empty!");
+        Map<String, List<String>> batchAudioUrlsMap = getBatchAudioUrlsMap(fsFileIdList, session);
         if (MapUtils.isEmpty(batchAudioUrlsMap)) {
             return new HashMap<String, String>(0);
         }
@@ -230,8 +243,9 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
-    public Map<String, List<String>> getBatchAudioUrlsMap(List<String> fsFileIdList) {
+    public Map<String, List<String>> getBatchAudioUrlsMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, List<String>>(0);
@@ -239,18 +253,20 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchAudioUrlsMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public String getZipUrl(String fsFileId) {
+    public String getZipUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchZipUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchZipUrlMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchZipUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
@@ -258,18 +274,20 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchZipUrlMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public String getImageUrl(String fsFileId) {
+    public String getImageUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchImageUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchImageUrlMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchImageUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchImageUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
@@ -277,18 +295,20 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchImageUrlMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , PropertiesUtils.getHttpProtocol(), session);
     }
 
     @Override
-    public String getFileUrl(String fsFileId) {
+    public String getFileUrl(String fsFileId, String session) {
         Assert.hasText(fsFileId, "FsFileId is empty!");
-        return getBatchFileUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+        Assert.hasText(session, "Session is empty!");
+        return getBatchFileUrlMap(Arrays.asList(fsFileId), session).get(fsFileId);
     }
 
     @Override
-    public Map<String, String> getBatchFileUrlMap(List<String> fsFileIdList) {
+    public Map<String, String> getBatchFileUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
         List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
         if (CollectionUtils.isEmpty(fsFiles)) {
             return new HashMap<String, String>(0);
@@ -336,7 +356,6 @@ public class FileServerServiceImpl implements FileServerService {
         }
 
         String httpProtocol = PropertiesUtils.getHttpProtocol();
-        String session = ExecutionContext.getSession();
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         if (CollectionUtils.isNotEmpty(files)) {
             Map<String, String> batchOriginFileUrlMap = PathUtils.getBatchOriginFileUrlMap(files

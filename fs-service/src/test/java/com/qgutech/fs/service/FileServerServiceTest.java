@@ -2,6 +2,7 @@ package com.qgutech.fs.service;
 
 
 import com.qgutech.fs.utils.FsConstants;
+import com.qgutech.fs.utils.FsUtils;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -13,45 +14,45 @@ public class FileServerServiceTest extends BaseServiceTest {
 
     @Test
     public void testGetOriginFileUrl() {
-        fileServerService.getOriginFileUrl("402881d65828f018015828f01ae40000");
+        fileServerService.getOriginFileUrl("402881d65828f018015828f01ae40000", FsUtils.generateUUID());
     }
 
     @Test
     public void testGetVideoUrls() {
-        fileServerService.getVideoUrls("402881d65828f018015828f01ae40000");
+        fileServerService.getVideoUrls("402881d65828f018015828f01ae40000", FsUtils.generateUUID());
     }
 
     @Test
     public void testGetVideoTypeUrlMap() {
-        fileServerService.getVideoTypeUrlMap("402881d65828efe3015828efe5e90000");
+        fileServerService.getVideoTypeUrlMap("402881d65828efe3015828efe5e90000", FsUtils.generateUUID());
     }
 
     @Test
     public void testGetBatchVideoUrlsMap() {
         fileServerService.getBatchVideoUrlsMap(Arrays.asList("402881d65828efe3015828efe5e90000"
-                , "402881d65828f018015828f01ae40000"));
+                , "402881d65828f018015828f01ae40000"), FsUtils.generateUUID());
     }
 
     @Test
     public void testGetVideoCoverUrls() {
-        fileServerService.getVideoCoverUrls("402881d65828f018015828f01ae40000");
+        fileServerService.getVideoCoverUrls("402881d65828f018015828f01ae40000", FsUtils.generateUUID());
     }
 
     @Test
     public void testGetVideoCoverUrl() {
-        fileServerService.getVideoCoverUrl("402881d65828efe3015828efe5e90000");
+        fileServerService.getVideoCoverUrl("402881d65828efe3015828efe5e90000", FsUtils.generateUUID());
     }
 
     @Test
     public void testGetBatchVideoCoverUrlsMap() {
         fileServerService.getBatchVideoCoverUrlsMap(Arrays.asList("402881d65828efe3015828efe5e90000"
-                , "402881d65828f018015828f01ae40000"));
+                , "402881d65828f018015828f01ae40000"), FsUtils.generateUUID());
     }
 
     @Test
     public void testFetBatchAudioUrlsMap() {
         fileServerService.getBatchAudioUrlsMap(Arrays.asList("402881d6582de20b01582de20e3a0000"
-                , "402881d6582de22e01582de2311d0000"));
+                , "402881d6582de22e01582de2311d0000"), FsUtils.generateUUID());
     }
 
 

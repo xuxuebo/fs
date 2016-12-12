@@ -135,6 +135,7 @@ public class ZipVideoProcessor extends AbstractProcessor {
         } catch (Exception e) {
             FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg(e.getMessage());
             HttpUtils.updateFsFile(fsFile);
 
             throw e;

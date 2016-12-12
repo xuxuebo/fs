@@ -354,7 +354,15 @@ public class FsFile extends BaseEntity {
     }
 
     public void setProcessMsg(String processMsg) {
-        this.processMsg = processMsg;
+        if (StringUtils.isEmpty(processMsg)) {
+            return;
+        }
+
+        if (processMsg.length() > 500) {
+            this.processMsg = processMsg.substring(0, 500);
+        } else {
+            this.processMsg = processMsg;
+        }
     }
 
     public String getServerCode() {

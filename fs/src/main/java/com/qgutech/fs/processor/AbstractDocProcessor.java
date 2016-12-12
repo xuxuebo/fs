@@ -44,6 +44,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             process(fsFile, tmpDirFile);
         } catch (Throwable e) {
             FsUtils.deleteFile(getGenFilePath(fsFile));
+            fsFile.setProcessMsg(e.getMessage());
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             HttpUtils.updateFsFile(fsFile);
 

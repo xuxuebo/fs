@@ -48,6 +48,7 @@ public class AudioProcessor extends AbstractProcessor {
             if (needAsync) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 fsFile.setCreateTime(null);
+                fsFile.setProcessMsg(e.getMessage());
                 FsUtils.deleteFile(genFilePath);
                 HttpUtils.updateFsFile(fsFile);
             }

@@ -1,5 +1,6 @@
 package com.qgutech.fs.service;
 
+import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.FsServer;
 
 import java.util.List;
@@ -8,22 +9,40 @@ import java.util.Map;
 public interface FileServerService {
 
     /**
-     * 根据文件在文件系统中的主键获取源文件url（未作改动的文件）。
+     * 根据文件在文件系统中的主键获取源文件访问url（未作改动的文件）。
      * 此方法适用于所有类型的文件。
      *
      * @param fsFileId 文件在文件系统中的主键
-     * @return 源文件url
+     * @return 源文件访问url
      */
     String getOriginFileUrl(String fsFileId);
 
     /**
-     * 根据文件在文件系统中的主键列表获取源文件url列表（未作改动的文件）。
+     * 根据文件在文件系统中的主键列表获取源文件访问url列表（未作改动的文件）。
      * 此方法适用于所有类型的文件。
      *
      * @param fsFileIdList 文件在文件系统中的主键列表
-     * @return 源文件url列表
+     * @return 源文件访问url列表
      */
     Map<String, String> getBatchOriginFileUrlMap(List<String> fsFileIdList);
+
+    /**
+     * 根据文件在文件系统中的主键获取源文件下载url（未作改动的文件）。
+     * 此方法适用于所有类型的文件。
+     *
+     * @param fsFileId 文件在文件系统中的主键
+     * @return 源文件下载url
+     */
+    String getOriginDownloadUrl(String fsFileId);
+
+    /**
+     * 根据文件在文件系统中的主键列表获取源文件下载url列表（未作改动的文件）。
+     * 此方法适用于所有类型的文件。
+     *
+     * @param fsFileIdList 文件在文件系统中的主键列表
+     * @return 源文件下载url列表
+     */
+    Map<String, String> getBatchOriginDownloadUrlMap(List<String> fsFileIdList);
 
     /**
      * 根据文件在文件系统中的主键获取清晰度（由码率和分辨率决定{@link com.qgutech.fs.domain.VideoTypeEnum}）
@@ -308,7 +327,7 @@ public interface FileServerService {
      * 则列表中的第一个元素为100，列表中的第二个元素为33，列表中的第三个元素为67。
      * 此方法只适用于文档包。
      *
-     * @param fsFileId 文件在文件系统中的主键列表
+     * @param fsFileId 文件在文件系统中的主键
      * @return 文档包的每个文档的页数列表
      */
     List<Long> getSubFileCounts(String fsFileId);
@@ -323,6 +342,22 @@ public interface FileServerService {
      * @return 文件主键和文档包的每个文档的页数列表的映射，key为文件主键，value为文档包的每个文档的页数列表
      */
     Map<String, List<Long>> getBatchSubFileCountsMap(List<String> fsFileIdList);
+
+    /**
+     * 根据文件主键获取文件详情
+     *
+     * @param fsFileId 文件在文件系统中的主键
+     * @return 文件详情
+     */
+    FsFile getFsFile(String fsFileId);
+
+    /**
+     * 根据文件主键列表获取文件详情的列表
+     *
+     * @param fsFileIdList 文件在文件系统中的主键列表
+     * @return 文件详情的列表
+     */
+    List<FsFile> getFsFiles(List<String> fsFileIdList);
 
     /**
      * 根据公司编号获取公司可以上传文件的文档服务器（包含default公司的）列表。

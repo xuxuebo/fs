@@ -56,14 +56,24 @@ public class PathUtils implements UriUtils, FsConstants {
         return batchOriginFilePathMap;
     }
 
+    public static String getOriginDownloadUrl(FsFile fsFile, FsServer fsServer
+            , String httpProtocol, String session) {
+        return getOriginUrl(fsFile, fsServer, DOWNLOAD_FILE_URI, httpProtocol, session);
+    }
+
     public static String getOriginFileUrl(FsFile fsFile, FsServer fsServer
             , String httpProtocol, String session) {
+        return getOriginUrl(fsFile, fsServer, GET_FILE_URI, httpProtocol, session);
+    }
+
+    public static String getOriginUrl(FsFile fsFile, FsServer fsServer
+            , String action, String httpProtocol, String session) {
         List<FsFile> fsFiles = new ArrayList<FsFile>(1);
         fsFiles.add(fsFile);
         Map<String, FsServer> fileIdFsServerMap = new HashMap<String, FsServer>(1);
         fileIdFsServerMap.put(fsFile.getId(), fsServer);
         Map<String, String> batchOriginFileUrlMap = getBatchOriginFileUrlMap(fsFiles
-                , fileIdFsServerMap, httpProtocol, session);
+                , fileIdFsServerMap, action, httpProtocol, session);
         if (MapUtils.isEmpty(batchOriginFileUrlMap)) {
             return null;
         }
@@ -72,7 +82,8 @@ public class PathUtils implements UriUtils, FsConstants {
     }
 
     public static Map<String, String> getBatchOriginFileUrlMap(List<FsFile> fsFiles
-            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+            , Map<String, FsServer> fileIdFsServerMap, String action
+            , String httpProtocol, String session) {
         Map<String, String> batchOriginFilePathMap = getBatchOriginFilePathMap(fsFiles);
         if (MapUtils.isEmpty(batchOriginFilePathMap)) {
             return new HashMap<String, String>(0);
@@ -92,7 +103,7 @@ public class PathUtils implements UriUtils, FsConstants {
             }
 
             String originFileUrl = httpProtocol + HTTP_COLON + fsServer.getHost()
-                    + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + originFilePath;
+                    + action + Signer.sign(fsServer, fsFile, session) + originFilePath;
             batchOriginFileUrlMap.put(fsFileId, originFileUrl);
         }
 

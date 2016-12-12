@@ -48,8 +48,7 @@ public class FsPathUtils extends PathUtils {
     }
 
     public static String getImageUrl(FsFile fsFile, String subFilePath) {
-        String imageUrl = getImageUrl(fsFile, getFsServer(), PropertiesUtils.getHttpProtocol()
-                , fsFile.getSession());
+        String imageUrl = getImageUrl(fsFile);
         if (StringUtils.isEmpty(imageUrl)) {
             return null;
         }

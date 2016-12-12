@@ -85,7 +85,28 @@ public class FileServerServiceImpl implements FileServerService {
 
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         return PathUtils.getBatchOriginFileUrlMap(fsFiles, fileIdFsServerMap
-                , PropertiesUtils.getHttpProtocol(), ExecutionContext.getSession());
+                , UriUtils.GET_FILE_URI, PropertiesUtils.getHttpProtocol()
+                , ExecutionContext.getSession());
+    }
+
+    @Override
+    public String getOriginDownloadUrl(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        return getBatchOriginDownloadUrlMap(Arrays.asList(fsFileId)).get(fsFileId);
+    }
+
+    @Override
+    public Map<String, String> getBatchOriginDownloadUrlMap(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return new HashMap<String, String>(0);
+        }
+
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
+        return PathUtils.getBatchOriginFileUrlMap(fsFiles, fileIdFsServerMap
+                , UriUtils.DOWNLOAD_FILE_URI, PropertiesUtils.getHttpProtocol()
+                , ExecutionContext.getSession());
     }
 
     @Override
@@ -319,7 +340,7 @@ public class FileServerServiceImpl implements FileServerService {
         Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
         if (CollectionUtils.isNotEmpty(files)) {
             Map<String, String> batchOriginFileUrlMap = PathUtils.getBatchOriginFileUrlMap(files
-                    , fileIdFsServerMap, httpProtocol, session);
+                    , fileIdFsServerMap, UriUtils.GET_FILE_URI, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchOriginFileUrlMap)) {
                 batchFileUrlMap.putAll(batchOriginFileUrlMap);
             }
@@ -436,6 +457,19 @@ public class FileServerServiceImpl implements FileServerService {
         }
 
         return batchSubFileCountsMap;
+    }
+
+    @Override
+    public FsFile getFsFile(String fsFileId) {
+        Assert.hasText(fsFileId, "FsFileId is empty!");
+        List<FsFile> fsFiles = getFsFiles(Arrays.asList(fsFileId));
+        return CollectionUtils.isEmpty(fsFiles) ? null : fsFiles.get(0);
+    }
+
+    @Override
+    public List<FsFile> getFsFiles(List<String> fsFileIdList) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        return fsFileService.listByIds(fsFileIdList);
     }
 
     @Override

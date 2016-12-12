@@ -191,7 +191,8 @@ public class FsUtils {
                 }
 
                 int indexOf = fileName.indexOf(baseName);
-                if (indexOf > -1) {
+                if (indexOf > -1 && (fileName.contains(FsConstants.PATH_SEPARATOR)
+                        || fileName.contains(File.separator))) {
                     fileName = fileName.substring(indexOf + baseName.length());
                 }
 
@@ -251,7 +252,8 @@ public class FsUtils {
                 }
 
                 int indexOf = name.indexOf(baseName);
-                if (indexOf > -1) {
+                if (indexOf > -1 && (name.contains(FsConstants.PATH_SEPARATOR)
+                        || name.contains(File.separator))) {
                     name = name.substring(indexOf + baseName.length());
                 }
 

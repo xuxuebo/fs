@@ -509,7 +509,8 @@ public class FileController {
                 filename = originFsFile.getStoredFileName();
             }
 
-            response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
+            response.setHeader("Content-Disposition", "attachment;filename=\""
+                    + toAttachmentFileName(filename, request) + "\"");
         }
 
         InputStream inputStream = null;
@@ -519,6 +520,27 @@ public class FileController {
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
+    }
+
+    protected String toAttachmentFileName(String fileName,
+                                          HttpServletRequest request) throws Exception {
+        String userAgent = request.getHeader("User-Agent");
+        if (StringUtils.isEmpty(userAgent)) {
+            return URL_CODEC.encode(fileName);
+        }
+
+        if (userAgent.contains("Firefox")) {
+            return new String(fileName.getBytes("UTF-8"), "ISO8859-1");
+        }
+
+        if (userAgent.contains("Chrome")) {
+            return new String(fileName.getBytes("UTF-8"), "ISO8859-1");
+        }
+
+        String result = URL_CODEC.encode(fileName);
+        result = result.replaceAll("[+]", " ");
+        return result;
+
     }
 
     private boolean checkAuth(boolean download, String requestURI, FsFile fsFile

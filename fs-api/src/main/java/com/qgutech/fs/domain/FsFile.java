@@ -245,6 +245,12 @@ public class FsFile extends BaseEntity {
     @Transient
     private Long chunks;
 
+    /**
+     * 前一次上传的文件信息
+     */
+    @Transient
+    private String beforeFsFileJson;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -525,6 +531,14 @@ public class FsFile extends BaseEntity {
         this.chunks = chunks;
     }
 
+    public String getBeforeFsFileJson() {
+        return beforeFsFileJson;
+    }
+
+    public void setBeforeFsFileJson(String beforeFsFileJson) {
+        this.beforeFsFileJson = beforeFsFileJson;
+    }
+
     @Override
     public String toString() {
         return "FsFile{" +
@@ -562,6 +576,7 @@ public class FsFile extends BaseEntity {
                 ", blockSize=" + blockSize +
                 ", chunk=" + chunk +
                 ", chunks=" + chunks +
+                ", beforeFsFileJson='" + beforeFsFileJson + '\'' +
                 '}';
     }
 

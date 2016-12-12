@@ -150,8 +150,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
         }
 
-        fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        HttpUtils.updateFsFile(fsFile);
+        super.afterProcess(fsFile);
     }
 
     public Converter getDocToPdfConverter() {

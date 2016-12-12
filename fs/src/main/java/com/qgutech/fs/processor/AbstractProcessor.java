@@ -146,6 +146,7 @@ public abstract class AbstractProcessor implements Processor {
             fsFile.setCreateTime(new Date());
         } else if (fsFile.getCreateTime() == null) {
             FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            fsFile.setBeforeFsFileJson(gson.toJson(dbFsFile));
             fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
 
@@ -213,6 +214,7 @@ public abstract class AbstractProcessor implements Processor {
             fsFile.setCreateTime(new Date());
         } else if (fsFile.getCreateTime() == null) {
             FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            fsFile.setBeforeFsFileJson(gson.toJson(dbFsFile));
             fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
 
@@ -398,6 +400,22 @@ public abstract class AbstractProcessor implements Processor {
     protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         HttpUtils.updateFsFile(fsFile);
+
+        String beforeFsFileJson = fsFile.getBeforeFsFileJson();
+        if (StringUtils.isNotEmpty(beforeFsFileJson)) {
+            FsFile beforeFsFile = gson.fromJson(beforeFsFileJson, FsFile.class);
+            String beforeOriginFilePath = getOriginFilePath(beforeFsFile);
+            String originFilePath = getOriginFilePath(fsFile);
+            if (!beforeOriginFilePath.equals(originFilePath)) {
+                FsUtils.deleteFile(beforeOriginFilePath);
+            }
+
+            String beforeGenFilePath = getGenFilePath(beforeFsFile);
+            String genFilePath = getGenFilePath(fsFile);
+            if (!beforeGenFilePath.equals(genFilePath)) {
+                FsUtils.deleteFile(beforeGenFilePath);
+            }
+        }
     }
 
     protected final <T> void getFutures(List<Future<T>> futures) throws Exception {

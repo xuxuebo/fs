@@ -306,6 +306,14 @@
             </dependency>
             <!-- PDF处理时用到的工具-->
 
+            <!-- cos方式上传文件组件-->
+            <dependency>
+                <groupId>servlets.com</groupId>
+                <artifactId>cos</artifactId>
+                <version>05Nov2002</version>
+            </dependency>
+            <!-- cos方式上传文件组件-->
+
         </dependencies>
     </dependencyManagement>
 

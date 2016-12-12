@@ -750,12 +750,13 @@ public class FileController {
     }
 
     @RequestMapping("/asyncProcess")
-    public void asyncProcess(FsFile fsFile, HttpServletResponse response) throws Exception {//todo sign
+    public void asyncProcess(FsFile fsFile, HttpServletResponse response) throws Exception {
         PrintWriter writer = response.getWriter();
         try {
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             processor.submit(fsFile);
         } catch (Exception e) {
+            LOG.error("Async processing the fsFile[" + fsFile + "] failed!", e);
             writer.write(FsConstants.RESPONSE_RESULT_ERROR);
         } finally {
             IOUtils.closeQuietly(writer);

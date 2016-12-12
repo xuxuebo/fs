@@ -23,6 +23,7 @@ public class DocProcessor extends AbstractDocProcessor {
     protected void process(FsFile fsFile, File tmpDirFile) throws Exception {
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
         if (!genFile.exists() && !genFile.mkdirs()) {
             throw new IOException("Creating directory[path:" + genFilePath + "] failed!");
         }

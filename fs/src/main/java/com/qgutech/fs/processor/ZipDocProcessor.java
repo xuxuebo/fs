@@ -38,6 +38,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
 
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
         if (!genFile.exists() && !genFile.mkdirs()) {
             throw new IOException("Creating directory[path:" + genFilePath + "] failed!");
         }

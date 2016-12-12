@@ -31,6 +31,7 @@ public class VideoProcessor extends AbstractProcessor {
         final String tmpFilePath = fsFile.getTmpFilePath();
         try {
             File genFile = new File(genFilePath);
+            FsUtils.deleteFile(genFilePath);
             if (!genFile.exists() && !genFile.mkdirs()) {
                 throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
             }

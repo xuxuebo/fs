@@ -35,6 +35,7 @@ public class ZipProcessor extends AbstractProcessor {
     public void process(FsFile fsFile) throws Exception {
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
         if (!genFile.exists() && !genFile.mkdirs()) {
             throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
         }

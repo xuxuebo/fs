@@ -142,8 +142,11 @@ public abstract class AbstractProcessor implements Processor {
 
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
-        if (StringUtils.isEmpty(fsFile.getId()) || fsFile.getCreateTime() == null) {
+        if (StringUtils.isEmpty(fsFile.getId())) {
             fsFile.setCreateTime(new Date());
+        } else {
+            FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
 
         return true;
@@ -206,8 +209,11 @@ public abstract class AbstractProcessor implements Processor {
         fsFile.setFileSize(file.getSize());
         fsFile.setServerCode(PropertiesUtils.getServerCode());
         fsFile.setServerHost(PropertiesUtils.getServerHost());
-        if (StringUtils.isEmpty(fsFile.getId()) || fsFile.getCreateTime() == null) {
+        if (StringUtils.isEmpty(fsFile.getId())) {
             fsFile.setCreateTime(new Date());
+        } else {
+            FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
 
         return true;

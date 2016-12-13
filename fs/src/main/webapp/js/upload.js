@@ -205,7 +205,7 @@
                     && this.options.accept[0]) {
                     var accept = this.options.accept[0];
                     if (accept.extensions) {
-                        if (accept.extensions.indexOf(file.ext) < 0) {
+                        if (accept.extensions.indexOf(file.ext.toLowerCase()) < 0) {
                             alert(accept.title);
                         }
                     }

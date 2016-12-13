@@ -319,16 +319,21 @@ public abstract class AbstractProcessor implements Processor {
         FsUtils.decompress(tmpFilePath, decompressDir.getAbsolutePath());
         File[] files = decompressDir.listFiles();
         if (files == null || files.length == 0) {
+            LOG.error("Compress file[" + tmpFilePath + "] is empty!");
             return false;
         }
 
         for (File file : files) {
             if (file.isDirectory()) {
+                LOG.error("Compress file[" + tmpFilePath + "] has directory["
+                        + file.getAbsolutePath() + "]!");
                 return false;
             }
 
             String extension = FilenameUtils.getExtension(file.getName());
             if (StringUtils.isEmpty(extension) || !validate.validate(extension)) {
+                LOG.error("Compress file[" + tmpFilePath + "]'s extension["
+                        + extension + "] is invalid!");
                 return false;
             }
         }

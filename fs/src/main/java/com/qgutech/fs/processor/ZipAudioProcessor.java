@@ -39,7 +39,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
                 LOG.error("Audio collection[" + fsFile.getTmpFilePath()
                         + "] is empty or contains directory or contains not audio file!");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("音频集中为空或者包含文件夹或者包含非音频文件");
+                fsFile.setProcessMsg("音频集为空或者包含文件夹或者包含非音频文件");
                 HttpUtils.updateFsFile(fsFile);
                 return;
             }
@@ -48,7 +48,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             File[] audioFiles = decompressDir.listFiles();
             if (audioFiles == null || audioFiles.length == 0) {
                 LOG.error("Audio collection[" + fsFile.getTmpFilePath() + "] is empty!");
-                fsFile.setProcessMsg("音频集中为空");
+                fsFile.setProcessMsg("音频集为空");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 HttpUtils.updateFsFile(fsFile);
                 return;
@@ -57,7 +57,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             final String genFilePath = getGenFilePath(fsFile);
             File genFile = new File(genFilePath);
             FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs()) {
+            if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
                 throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
             }
 

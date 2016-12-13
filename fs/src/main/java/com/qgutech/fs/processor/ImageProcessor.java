@@ -30,7 +30,7 @@ public class ImageProcessor extends AbstractProcessor {
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
         FsUtils.deleteFile(genFilePath);
-        if (!genFile.exists() && !genFile.mkdirs()) {
+        if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
             throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
         }
 

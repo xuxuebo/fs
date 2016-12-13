@@ -37,7 +37,10 @@ public class ZipVideoProcessor extends AbstractProcessor {
                     return validateVideo(extension);
                 }
             })) {
+                LOG.error("Video collection[" + fsFile.getTmpFilePath()
+                        + "] is empty or contains directory or contains not video file!");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setProcessMsg("视频集为空或者包含文件夹或者包含非视频文件");
                 HttpUtils.updateFsFile(fsFile);
                 return;
             }
@@ -45,6 +48,8 @@ public class ZipVideoProcessor extends AbstractProcessor {
             File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
             File[] videoFiles = decompressDir.listFiles();
             if (videoFiles == null || videoFiles.length == 0) {
+                LOG.error("Video collection[" + fsFile.getTmpFilePath() + "] is empty!");
+                fsFile.setProcessMsg("视频集为空");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 HttpUtils.updateFsFile(fsFile);
                 return;
@@ -53,7 +58,7 @@ public class ZipVideoProcessor extends AbstractProcessor {
             final String genFilePath = getGenFilePath(fsFile);
             File genFile = new File(genFilePath);
             FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs()) {
+            if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
                 throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
             }
 
@@ -64,7 +69,7 @@ public class ZipVideoProcessor extends AbstractProcessor {
             for (int i = 0; i < videoFiles.length; i++) {
                 final int index = i + 1;
                 File pFile = new File(genFilePath + File.separator + index);
-                if (!pFile.exists() && !pFile.mkdirs()) {
+                if (!pFile.exists() && !pFile.mkdirs() && !pFile.exists()) {
                     throw new IOException("Creating directory[path:" + pFile.getAbsolutePath() + "] failed!");
                 }
 

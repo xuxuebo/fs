@@ -37,7 +37,10 @@ public class ZipImageProcessor extends AbstractProcessor {
                     return validateImage(extension);
                 }
             })) {
+                LOG.error("Image collection[" + fsFile.getTmpFilePath()
+                        + "] is empty or contains directory or contains not image file!");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
+                fsFile.setProcessMsg("图片集为空或者包含文件夹或者包含非图片文件");
                 HttpUtils.updateFsFile(fsFile);
                 return;
             }
@@ -45,6 +48,8 @@ public class ZipImageProcessor extends AbstractProcessor {
             File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
             File[] imageFiles = decompressDir.listFiles();
             if (imageFiles == null || imageFiles.length == 0) {
+                LOG.error("Image collection[" + fsFile.getTmpFilePath() + "] is empty!");
+                fsFile.setProcessMsg("图片集为空");
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 HttpUtils.updateFsFile(fsFile);
                 return;
@@ -53,7 +58,7 @@ public class ZipImageProcessor extends AbstractProcessor {
             final String genFilePath = getGenFilePath(fsFile);
             File genFile = new File(genFilePath);
             FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs()) {
+            if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
                 throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
             }
 

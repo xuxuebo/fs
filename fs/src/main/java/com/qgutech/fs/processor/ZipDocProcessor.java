@@ -44,12 +44,12 @@ public class ZipDocProcessor extends AbstractDocProcessor {
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
         FsUtils.deleteFile(genFilePath);
-        if (!genFile.exists() && !genFile.mkdirs()) {
+        if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
             throw new IOException("Creating directory[path:" + genFilePath + "] failed!");
         }
 
         File imageTmpDirFile = new File(tmpDirFile, FsUtils.generateUUID() + FsConstants.FILE_DIR_IMG);
-        if (!imageTmpDirFile.exists() && !imageTmpDirFile.mkdirs()) {
+        if (!imageTmpDirFile.exists() && !imageTmpDirFile.mkdirs() && !imageTmpDirFile.exists()) {
             throw new IOException("Creating directory[path:" + imageTmpDirFile.getAbsolutePath() + "] failed!");
         }
 

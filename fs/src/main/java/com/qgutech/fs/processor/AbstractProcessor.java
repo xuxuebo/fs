@@ -415,10 +415,10 @@ public abstract class AbstractProcessor implements Processor {
                 FsUtils.deleteFile(beforeOriginFilePath);
             }
 
-            if (!ProcessorTypeEnum.FILE.equals(fsFile.getProcessor())) {
+            if (!ProcessorTypeEnum.FILE.equals(beforeFsFile.getProcessor())) {
                 String beforeGenFilePath = getGenFilePath(beforeFsFile);
-                String genFilePath = getGenFilePath(fsFile);
-                if (!beforeGenFilePath.equals(genFilePath)) {
+                if (ProcessorTypeEnum.FILE.equals(fsFile.getProcessor())
+                        || !beforeGenFilePath.equals(getGenFilePath(fsFile))) {
                     FsUtils.deleteFile(beforeGenFilePath);
                 }
             }

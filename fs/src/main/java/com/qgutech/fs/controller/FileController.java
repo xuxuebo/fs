@@ -344,7 +344,7 @@ public class FileController {
         }
     }
 
-    public boolean getLock(String key, long lockExpireTime) {
+    private boolean getLock(String key, long lockExpireTime) {
         JedisCommands commonJedis = FsRedis.getCommonJedis();
         Long lockFlag = commonJedis.setnx(key, System.currentTimeMillis() + "");
         if (lockFlag != null && lockFlag == 1l) {

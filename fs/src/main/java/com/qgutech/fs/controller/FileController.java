@@ -614,7 +614,7 @@ public class FileController {
 
                 fsFile.setTimestamp(timestamp);
                 session = split[2];
-                if (!checkSession(session, HttpUtils.getRealRemoteAddress(request))) {
+                if (!checkSession(session)) {
                     return false;
                 }
 
@@ -631,6 +631,33 @@ public class FileController {
         String paramSign = signLevel + FsConstants.PATH_SEPARATOR + auth;
 
         return paramSign.equals(sign);
+    }
+
+    private boolean checkSession(String session) {
+        JedisCommands commonJedis = FsRedis.getCommonJedis();
+        String key = RedisKey.FS_CHECK_SESSION_RESULT + session;
+        String checkResult = commonJedis.get(key);
+        if (StringUtils.isNotEmpty(checkResult)) {
+            return BooleanUtils.toBoolean(checkResult);
+        }
+
+        String sign = Signer.md5(session + FsConstants.VERTICAL_LINE + PropertiesUtils.getCheckSessionSecret());
+        Map<String, String> paramMap = new HashMap<String, String>(2);
+        paramMap.put("sid", session);
+        paramMap.put("sign", sign);
+        boolean checkSessionResult = false;
+        try {
+            String result = HttpUtils.doPost(PropertiesUtils.getCheckSessionUrl(), paramMap);
+            checkSessionResult = PropertiesUtils.getCheckSessionCorrectResult().equals(result);
+            commonJedis.setex(key, PropertiesUtils.getCheckSessionCacheTime()
+                    , Boolean.toString(checkSessionResult));
+        } catch (Exception e) {
+            LOG.error("Exception occurred when checking session[sid:" + session + "] by request[url:" +
+                    PropertiesUtils.getCheckSessionUrl() + ",sid:" + session + ",sign:" + sign
+                    + ",checkSessionSecret:" + PropertiesUtils.getCheckSessionSecret() + "]!", e);
+        }
+
+        return checkSessionResult;
     }
 
     private boolean checkSession(String session, String remoteAddress) {

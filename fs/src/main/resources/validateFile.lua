@@ -39,6 +39,14 @@ if corpCode == "" or corpCode == nil then
     ngx.exit(ngx.HTTP_FORBIDDEN)
 end
 
+--用于切分字符串
+function string:split(sep)
+    local sep, fields = sep or "\t", {}
+    local pattern = string.format("([^%s]+)", sep)
+    self:gsub(pattern, function(c) fields[#fields + 1] = c end)
+    return fields
+end
+
 --不校验权限的公司列表
 local excludeCorpCodes = ngx.var.excludeCorpCodes;
 if excludeCorpCodes ~= "" and excludeCorpCodes ~= nil then
@@ -67,9 +75,9 @@ end
 --文件在文件系统中的主键
 local fileId;
 if fileType == "gen" then
-    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/gen/%w+/%d{4}/(%w+)/.+")
+    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+")
 else
-    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/src/.+/%d{4}/%w+/(%w+)%.%w+")
+    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+")
 end
 
 --文件在文件系统中的主键不存在不能通过验权
@@ -89,7 +97,7 @@ if excludeResources ~= "" and excludeResources ~= nil then
     end
 end
 
-local signFlag = true;
+local signFlag = true
 local excludeSecretCorpCodes = ngx.var.excludeSecretCorpCodes
 if excludeSecretCorpCodes ~= "" and excludeSecretCorpCodes ~= nil then
     local excludeSecretCorpCodeList = string.split(excludeSecretCorpCodes, ",")
@@ -102,7 +110,7 @@ if excludeSecretCorpCodes ~= "" and excludeSecretCorpCodes ~= nil then
     end
 end
 
-local timeFlag = true;
+local timeFlag = true
 local excludeTimeCorpCodes = ngx.var.excludeTimeCorpCodes
 if excludeTimeCorpCodes ~= "" and excludeTimeCorpCodes ~= nil then
     local excludeTimeCorpCodeList = string.split(excludeTimeCorpCodes, ",")
@@ -115,7 +123,7 @@ if excludeTimeCorpCodes ~= "" and excludeTimeCorpCodes ~= nil then
     end
 end
 
-local sessionFlag = true;
+local sessionFlag = true
 local excludeSessionCorpCodes = ngx.var.excludeSessionCorpCodes
 if excludeSessionCorpCodes ~= "" and excludeSessionCorpCodes ~= nil then
     local excludeSessionCorpCodeList = string.split(excludeSessionCorpCodes, ",")
@@ -129,7 +137,7 @@ if excludeSessionCorpCodes ~= "" and excludeSessionCorpCodes ~= nil then
 end
 
 --用户登录session
-local sid;
+local sid
 --文档url校验文档服务器的秘钥 SECRET
 if signLevel == "st" then
     --当前公司不需要验证签名（秘钥），直接通过
@@ -177,6 +185,8 @@ elseif signLevel == "stt" then
     end
 
     if signFlag == true then
+        --文档服务器的秘钥
+        local secret = ngx.var.secret
         local signText = secret .. "|" .. timestamp .. "|" .. serverHost .. "|" .. signLevel ..
                 "|" .. corpCode .. "|" .. appCode .. "|" .. fileId .. "|" .. secret;
         local genSign = ngx.md5(signText);
@@ -195,7 +205,7 @@ elseif signLevel == "sn" then
         ngx.exit(ngx.OK)
     end
 
-    sid = string.match(url, ".+/file/%w+/%w+/(%w+)/.+")
+    sid = string.match(url, ".+/file/%w+/%w+/([%w.]+)/.+")
     --登录session为空，验证不通过
     if sid == "" or sid == nil then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -209,7 +219,7 @@ elseif signLevel == "sts" then
 
     local sign = string.match(url, ".+/file/%w+/%w+/(%w+)_%d+_[%w.]+/.+")
     local timestamp = string.match(url, ".+/file/%w+/%w+/%w+_(%d+)_[%w.]+/.+")
-    sid = string.match(url, ".+/file/%w+/%w+/%w+_(%d+)_[%w.]+/.+")
+    sid = string.match(url, ".+/file/%w+/%w+/%w+_%d+_([%w.]+)/.+")
     --时间戳不存在或者签名不存在或者session不存在，验证不通过
     if sign == "" or sign == nil or timestamp == ""
             or timestamp == nil or timestamp == 0
@@ -227,6 +237,8 @@ elseif signLevel == "sts" then
     end
 
     if signFlag == true then
+        --文档服务器的秘钥
+        local secret = ngx.var.secret
         local signText = secret .. "|" .. timestamp .. "|" .. sid .. "|" .. serverHost ..
                 "|" .. signLevel .. "|" .. corpCode .. "|" .. appCode .. "|" .. fileId .. "|" .. secret;
         local genSign = ngx.md5(signText);
@@ -318,7 +330,7 @@ end
 --excludeSecretCorpCodes 不校验秘钥权限的公司列表
 --excludeTimeCorpCodes 不校验时间权限的公司列表
 --excludeSessionCorpCodes 不校验session权限的公司列表
---urlExpireTime url的实效时间（单位为分钟），默认24*60。
+--urlExpireTime url的实效时间（单位为分钟），默认1440(24*60)。
 --checkSidUrl 用于检验session是否正确的url
 --sessionValidCacheTime session验证结果缓存时间（单位为秒），默认180。
 --sessionSignSecret 验证session的签名秘钥，默认为sf。

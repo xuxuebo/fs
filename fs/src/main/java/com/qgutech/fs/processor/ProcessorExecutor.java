@@ -2,6 +2,7 @@ package com.qgutech.fs.processor;
 
 import com.google.gson.Gson;
 import com.qgutech.fs.domain.FsFile;
+import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.PropertiesUtils;
 import com.qgutech.fs.utils.RedisKey;
 import org.apache.commons.collections.CollectionUtils;
@@ -79,14 +80,16 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                 continue;
             }
 
-            final String doingQueueName = queueName + RedisKey.FS_DOING_LIST_SUFFIX;
+            String doingQueueName = queueName + RedisKey.FS_DOING_LIST_SUFFIX;
             String lockKey = doingQueueName + RedisKey.FS_DOING_LIST_LOCK_SUFFIX;
             boolean lockFlag = getLock(lockKey);
             if (!lockFlag) {
                 continue;
             }
 
-            Long size = commonJedis.scard(doingQueueName);
+            final String doingList = doingQueueName + FsConstants.UNDERLINE
+                    + PropertiesUtils.getServerHost();
+            Long size = commonJedis.scard(doingList);
             if (size >= getMaxDoingListSize(queueName)) {
                 commonJedis.expire(lockKey, 0);
                 continue;
@@ -104,7 +107,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                 continue;
             }
 
-            commonJedis.sadd(doingQueueName, fsFileId);
+            commonJedis.sadd(doingList, fsFileId);
             commonJedis.expire(lockKey, 0);
             LOG.info("Processing fsFile[fsFile:" + fsFileJson + ",queue:" + queueName + "] start!");
             taskExecutor.submit(new Runnable() {
@@ -117,7 +120,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                     } catch (Throwable e) {
                         LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
                     } finally {
-                        commonJedis.srem(doingQueueName, fsFileId);
+                        commonJedis.srem(doingList, fsFileId);
                         commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
                         LOG.info("Processing fsFile[fsFile:" + fsFileJson + ",queue:" + queueName + "] end!");
                     }
@@ -138,7 +141,8 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
         }
 
         for (String queueName : queueNames) {
-            final String doingQueueName = queueName + RedisKey.FS_DOING_LIST_SUFFIX;
+            String doingQueueName = queueName + RedisKey.FS_DOING_LIST_SUFFIX
+                    + FsConstants.UNDERLINE + PropertiesUtils.getServerHost();
             Long doingCount = commonJedis.scard(doingQueueName);
             if (doingCount == null || doingCount == 0l) {
                 continue;

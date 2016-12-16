@@ -310,10 +310,10 @@ elseif check < 0 or nowTime - check >= sessionValidCacheTime * 1000 then
         --由uc，网络等造成的请求失败，不保存缓存
         ngx.exit(ngx.HTTP_FORBIDDEN)
     elseif res.body == 't' then
-        store.set(sid .. remote_addr, nowTime, sessionValidCacheTime)
+        store.set(sid, nowTime, sessionValidCacheTime)
         ngx.exit(ngx.OK)
     else
-        store.set(sid .. remote_addr, -nowTime, sessionValidCacheTime)
+        store.set(sid, -nowTime, sessionValidCacheTime)
         ngx.exit(ngx.HTTP_FORBIDDEN)
     end
 else

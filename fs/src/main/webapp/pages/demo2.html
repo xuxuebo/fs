@@ -17,6 +17,12 @@
 
 <script type="text/javascript">
     $(function () {
+        var hash = window.location.hash;
+        var processor = "DOC";
+        if (hash) {
+            processor = hash.substring(1);
+        }
+
         uploadFile({
             swf: "../flash/Uploader.swf",
             server: "/fs/file/uploadFile",
@@ -50,7 +56,7 @@
                 console.log(data);
             },
             appCode: "km",
-            processor: "DOC",
+            processor: processor,
             corpCode: "ladeng.com",
             businessId: (new Date()).getTime(),
             responseFormat: "json"

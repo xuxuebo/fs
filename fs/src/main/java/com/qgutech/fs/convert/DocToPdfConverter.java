@@ -23,7 +23,7 @@ public class DocToPdfConverter extends AbstractConverter implements Initializing
     protected JedisCommands commonJedis;
 
     public void afterPropertiesSet() throws Exception {
-        if (!SERVER_TYPE_WINDOWS.equals(serverType) && enableTimer) {
+        if (!SERVER_TYPE_WINDOWS.equals(serverType) || !enableTimer) {
             return;
         }
 

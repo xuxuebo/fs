@@ -34,21 +34,21 @@ public class DocToPdfConverterChain extends AbstractConverter {
 
     @Override
     protected File windowsConvert(String inputFilePath, String targetFileDirPath) throws Exception {
-        Exception exception = null;
+        Throwable throwable = null;
         File beforeFile = beforeConvert(inputFilePath);
         try {
             for (Converter converter : converters) {
                 try {
                     return converter.convert(beforeFile.getAbsolutePath(), targetFileDirPath);
-                } catch (Exception e) {
-                    exception = e;
+                } catch (Throwable e) {
+                    throwable = e;
                 }
             }
         } finally {
             afterConvert(beforeFile);
         }
 
-        throw exception;
+        throw new RuntimeException(throwable);
     }
 
     public List<Converter> getConverters() {

@@ -231,6 +231,7 @@ public abstract class AbstractProcessor implements Processor {
             }
         }
 
+        fsFile.setTmpFilePath(tmpFilePath);
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {

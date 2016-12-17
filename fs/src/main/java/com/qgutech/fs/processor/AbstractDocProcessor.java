@@ -69,8 +69,8 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             try {
                 ConvertUtils.pptToPng(srcFilePath, imageTmpDirPath);
                 convert = false;
-            } catch (Exception e) {
-                LOG.error("Exception occurred when ppt[" + srcFilePath
+            } catch (Throwable e) {
+                LOG.debug("Exception occurred when ppt[" + srcFilePath
                         + "] straight turn to png[pngDir:" + imageTmpDirPath + "]!", e);
             }
         }

@@ -542,7 +542,7 @@ public class FileController {
             return false;
         }
 
-        //表示压缩图片
+        //表示压缩图片或者拉伸图片
         if (coordinate.length == 2) {
             String w = coordinate[0];
             String h = coordinate[1];

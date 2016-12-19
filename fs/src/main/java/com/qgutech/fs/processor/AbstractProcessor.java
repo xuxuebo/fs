@@ -92,7 +92,9 @@ public abstract class AbstractProcessor implements Processor {
             if (needAsync) {
                 submit(fsFile, 0);
             } else {
+                LOG.info("Processing fsFile[fsFile:" + fsFile + "] start!");
                 process(fsFile);
+                LOG.info("Processing fsFile[fsFile:" + fsFile + "] end!");
             }
         } catch (Exception e) {
             needAsync = false;
@@ -462,7 +464,9 @@ public abstract class AbstractProcessor implements Processor {
                 fsFile.setStatus(ProcessStatusEnum.PROCESSING);
                 submit(fsFile, 0);
             } else {
+                LOG.info("Processing fsFile[fsFile:" + fsFile + "] start!");
                 process(fsFile);
+                LOG.info("Processing fsFile[fsFile:" + fsFile + "] end!");
             }
         } catch (Exception e) {
             needAsync = false;

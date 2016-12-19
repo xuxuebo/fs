@@ -179,26 +179,26 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
             fsFile = gson.fromJson(fsFileJson, FsFile.class);
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             processor.process(fsFile);
-            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
             commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
+            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
         } catch (Throwable e) {
             LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
             Long executeCnt = commonJedis.incr(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId);
             if (executeCnt == null || executeCnt == 0 || executeCnt > maxAllowFailCnt) {
-                commonJedis.srem(doingList, fsFileId);
-                commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
                 commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
-            } else {
-                if (fsFile == null) {
-                    return;
-                }
-
-                Long nextExecuteTime = roundNextExecuteTimeMap.get(executeCnt.intValue());
-                nextExecuteTime = System.currentTimeMillis() + nextExecuteTime;
-                commonJedis.zadd(RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME
-                        , nextExecuteTime.doubleValue()
-                        , fsFileId + FsConstants.VERTICAL_LINE + fsFile.getProcessor());
+                commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
+                return;
             }
+
+            if (fsFile == null) {
+                return;
+            }
+
+            Long nextExecuteTime = System.currentTimeMillis()
+                    + roundNextExecuteTimeMap.get(executeCnt.intValue());
+            commonJedis.zadd(RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME
+                    , nextExecuteTime.doubleValue()
+                    , fsFileId + FsConstants.VERTICAL_LINE + fsFile.getProcessor());
         } finally {
             commonJedis.srem(doingList, fsFileId);
         }

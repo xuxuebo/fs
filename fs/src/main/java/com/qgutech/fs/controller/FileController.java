@@ -788,7 +788,7 @@ public class FileController {
 
         try {
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
-            processor.submitToReprocess(fsFile);
+            processor.reprocess(fsFile);
         } catch (Exception e) {
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg(e.getMessage());

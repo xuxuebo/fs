@@ -55,8 +55,7 @@ public abstract class AbstractProcessor implements Processor {
             throw new IOException("Creating directory[" + tmpDirPath + "] failed!");
         }
 
-        String tmpFilePath = tmpDirPath + File.separator
-                + tmp + FsConstants.POINT + fsFile.getSuffix();
+        String tmpFilePath = tmpDirPath + File.separator + tmp + FsConstants.POINT + fsFile.getSuffix();
         InputStream inputStream = null;
         OutputStream outputStream = null;
         String fsFileId = null;
@@ -354,12 +353,12 @@ public abstract class AbstractProcessor implements Processor {
             LOG.error("Exception occurred when submitting fsFile[" + fsFile
                     + "submitCount:" + (count + 1) + "] to redis!", e);
             try {
-                Thread.sleep(submitFailedWaitTime);
+                Thread.sleep(getSubmitFailedWaitTime());
             } catch (Exception ex) {
                 //NP
             }
 
-            if (count < maxSubmitCnt) {
+            if (count < getMaxSubmitCnt()) {
                 submit(fsFile, ++count);
             } else {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
@@ -441,16 +440,15 @@ public abstract class AbstractProcessor implements Processor {
     }
 
     @Override
-    public void submitToReprocess(FsFile fsFile) throws Exception {
+    public void reprocess(FsFile fsFile) throws Exception {
         String tmp = FsUtils.generateUUID();
         String tmpDirPath = FsPathUtils.getImportTmpDirPath(tmp);
         File tmpDir = new File(tmpDirPath);
-        if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+        if (!tmpDir.exists() && !tmpDir.mkdirs() && !tmpDir.exists()) {
             throw new IOException("Creating directory[" + tmpDirPath + "] failed!");
         }
 
-        String tmpFilePath = tmpDirPath + File.separator
-                + tmp + FsConstants.POINT + fsFile.getSuffix();
+        String tmpFilePath = tmpDirPath + File.separator + tmp + FsConstants.POINT + fsFile.getSuffix();
         fsFile.setTmpFilePath(tmpFilePath);
         boolean needAsync = true;
         InputStream inputStream = null;
@@ -466,12 +464,8 @@ public abstract class AbstractProcessor implements Processor {
             } else {
                 process(fsFile);
             }
-
-            fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         } catch (Exception e) {
-            FsUtils.deleteFile(tmpDir);
-            needAsync = true;
-
+            needAsync = false;
             throw e;
         } finally {
             IOUtils.closeQuietly(inputStream);

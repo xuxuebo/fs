@@ -8,6 +8,7 @@ public interface FsConstants {
     String DEFAULT_VIDEO_SUFFIX = ".m3u8";
     String DEFAULT_VIDEO_TYPE = "m3u8";
     String DEFAULT_IMAGE_SUFFIX = ".png";
+    String DEFAULT_IMAGE_TYPE = "png";
     String FILE_DIR_SRC = "src";
     String FILE_DIR_GEN = "gen";
     String FILE_DIR_TMP = "tmp";

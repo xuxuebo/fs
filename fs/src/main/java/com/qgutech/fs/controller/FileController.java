@@ -1,9 +1,6 @@
 package com.qgutech.fs.controller;
 
-import com.qgutech.fs.domain.FsFile;
-import com.qgutech.fs.domain.FsServer;
-import com.qgutech.fs.domain.ProcessStatusEnum;
-import com.qgutech.fs.domain.SignLevelEnum;
+import com.qgutech.fs.domain.*;
 import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
 import com.qgutech.fs.utils.*;
@@ -13,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.annotation.DependsOn;
@@ -488,7 +486,12 @@ public class FileController {
         String path = requestURI.substring(pos);
         File file = new File(PropertiesUtils.getFileStoreDir(), path);
         String extension = FilenameUtils.getExtension(file.getName());
-        if (!file.exists() || StringUtils.isEmpty(extension)) {
+        if (!file.exists() && FsConstants.DEFAULT_IMAGE_TYPE.equals(extension)) {
+            if (!cutOrCompressImage(file)) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+        } else if (!file.exists() || StringUtils.isEmpty(extension)) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -520,6 +523,61 @@ public class FileController {
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
+    }
+
+    private boolean cutOrCompressImage(File file) throws Exception {
+        File parentFile = file.getParentFile();
+        if (!parentFile.exists()) {
+            return false;
+        }
+
+        File originImageFile = new File(parentFile, FsConstants.ORIGIN_IMAGE_NAME);
+        if (!originImageFile.exists()) {
+            return false;
+        }
+
+        String baseName = FilenameUtils.getBaseName(file.getName());
+        String[] coordinate = baseName.split("_");
+        if (coordinate.length != 2 && coordinate.length != 4) {
+            return false;
+        }
+
+        //表示压缩图片
+        if (coordinate.length == 2) {
+            String w = coordinate[0];
+            String h = coordinate[1];
+            if (!NumberUtils.isNumber(w) || !NumberUtils.isNumber(h)) {
+                return false;
+            }
+
+            String[] commands = {FsConstants.FFMPEG, "-i"
+                    , originImageFile.getAbsolutePath(), "-s"
+                    , w + "*" + h, "-y", file.getAbsolutePath()};
+            LOG.info("Executing command[" + FsUtils.toString(commands) + "] start!");
+            FsUtils.executeCommand(commands);
+            LOG.info("Executing command[" + FsUtils.toString(commands) + "] end!");
+            return true;
+        }
+
+        //表示剪切图片
+        String x = coordinate[0];
+        String y = coordinate[1];
+        String w = coordinate[2];
+        String h = coordinate[3];
+        if (!NumberUtils.isNumber(x) || !NumberUtils.isNumber(y)
+                || !NumberUtils.isNumber(w) || !NumberUtils.isNumber(h)) {
+            return false;
+        }
+
+        String[] commands = {FsConstants.FFMPEG, "-i"
+                , originImageFile.getAbsolutePath(), "-vf"
+                , "crop=" + w + ":" + h + ":" + x + ":" + y, "-y"
+                , file.getAbsolutePath()};
+        LOG.info("Executing command[" + FsUtils.toString(commands) + "] start!");
+        FsUtils.executeCommand(commands);
+        LOG.info("Executing command[" + FsUtils.toString(commands) + "] end!");
+
+        return true;
     }
 
     protected String toAttachmentFileName(String fileName,
@@ -800,6 +858,11 @@ public class FileController {
 
     @RequestMapping("/asyncProcess")
     public void asyncProcess(FsFile fsFile, HttpServletResponse response) throws Exception {
+        if (!PropertiesUtils.isDocConvert()) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
         PrintWriter writer = response.getWriter();
         try {
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());

@@ -11,6 +11,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -47,7 +48,9 @@ public class HttpUtils {
         try {
             HttpPost httpPost = new HttpPost(url);
             if (MapUtils.isNotEmpty(paramMap) || StringUtils.isNotEmpty(filePath)) {
-                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                        .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                        .setCharset(Consts.UTF_8);
                 if (StringUtils.isNotEmpty(filePath)) {
                     FileBody fileBody;
                     File file = new File(filePath);

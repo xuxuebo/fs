@@ -14,8 +14,8 @@ public interface RedisKey {
     String FS_DOING_LIST_LOCK_SUFFIX = "_lock";
     String FS_FILE_CONTENT_PREFIX = "fs_file_content_prefix_";
     String FS_CHECK_SESSION_RESULT = "fs_check_session_result_";
-
     String FS_CHUNK_MERGE_LOCK_ = "fs_chunk_merge_lock_";
-
     String FS_WINDOWS_PID_ = "fs_windows_pid_";
+    String FS_FAIL_EXECUTE_CNT_ = "fs_fail_execute_cnt_";
+    String FS_FAIL_EXECUTE_QUEUE_NAME = "fs_fail_execute_queue_name";
 }

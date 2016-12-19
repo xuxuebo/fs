@@ -178,6 +178,7 @@
         <property name="minAvailablePoolSize" value="${fs.processorExecutor.minAvailablePoolSize}"/>
         <property name="timerDelay" value="${fs.processorExecutor.timerDelay}"/>
         <property name="timerPeriod" value="${fs.processorExecutor.timerPeriod}"/>
+        <property name="repeatProcessTimeInterval" value="${fs.processorExecutor.repeatProcessTimeInterval}"/>
         <property name="processorFactory" ref="processorFactory"/>
         <property name="maxDoingListSizeMap">
             <map key-type="java.lang.String" value-type="java.lang.Integer">

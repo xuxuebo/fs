@@ -2,11 +2,13 @@ package com.qgutech.fs.processor;
 
 import com.google.gson.Gson;
 import com.qgutech.fs.domain.FsFile;
+import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.PropertiesUtils;
 import com.qgutech.fs.utils.RedisKey;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,6 +22,9 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
 
     private static final Log LOG = LogFactory.getLog(ProcessorExecutor.class);
     private static final Gson gson = new Gson();
+    private static final String TIME_SECOND_UNIT = "s";
+    private static final String TIME_MINUTE_UNIT = "m";
+    private static final String TIME_HOUR_UNIT = "h";
 
     private ProcessorFactory processorFactory;
     private ThreadPoolTaskExecutor taskExecutor;
@@ -30,7 +35,9 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
     private long timerDelay;
     private long timerPeriod;
     private Map<String, Integer> maxDoingListSizeMap;
-
+    private String repeatProcessTimeInterval;
+    private int maxAllowFailCnt;
+    private Map<Integer, Long> roundNextExecuteTimeMap;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -39,6 +46,47 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
         Assert.notNull(commonJedis, "CommonJedis is null!");
         if (maxDoingListSizeMap == null) {
             maxDoingListSizeMap = new HashMap<String, Integer>();
+        }
+
+        if (StringUtils.isEmpty(repeatProcessTimeInterval)
+                || "null".equals(repeatProcessTimeInterval)) {
+            return;
+        }
+
+        String[] repeatProcessTimes = repeatProcessTimeInterval.split(",");
+        if (repeatProcessTimes.length <= 0) {
+            return;
+        }
+
+        maxAllowFailCnt = repeatProcessTimes.length;
+        roundNextExecuteTimeMap = new HashMap<Integer, Long>(repeatProcessTimes.length);
+        for (int i = 0; i < repeatProcessTimes.length; i++) {
+            String time = repeatProcessTimes[i];
+            if (StringUtils.isEmpty(time)) {
+                throw new RuntimeException("repeatProcessTimeInterval["
+                        + repeatProcessTimeInterval + "] is illegally!");
+            }
+
+            String numTime = time.substring(0, time.length() - 1);
+            if (!NumberUtils.isNumber(numTime)) {
+                throw new RuntimeException("repeatProcessTimeInterval["
+                        + repeatProcessTimeInterval + "] is illegally!");
+            }
+
+            long timeMills = Long.parseLong(numTime);
+            String unit = time.substring(time.length() - 1, time.length());
+            if (TIME_SECOND_UNIT.equals(unit)) {
+                timeMills = timeMills * 1000;
+            } else if (TIME_MINUTE_UNIT.equals(unit)) {
+                timeMills = timeMills * 60 * 1000;
+            } else if (TIME_HOUR_UNIT.equals(unit)) {
+                timeMills = timeMills * 60 * 60 * 1000;
+            } else {
+                throw new RuntimeException("repeatProcessTimeInterval["
+                        + repeatProcessTimeInterval + "] is illegally!");
+            }
+
+            roundNextExecuteTimeMap.put(i + 1, timeMills);
         }
     }
 
@@ -113,15 +161,33 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
             taskExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
+                    FsFile fsFile = null;
                     try {
-                        FsFile fsFile = gson.fromJson(fsFileJson, FsFile.class);
+                        fsFile = gson.fromJson(fsFileJson, FsFile.class);
                         Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
                         processor.process(fsFile);
+                        commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
+                        commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
                     } catch (Throwable e) {
                         LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
+                        Long executeCnt = commonJedis.incr(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId);
+                        if (executeCnt == null || executeCnt == 0 || executeCnt > maxAllowFailCnt) {
+                            commonJedis.srem(doingList, fsFileId);
+                            commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
+                            commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
+                        } else {
+                            if (fsFile == null) {
+                                return;
+                            }
+
+                            Long nextExecuteTime = roundNextExecuteTimeMap.get(executeCnt.intValue());
+                            nextExecuteTime = System.currentTimeMillis() + nextExecuteTime;
+                            commonJedis.zadd(RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME
+                                    , nextExecuteTime.doubleValue()
+                                    , fsFileId + FsConstants.VERTICAL_LINE + fsFile.getProcessor());
+                        }
                     } finally {
                         commonJedis.srem(doingList, fsFileId);
-                        commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
                         LOG.info("Processing fsFile[fsFile:" + fsFileJson + ",queue:" + queueName + "] end!");
                     }
                 }
@@ -170,6 +236,47 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
     private void start() {
         Timer timer = new Timer();
         timer.schedule(this, timerDelay, timerPeriod);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    Set<String> tasks = commonJedis.zrangeByScore(
+                            RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME, 0, System.currentTimeMillis());
+                    if (CollectionUtils.isEmpty(tasks)) {
+                        return;
+                    }
+
+                    for (String task : tasks) {
+                        String fsFileId = task.substring(0, task.indexOf(FsConstants.VERTICAL_LINE));
+                        String processor = task.substring(task.indexOf(FsConstants.VERTICAL_LINE) + 1);
+                        commonJedis.lpush(getProcessQueueName(processor), fsFileId);
+                    }
+                } catch (Exception e) {
+                    LOG.error(e);
+                }
+            }
+        }, timerDelay, timerPeriod);
+    }
+
+    protected String getProcessQueueName(String processor) {
+        switch (ProcessorTypeEnum.valueOf(processor)) {
+            case VID:
+                return RedisKey.FS_VIDEO_QUEUE_LIST;
+            case AUD:
+                return RedisKey.FS_AUDIO_QUEUE_LIST;
+            case DOC:
+                return RedisKey.FS_DOC_QUEUE_LIST;
+            case ZVID:
+                return RedisKey.FS_ZIP_VIDEO_QUEUE_LIST;
+            case ZAUD:
+                return RedisKey.FS_ZIP_AUDIO_QUEUE_LIST;
+            case ZIMG:
+                return RedisKey.FS_ZIP_IMAGE_QUEUE_LIST;
+            case ZDOC:
+                return RedisKey.FS_ZIP_DOC_QUEUE_LIST;
+            default:
+                throw new RuntimeException("This processor[" + processor + "] is not supported!");
+        }
     }
 
     protected boolean getLock(String key) {
@@ -272,5 +379,13 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
 
     public void setMaxDoingListSizeMap(Map<String, Integer> maxDoingListSizeMap) {
         this.maxDoingListSizeMap = maxDoingListSizeMap;
+    }
+
+    public String getRepeatProcessTimeInterval() {
+        return repeatProcessTimeInterval;
+    }
+
+    public void setRepeatProcessTimeInterval(String repeatProcessTimeInterval) {
+        this.repeatProcessTimeInterval = repeatProcessTimeInterval;
     }
 }

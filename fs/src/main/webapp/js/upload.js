@@ -13,6 +13,17 @@
             $(".itemDel").hide();
         }
 
+        function uploadFailed(file) {
+            uploader.reset();
+            $("#bar").css("width", "800px");
+            $("#" + file.id + " .percent").text("上传失败");
+            $("#bar").css("background", "red");
+            $("#" + file.id + " .percentage").text("上传失败");
+            $(".itemStop").hide();
+            $(".itemUpload").hide();
+            $(".itemDel").hide();
+        }
+
         WebUploader.Uploader.register({
             "before-send-file": "beforeSendFile",
             "before-send": "beforeSend",
@@ -44,7 +55,8 @@
                                     //FAILED表示参数错误或者程序执行错误，不需要上传文件
                                     task.reject();
                                     uploader.skipFile(file);
-                                    alert("Uploading File Failed:" + data.processMsg);
+                                    uploadFailed(file);
+                                    console.log("Uploading File Failed:" + data.processMsg);
                                 } else if (data.status == "SUCCESS"
                                     || data.status == "PROCESSING") {
                                     //表示文件已存在并且处理正确或者处理中，不需要上传文件
@@ -86,7 +98,7 @@
                         if (data.status == "FAILED") {
                             //FAILED表示参数错误，不需要上传分片，结束文件上传
                             task.reject();
-                            alert("Uploading Chunk Failed:" + data.processMsg);
+                            console.log("Uploading Chunk Failed:" + data.processMsg);
                         } else if (data.status == "SUCCESS") {
                             //SUCCESS表示分片已存在，不需要上传分片
                             task.reject();
@@ -115,7 +127,8 @@
                         if (data.status == "FAILED") {
                             //FAILED表示参数错误(包括实际分片总数和前台传来的分片总数不一致)或者程序执行错误，上传文件失败
                             task.reject();
-                            alert("Merging Chunk Failed:" + data.processMsg);
+                            uploadFailed(file);
+                            console.log("Merging Chunk Failed:" + data.processMsg);
                         } else if (data.status == "SUCCESS"
                             || data.status == "PROCESSING") {
                             //SUCCESS表示分片已合并完成并且正确处理或者正在处理中。

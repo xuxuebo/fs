@@ -184,6 +184,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
         } catch (Throwable e) {
             LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
             Long executeCnt = commonJedis.incr(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId);
+            LOG.info("========" + RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId + "[" + executeCnt + "]========");
             if (executeCnt == null || executeCnt == 0 || executeCnt > maxAllowFailCnt) {
                 commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
                 commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
@@ -263,7 +264,8 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                     for (String task : tasks) {
                         String fsFileId = task.substring(0, task.indexOf(FsConstants.VERTICAL_LINE));
                         String processor = task.substring(task.indexOf(FsConstants.VERTICAL_LINE) + 1);
-                        commonJedis.lpush(getProcessQueueName(processor), fsFileId);
+                        commonJedis.rpush(getProcessQueueName(processor), fsFileId);
+                        commonJedis.zrem(RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME, task);
                     }
 
                     commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_LOCK, 0);

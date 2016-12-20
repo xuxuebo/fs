@@ -348,12 +348,10 @@ public abstract class AbstractProcessor implements Processor {
         boolean validate(String extension);
     }
 
-    protected boolean submit(FsFile fsFile, int count) throws Exception {
+    protected void submit(FsFile fsFile, int count) throws Exception {
         try {
             submitToRedis(fsFile);
-        } catch (Exception e) {
-            LOG.error("Exception occurred when submitting fsFile[" + fsFile
-                    + "submitCount:" + (count + 1) + "] to redis!", e);
+        } catch (Throwable e) {
             try {
                 Thread.sleep(getSubmitFailedWaitTime());
             } catch (Exception ex) {
@@ -361,14 +359,16 @@ public abstract class AbstractProcessor implements Processor {
             }
 
             if (count < getMaxSubmitCnt()) {
+                LOG.debug("Exception occurred when submitting fsFile[" + fsFile
+                        + "submitCount:" + (count + 1) + "] to redis!", e);
                 submit(fsFile, ++count);
             } else {
+                LOG.error("Exception occurred when submitting fsFile[" + fsFile
+                        + "submitCount:" + (count + 1) + "] to redis!", e);
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                return false;
+                throw new Exception(e);
             }
         }
-
-        return true;
     }
 
     protected boolean needAsync(FsFile fsFile) {

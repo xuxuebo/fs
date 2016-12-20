@@ -110,13 +110,13 @@ public class ZipImageProcessor extends AbstractProcessor {
 
             getFutures(futures);
             afterProcess(fsFile);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg(e.getMessage());
             HttpUtils.updateFsFile(fsFile);
 
-            throw e;
+            throw new Exception(e);
         } finally {
             FsUtils.deleteFile(parentFile);
         }

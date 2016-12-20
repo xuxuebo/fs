@@ -45,7 +45,7 @@ public class AudioProcessor extends AbstractProcessor {
             fsFile.setDurations(audio.getDuration());
 
             afterProcess(fsFile);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (needAsync) {
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
                 fsFile.setCreateTime(null);
@@ -54,7 +54,7 @@ public class AudioProcessor extends AbstractProcessor {
                 HttpUtils.updateFsFile(fsFile);
             }
 
-            throw e;
+            throw new Exception(e);
         } finally {
             FsUtils.deleteFile(new File(tmpFilePath).getParentFile());
         }

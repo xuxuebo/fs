@@ -95,13 +95,13 @@ public class VideoProcessor extends AbstractProcessor {
             fsFile.setVideoLevels(videoType.name());
             fsFile.setDurations(video.getDuration());
             afterProcess(fsFile);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             FsUtils.deleteFile(genFilePath);
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg(e.getMessage());
             HttpUtils.updateFsFile(fsFile);
 
-            throw e;
+            throw new Exception(e);
         } finally {
             FsUtils.deleteFile(new File(tmpFilePath).getParentFile());
         }

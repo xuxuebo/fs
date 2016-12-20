@@ -30,95 +30,84 @@ public class ZipImageProcessor extends AbstractProcessor {
     public void process(FsFile fsFile) throws Exception {
         String tmpFilePath = fsFile.getTmpFilePath();
         File parentFile = new File(tmpFilePath).getParentFile();
-        try {
-            if (!decompress(fsFile, new Validate() {
+        if (!decompress(fsFile, new Validate() {
+            @Override
+            public boolean validate(String extension) {
+                return validateImage(extension);
+            }
+        })) {
+            LOG.error("Image collection[" + fsFile.getTmpFilePath()
+                    + "] is empty or contains directory or contains not image file!");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            fsFile.setProcessMsg("图片集为空或者包含文件夹或者包含非图片文件");
+            HttpUtils.updateFsFile(fsFile);
+            return;
+        }
+
+        File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
+        File[] imageFiles = decompressDir.listFiles();
+        if (imageFiles == null || imageFiles.length == 0) {
+            LOG.error("Image collection[" + fsFile.getTmpFilePath() + "] is empty!");
+            fsFile.setProcessMsg("图片集为空");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            HttpUtils.updateFsFile(fsFile);
+            return;
+        }
+
+        final String genFilePath = getGenFilePath(fsFile);
+        File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
+        if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
+            throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
+        }
+
+        List<Future<String>> futures = new ArrayList<Future<String>>(imageFiles.length);
+        final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
+        for (int i = 0; i < imageFiles.length; i++) {
+            final int index = i + 1;
+            final String imagePath = imageFiles[i].getAbsolutePath();
+            semaphore.acquire();
+            futures.add(taskExecutor.submit(new Callable<String>() {
                 @Override
-                public boolean validate(String extension) {
-                    return validateImage(extension);
-                }
-            })) {
-                LOG.error("Image collection[" + fsFile.getTmpFilePath()
-                        + "] is empty or contains directory or contains not image file!");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("图片集为空或者包含文件夹或者包含非图片文件");
-                HttpUtils.updateFsFile(fsFile);
-                return;
-            }
-
-            File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
-            File[] imageFiles = decompressDir.listFiles();
-            if (imageFiles == null || imageFiles.length == 0) {
-                LOG.error("Image collection[" + fsFile.getTmpFilePath() + "] is empty!");
-                fsFile.setProcessMsg("图片集为空");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                HttpUtils.updateFsFile(fsFile);
-                return;
-            }
-
-            final String genFilePath = getGenFilePath(fsFile);
-            File genFile = new File(genFilePath);
-            FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
-                throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
-            }
-
-            List<Future<String>> futures = new ArrayList<Future<String>>(imageFiles.length);
-            final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
-            for (int i = 0; i < imageFiles.length; i++) {
-                final int index = i + 1;
-                final String imagePath = imageFiles[i].getAbsolutePath();
-                semaphore.acquire();
-                futures.add(taskExecutor.submit(new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        try {
-                            String orgResolution = FsUtils.getImageResolution(imagePath);
-                            int indexOf = orgResolution.indexOf("x");
-                            int width = Integer.parseInt(orgResolution.substring(0, indexOf));
-                            int height = Integer.parseInt(orgResolution.substring(indexOf + 1));
-                            for (ImageTypeEnum value : ImageTypeEnum.values()) {
-                                int w = value.getW();
-                                int h = value.getH();
-                                String resolution;
-                                if (w > 0 && h > 0) {
-                                    if (w > width) {
-                                        w = width;
-                                    }
-
-                                    if (h > height) {
-                                        h = height;
-                                    }
-
-                                    resolution = w + "*" + h;
-                                } else {
-                                    resolution = orgResolution;
+                public String call() throws Exception {
+                    try {
+                        String orgResolution = FsUtils.getImageResolution(imagePath);
+                        int indexOf = orgResolution.indexOf("x");
+                        int width = Integer.parseInt(orgResolution.substring(0, indexOf));
+                        int height = Integer.parseInt(orgResolution.substring(indexOf + 1));
+                        for (ImageTypeEnum value : ImageTypeEnum.values()) {
+                            int w = value.getW();
+                            int h = value.getH();
+                            String resolution;
+                            if (w > 0 && h > 0) {
+                                if (w > width) {
+                                    w = width;
                                 }
 
-                                String destFilePath = genFilePath + File.separator + index
-                                        + value.name().toLowerCase() + FsConstants.DEFAULT_IMAGE_SUFFIX;
-                                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", imagePath
-                                        , "-s", resolution, "-y", destFilePath});
+                                if (h > height) {
+                                    h = height;
+                                }
+
+                                resolution = w + "*" + h;
+                            } else {
+                                resolution = orgResolution;
                             }
 
-                            return null;
-                        } finally {
-                            semaphore.release();
+                            String destFilePath = genFilePath + File.separator + index
+                                    + value.name().toLowerCase() + FsConstants.DEFAULT_IMAGE_SUFFIX;
+                            FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", imagePath
+                                    , "-s", resolution, "-y", destFilePath});
                         }
+
+                        return null;
+                    } finally {
+                        semaphore.release();
                     }
-                }));
-            }
-
-            getFutures(futures);
-            afterProcess(fsFile);
-        } catch (Throwable e) {
-            FsUtils.deleteFile(getGenFilePath(fsFile));
-            fsFile.setStatus(ProcessStatusEnum.FAILED);
-            fsFile.setProcessMsg(e.getMessage());
-            HttpUtils.updateFsFile(fsFile);
-
-            throw new Exception(e);
-        } finally {
-            FsUtils.deleteFile(parentFile);
+                }
+            }));
         }
+
+        getFutures(futures);
+        afterProcess(fsFile);
     }
 }

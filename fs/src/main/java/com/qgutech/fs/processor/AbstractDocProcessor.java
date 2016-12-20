@@ -5,7 +5,6 @@ import com.qgutech.fs.convert.Converter;
 import com.qgutech.fs.domain.DocTypeEnum;
 import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.ImageTypeEnum;
-import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,29 +35,6 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             FsUtils.deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
         }
     }
-
-    @Override
-    public void process(FsFile fsFile) throws Exception {
-        File tmpDirFile = new File(fsFile.getTmpFilePath()).getParentFile();
-        try {
-            process(fsFile, tmpDirFile);
-        } catch (Throwable e) {
-            FsUtils.deleteFile(getGenFilePath(fsFile));
-            fsFile.setProcessMsg(e.getMessage());
-            fsFile.setStatus(ProcessStatusEnum.FAILED);
-            HttpUtils.updateFsFile(fsFile);
-
-            throw new Exception(e);
-        } finally {
-            FsUtils.deleteFile(tmpDirFile);
-            if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {
-                FsUtils.deleteFile(getGenFilePath(fsFile));
-                FsUtils.deleteFile(getOriginFilePath(fsFile));
-            }
-        }
-    }
-
-    protected abstract void process(FsFile fsFile, File tmpDirFile) throws Exception;
 
     protected int processDoc(String srcFilePath, String imageTmpDirPath
             , String pdfTmpDirPath, final String genFilePath) throws Exception {

@@ -16,7 +16,8 @@ public class ZipDocProcessor extends AbstractDocProcessor {
     }
 
     @Override
-    protected void process(FsFile fsFile, File tmpDirFile) throws Exception {
+    public void process(FsFile fsFile) throws Exception {
+        File tmpDirFile = new File(fsFile.getTmpFilePath()).getParentFile();
         if (!decompress(fsFile, new Validate() {
             @Override
             public boolean validate(String extension) {

@@ -2,7 +2,6 @@ package com.qgutech.fs.processor;
 
 
 import com.qgutech.fs.domain.FsFile;
-import com.qgutech.fs.domain.ProcessStatusEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.io.FileUtils;
 
@@ -25,39 +24,24 @@ public class AudioProcessor extends AbstractProcessor {
         String genFilePath = getGenFilePath(fsFile);
         boolean needAsync = needAsync(fsFile);
         String tmpFilePath = fsFile.getTmpFilePath();
-        try {
-            File genFile = new File(genFilePath);
-            FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs()) {
-                throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
-            }
-
-            if (needAsync) {
-                FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", tmpFilePath
-                        , "-y", genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
-            } else {
-                File srcFile = new File(tmpFilePath);
-                File destFile = new File(genFilePath, FsConstants.DEFAULT_AUDIO_NAME);
-                FileUtils.copyFile(srcFile, destFile);
-            }
-
-            Audio audio = FsUtils.getAudio(tmpFilePath);
-            fsFile.setDurations(audio.getDuration());
-
-            afterProcess(fsFile);
-        } catch (Throwable e) {
-            if (needAsync) {
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setCreateTime(null);
-                fsFile.setProcessMsg(e.getMessage());
-                FsUtils.deleteFile(genFilePath);
-                HttpUtils.updateFsFile(fsFile);
-            }
-
-            throw new Exception(e);
-        } finally {
-            FsUtils.deleteFile(new File(tmpFilePath).getParentFile());
+        File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
+        if (!genFile.exists() && !genFile.mkdirs()) {
+            throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
         }
+
+        if (needAsync) {
+            FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", tmpFilePath
+                    , "-y", genFilePath + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
+        } else {
+            File srcFile = new File(tmpFilePath);
+            File destFile = new File(genFilePath, FsConstants.DEFAULT_AUDIO_NAME);
+            FileUtils.copyFile(srcFile, destFile);
+        }
+
+        Audio audio = FsUtils.getAudio(tmpFilePath);
+        fsFile.setDurations(audio.getDuration());
+        afterProcess(fsFile);
     }
 
     @Override

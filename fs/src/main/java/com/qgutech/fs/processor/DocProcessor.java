@@ -20,7 +20,8 @@ public class DocProcessor extends AbstractDocProcessor {
     }
 
     @Override
-    protected void process(FsFile fsFile, File tmpDirFile) throws Exception {
+    public void process(FsFile fsFile) throws Exception {
+        File tmpDirFile = new File(fsFile.getTmpFilePath()).getParentFile();
         String genFilePath = getGenFilePath(fsFile);
         File genFile = new File(genFilePath);
         FsUtils.deleteFile(genFilePath);

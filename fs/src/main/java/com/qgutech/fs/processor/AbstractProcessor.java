@@ -404,6 +404,20 @@ public abstract class AbstractProcessor implements Processor {
                 + File.separator + fsFile.getId();
     }
 
+    public void afterFailProcess(FsFile fsFile) {
+        FsUtils.deleteFile(getGenFilePath(fsFile));
+        fsFile.setStatus(ProcessStatusEnum.FAILED);
+        HttpUtils.updateFsFile(fsFile);
+    }
+
+    public void clear(FsFile fsFile) {
+        FsUtils.deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
+        if (StringUtils.isNotEmpty(fsFile.getBackUrl())) {
+            FsUtils.deleteFile(getGenFilePath(fsFile));
+            FsUtils.deleteFile(getOriginFilePath(fsFile));
+        }
+    }
+
     protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
         HttpUtils.updateFsFile(fsFile);

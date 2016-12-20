@@ -173,17 +173,26 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
     }
 
     protected void executeTask(String fsFileId, String fsFileJson, String doingList, String queueName) {
+        FsFile fsFile = null;
+        Processor processor = null;
         try {
-            FsFile fsFile = gson.fromJson(fsFileJson, FsFile.class);
-            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+            fsFile = gson.fromJson(fsFileJson, FsFile.class);
+            processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             processor.process(fsFile);
             commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
             commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
+            processor.clear(fsFile);
         } catch (Throwable e) {
             LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
             Long executeCnt = commonJedis.incr(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId);
             LOG.info("========" + RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId + "[" + executeCnt + "]========");
             if (executeCnt == null || executeCnt == 0 || executeCnt > maxAllowFailCnt) {
+                if (fsFile != null && processor != null) {
+                    fsFile.setProcessMsg(e.getMessage());
+                    processor.afterFailProcess(fsFile);
+                    processor.clear(fsFile);
+                }
+
                 commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
                 commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
                 return;

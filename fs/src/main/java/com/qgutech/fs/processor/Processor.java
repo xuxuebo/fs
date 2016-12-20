@@ -9,6 +9,10 @@ public interface Processor {
 
     void process(FsFile fsFile) throws Exception;
 
+    void afterFailProcess(FsFile fsFile);
+
+    void clear(FsFile fsFile);
+
     String getGenFilePath(FsFile fsFile);
 
     void reprocess(FsFile fsFile) throws Exception;

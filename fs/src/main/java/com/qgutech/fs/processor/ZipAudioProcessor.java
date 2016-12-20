@@ -29,85 +29,74 @@ public class ZipAudioProcessor extends AbstractProcessor {
     public void process(FsFile fsFile) throws Exception {
         String tmpFilePath = fsFile.getTmpFilePath();
         File parentFile = new File(tmpFilePath).getParentFile();
-        try {
-            if (!decompress(fsFile, new Validate() {
-                @Override
-                public boolean validate(String extension) {
-                    return validateAudio(extension);
-                }
-            })) {
-                LOG.error("Audio collection[" + fsFile.getTmpFilePath()
-                        + "] is empty or contains directory or contains not audio file!");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                fsFile.setProcessMsg("音频集为空或者包含文件夹或者包含非音频文件");
-                HttpUtils.updateFsFile(fsFile);
-                return;
+        if (!decompress(fsFile, new Validate() {
+            @Override
+            public boolean validate(String extension) {
+                return validateAudio(extension);
             }
-
-            File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
-            File[] audioFiles = decompressDir.listFiles();
-            if (audioFiles == null || audioFiles.length == 0) {
-                LOG.error("Audio collection[" + fsFile.getTmpFilePath() + "] is empty!");
-                fsFile.setProcessMsg("音频集为空");
-                fsFile.setStatus(ProcessStatusEnum.FAILED);
-                HttpUtils.updateFsFile(fsFile);
-                return;
-            }
-
-            final String genFilePath = getGenFilePath(fsFile);
-            File genFile = new File(genFilePath);
-            FsUtils.deleteFile(genFilePath);
-            if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
-                throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
-            }
-
-            StringBuilder durations = new StringBuilder();
-            List<Future<String>> futures = new ArrayList<Future<String>>();
-            final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
-            for (int i = 0; i < audioFiles.length; i++) {
-                final int index = i + 1;
-                File pFile = new File(genFilePath + File.separator + index);
-                if (!pFile.exists() && !pFile.mkdirs() && !pFile.exists()) {
-                    throw new IOException("Creating directory[path:" + pFile.getAbsolutePath() + "] failed!");
-                }
-
-                File audioFile = audioFiles[i];
-                final String audioPath = audioFile.getAbsolutePath();
-                Audio audio = FsUtils.getAudio(audioPath);
-                durations.append(audio.getDuration()).append(FsConstants.VERTICAL_LINE);
-                String extension = FilenameUtils.getExtension(audioPath);
-                if (!FsConstants.DEFAULT_AUDIO_TYPE.equals(extension)) {
-                    semaphore.acquire();
-                    futures.add(taskExecutor.submit(new Callable<String>() {
-                        @Override
-                        public String call() throws Exception {
-                            try {
-                                return FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", audioPath
-                                        , "-y", genFilePath + File.separator + index
-                                        + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
-                            } finally {
-                                semaphore.release();
-                            }
-                        }
-                    }));
-                } else {
-                    File destFile = new File(pFile, FsConstants.DEFAULT_AUDIO_NAME);
-                    FileUtils.copyFile(audioFile, destFile);
-                }
-            }
-
-            getFutures(futures);
-            fsFile.setDurations(durations.substring(0, durations.length() - 1));
-            afterProcess(fsFile);
-        } catch (Throwable e) {
-            FsUtils.deleteFile(getGenFilePath(fsFile));
+        })) {
+            LOG.error("Audio collection[" + fsFile.getTmpFilePath()
+                    + "] is empty or contains directory or contains not audio file!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            fsFile.setProcessMsg(e.getMessage());
+            fsFile.setProcessMsg("音频集为空或者包含文件夹或者包含非音频文件");
             HttpUtils.updateFsFile(fsFile);
-
-            throw new Exception(e);
-        } finally {
-            FsUtils.deleteFile(parentFile);
+            return;
         }
+
+        File decompressDir = new File(parentFile, FsConstants.DECOMPRESS);
+        File[] audioFiles = decompressDir.listFiles();
+        if (audioFiles == null || audioFiles.length == 0) {
+            LOG.error("Audio collection[" + fsFile.getTmpFilePath() + "] is empty!");
+            fsFile.setProcessMsg("音频集为空");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            HttpUtils.updateFsFile(fsFile);
+            return;
+        }
+
+        final String genFilePath = getGenFilePath(fsFile);
+        File genFile = new File(genFilePath);
+        FsUtils.deleteFile(genFilePath);
+        if (!genFile.exists() && !genFile.mkdirs() && !genFile.exists()) {
+            throw new IOException("Creating directory[path:" + genFile.getAbsolutePath() + "] failed!");
+        }
+
+        StringBuilder durations = new StringBuilder();
+        List<Future<String>> futures = new ArrayList<Future<String>>();
+        final Semaphore semaphore = new Semaphore(getSemaphoreCnt());
+        for (int i = 0; i < audioFiles.length; i++) {
+            final int index = i + 1;
+            File pFile = new File(genFilePath + File.separator + index);
+            if (!pFile.exists() && !pFile.mkdirs() && !pFile.exists()) {
+                throw new IOException("Creating directory[path:" + pFile.getAbsolutePath() + "] failed!");
+            }
+
+            File audioFile = audioFiles[i];
+            final String audioPath = audioFile.getAbsolutePath();
+            Audio audio = FsUtils.getAudio(audioPath);
+            durations.append(audio.getDuration()).append(FsConstants.VERTICAL_LINE);
+            String extension = FilenameUtils.getExtension(audioPath);
+            if (!FsConstants.DEFAULT_AUDIO_TYPE.equals(extension)) {
+                semaphore.acquire();
+                futures.add(taskExecutor.submit(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        try {
+                            return FsUtils.executeCommand(new String[]{FsConstants.FFMPEG, "-i", audioPath
+                                    , "-y", genFilePath + File.separator + index
+                                    + File.separator + FsConstants.DEFAULT_AUDIO_NAME});
+                        } finally {
+                            semaphore.release();
+                        }
+                    }
+                }));
+            } else {
+                File destFile = new File(pFile, FsConstants.DEFAULT_AUDIO_NAME);
+                FileUtils.copyFile(audioFile, destFile);
+            }
+        }
+
+        getFutures(futures);
+        fsFile.setDurations(durations.substring(0, durations.length() - 1));
+        afterProcess(fsFile);
     }
 }

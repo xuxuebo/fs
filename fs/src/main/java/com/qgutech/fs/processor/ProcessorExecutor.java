@@ -256,6 +256,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                     Set<String> tasks = commonJedis.zrangeByScore(
                             RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME, 0, System.currentTimeMillis());
                     if (CollectionUtils.isEmpty(tasks)) {
+                        commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_LOCK, 0);
                         return;
                     }
 
@@ -264,10 +265,10 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                         String processor = task.substring(task.indexOf(FsConstants.VERTICAL_LINE) + 1);
                         commonJedis.lpush(getProcessQueueName(processor), fsFileId);
                     }
-                } catch (Exception e) {
-                    LOG.error(e);
-                } finally {
+
                     commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_LOCK, 0);
+                } catch (Throwable e) {
+                    LOG.error("Exception occurred when getting the fsFiles from the repeat queue list!", e);
                 }
             }
         }, timerDelay, timerPeriod);

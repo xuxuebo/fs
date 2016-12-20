@@ -179,13 +179,13 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
             fsFile = gson.fromJson(fsFileJson, FsFile.class);
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             processor.process(fsFile);
-            commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
+            commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
             commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
         } catch (Throwable e) {
             LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
-            Long executeCnt = commonJedis.incr(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId);
+            Long executeCnt = commonJedis.incr(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId);
             if (executeCnt == null || executeCnt == 0 || executeCnt > maxAllowFailCnt) {
-                commonJedis.expire(RedisKey.FS_FAIL_EXECUTE_CNT_ + fsFileId, 0);
+                commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
                 commonJedis.expire(RedisKey.FS_FILE_CONTENT_PREFIX + fsFileId, 0);
                 return;
             }
@@ -196,7 +196,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
 
             Long nextExecuteTime = System.currentTimeMillis()
                     + roundNextExecuteTimeMap.get(executeCnt.intValue());
-            commonJedis.zadd(RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME
+            commonJedis.zadd(RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME
                     , nextExecuteTime.doubleValue()
                     , fsFileId + FsConstants.VERTICAL_LINE + fsFile.getProcessor());
         } finally {
@@ -249,8 +249,12 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
             @Override
             public void run() {
                 try {
+                    if (!getLock(RedisKey.FS_REPEAT_EXECUTE_LOCK)) {
+                        return;
+                    }
+
                     Set<String> tasks = commonJedis.zrangeByScore(
-                            RedisKey.FS_FAIL_EXECUTE_QUEUE_NAME, 0, System.currentTimeMillis());
+                            RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME, 0, System.currentTimeMillis());
                     if (CollectionUtils.isEmpty(tasks)) {
                         return;
                     }
@@ -262,6 +266,8 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                     }
                 } catch (Exception e) {
                     LOG.error(e);
+                } finally {
+                    commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_LOCK, 0);
                 }
             }
         }, timerDelay, timerPeriod);

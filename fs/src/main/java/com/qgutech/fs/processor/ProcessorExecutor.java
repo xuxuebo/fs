@@ -2,7 +2,6 @@ package com.qgutech.fs.processor;
 
 import com.google.gson.Gson;
 import com.qgutech.fs.domain.FsFile;
-import com.qgutech.fs.domain.ProcessorTypeEnum;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.PropertiesUtils;
 import com.qgutech.fs.utils.RedisKey;
@@ -162,7 +161,7 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                 @Override
                 public void run() {
                     try {
-                        executeTask(fsFileId, fsFileJson, doingList);
+                        executeTask(fsFileId, fsFileJson, doingList, queueName);
                     } catch (Throwable e) {
                         LOG.error("Error occurred when executing process fsFile[fsFile:" + fsFileJson + "]!", e);
                     } finally {
@@ -173,10 +172,9 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
         }
     }
 
-    protected void executeTask(String fsFileId, String fsFileJson, String doingList) {
-        FsFile fsFile = null;
+    protected void executeTask(String fsFileId, String fsFileJson, String doingList, String queueName) {
         try {
-            fsFile = gson.fromJson(fsFileJson, FsFile.class);
+            FsFile fsFile = gson.fromJson(fsFileJson, FsFile.class);
             Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
             processor.process(fsFile);
             commonJedis.expire(RedisKey.FS_REPEAT_EXECUTE_CNT_ + fsFileId, 0);
@@ -191,15 +189,11 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                 return;
             }
 
-            if (fsFile == null) {
-                return;
-            }
-
             Long nextExecuteTime = System.currentTimeMillis()
                     + roundNextExecuteTimeMap.get(executeCnt.intValue());
             commonJedis.zadd(RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME
                     , nextExecuteTime.doubleValue()
-                    , fsFileId + FsConstants.VERTICAL_LINE + fsFile.getProcessor());
+                    , fsFileId + FsConstants.VERTICAL_LINE + queueName);
         } finally {
             commonJedis.srem(doingList, fsFileId);
         }
@@ -246,6 +240,10 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
     private void start() {
         Timer timer = new Timer();
         timer.schedule(this, timerDelay, timerPeriod);
+        if (maxAllowFailCnt < 1) {
+            return;
+        }
+
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -263,8 +261,8 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
 
                     for (String task : tasks) {
                         String fsFileId = task.substring(0, task.indexOf(FsConstants.VERTICAL_LINE));
-                        String processor = task.substring(task.indexOf(FsConstants.VERTICAL_LINE) + 1);
-                        commonJedis.rpush(getProcessQueueName(processor), fsFileId);
+                        String queueName = task.substring(task.indexOf(FsConstants.VERTICAL_LINE) + 1);
+                        commonJedis.rpush(queueName, fsFileId);
                         commonJedis.zrem(RedisKey.FS_REPEAT_EXECUTE_QUEUE_NAME, task);
                     }
 
@@ -274,27 +272,6 @@ public class ProcessorExecutor extends TimerTask implements InitializingBean {
                 }
             }
         }, timerDelay, timerPeriod);
-    }
-
-    protected String getProcessQueueName(String processor) {
-        switch (ProcessorTypeEnum.valueOf(processor)) {
-            case VID:
-                return RedisKey.FS_VIDEO_QUEUE_LIST;
-            case AUD:
-                return RedisKey.FS_AUDIO_QUEUE_LIST;
-            case DOC:
-                return RedisKey.FS_DOC_QUEUE_LIST;
-            case ZVID:
-                return RedisKey.FS_ZIP_VIDEO_QUEUE_LIST;
-            case ZAUD:
-                return RedisKey.FS_ZIP_AUDIO_QUEUE_LIST;
-            case ZIMG:
-                return RedisKey.FS_ZIP_IMAGE_QUEUE_LIST;
-            case ZDOC:
-                return RedisKey.FS_ZIP_DOC_QUEUE_LIST;
-            default:
-                throw new RuntimeException("This processor[" + processor + "] is not supported!");
-        }
     }
 
     protected boolean getLock(String key) {

@@ -6,6 +6,7 @@
         function uploadCompleted(file) {
             uploader.reset();
             $("#bar").css("width", "800px");
+            $("#bar").css("background", "#5EC4EA");
             $("#" + file.id + " .percent").text("100%");
             $("#" + file.id + " .percentage").text("上传完毕");
             $(".itemStop").hide();

@@ -267,6 +267,7 @@
             });
 
             uploader.on("uploadProgress", function (file, percentage) {
+                $("#bar").css("background", "#5EC4EA");
                 $("#bar").css("width", percentage * 800 + "px");
                 $("#" + file.id + " .percentage").text(percentage * 100 + "%");
                 $("#" + file.id + " .percent").text(parseInt(percentage * 10000) / 100.0 + "%");

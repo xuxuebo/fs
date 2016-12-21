@@ -24,12 +24,26 @@
             $(".itemDel").hide();
         }
 
+
+        function prepareUpload(file) {
+            $("#bar").css("width", "800px");
+            $("#" + file.id + " .percent").text("上传准备中。。。");
+            $("#bar").css("background", "green");
+            $("#" + file.id + " .percentage").text("上传准备中。。。");
+        }
+
+        function processUpload(file) {
+            $("#" + file.id + " .percent").text("处理中。。。");
+            $("#" + file.id + " .percentage").text("处理中。。。");
+        }
+
         WebUploader.Uploader.register({
             "before-send-file": "beforeSendFile",
             "before-send": "beforeSend",
             "after-send-file": "afterSendFile"
         }, {
             beforeSendFile: function (file) {
+                prepareUpload(file);
                 //秒传验证
                 var task = new $.Deferred();
                 (new WebUploader.Uploader())
@@ -115,7 +129,7 @@
             }, afterSendFile: function (file) {
                 //合并请求
                 var task = new $.Deferred();
-
+                processUpload(file);
                 $.ajax({
                     type: "POST",
                     url: business.uploadFileUrl,

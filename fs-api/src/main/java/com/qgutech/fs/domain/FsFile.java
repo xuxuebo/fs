@@ -251,6 +251,51 @@ public class FsFile extends BaseEntity {
     @Transient
     private String beforeFsFileJson;
 
+    /**
+     * 抽取图像时每个单元格的大小
+     */
+    @Transient
+    private Integer cell;
+
+    /**
+     * 画布宽度
+     */
+    @Transient
+    private Integer canvasWidth;
+
+    /**
+     * 画布高度
+     */
+    @Transient
+    private Integer canvasHeight;
+
+    /**
+     * 转化为图片的文本内容
+     */
+    @Transient
+    private String text;
+
+    /**
+     * 字体名称，如黑体，宋体，楷体等，当前计算机支持的字体
+     */
+    @Transient
+    private String family;
+
+    /**
+     * 字体样式
+     * 一般{@link java.awt.Font.PLAIN}
+     * ，粗体{@link java.awt.Font.BOLD}
+     * ，斜体{@link java.awt.Font.ITALIC}
+     */
+    @Transient
+    private Integer style;
+
+    /**
+     * 是否是抽取图片阴影坐标
+     */
+    @Transient
+    private Boolean extractPoint;
+
     public String getStoredFileName() {
         return storedFileName;
     }
@@ -537,6 +582,62 @@ public class FsFile extends BaseEntity {
 
     public void setBeforeFsFileJson(String beforeFsFileJson) {
         this.beforeFsFileJson = beforeFsFileJson;
+    }
+
+    public Integer getCell() {
+        return cell;
+    }
+
+    public void setCell(Integer cell) {
+        this.cell = cell;
+    }
+
+    public Integer getCanvasWidth() {
+        return canvasWidth;
+    }
+
+    public void setCanvasWidth(Integer canvasWidth) {
+        this.canvasWidth = canvasWidth;
+    }
+
+    public Integer getCanvasHeight() {
+        return canvasHeight;
+    }
+
+    public void setCanvasHeight(Integer canvasHeight) {
+        this.canvasHeight = canvasHeight;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
+
+    public Integer getStyle() {
+        return style;
+    }
+
+    public void setStyle(Integer style) {
+        this.style = style;
+    }
+
+    public Boolean getExtractPoint() {
+        return extractPoint;
+    }
+
+    public void setExtractPoint(Boolean extractPoint) {
+        this.extractPoint = extractPoint;
     }
 
     @Override

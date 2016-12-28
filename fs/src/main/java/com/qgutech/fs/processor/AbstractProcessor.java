@@ -299,7 +299,7 @@ public abstract class AbstractProcessor implements Processor {
         return DocTypeEnum.isDoc(extension);
     }
 
-    protected final boolean validateImage(String extension) {
+    public static boolean validateImage(String extension) {
         String imageTypes = PropertiesUtils.getImageType();
         if (StringUtils.isEmpty(imageTypes)) {
             return false;

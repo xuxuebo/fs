@@ -1,11 +1,14 @@
 package com.qgutech.fs.controller;
 
 import com.qgutech.fs.domain.*;
+import com.qgutech.fs.domain.Point;
+import com.qgutech.fs.processor.ImageProcessor;
 import com.qgutech.fs.processor.Processor;
 import com.qgutech.fs.processor.ProcessorFactory;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -25,9 +28,11 @@ import redis.clients.jedis.JedisCommands;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +65,28 @@ public class FileController {
         ServletRequestAttributes attributes = new ServletRequestAttributes(request);
         RequestContextHolder.setRequestAttributes(attributes);
         try {
-            Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
-            fsFile = processor.submit(fsFile);
+            if (BooleanUtils.isTrue(fsFile.getExtractPoint())) {
+                if (!validateParams(fsFile)) {
+                    fsFile.setStatus(ProcessStatusEnum.FAILED);
+                    fsFile.setProcessMsg("Param Error");
+                } else {
+                    List<Point> points = ImageProcessor.extractPoints(fsFile);
+                    fsFile.setStatus(ProcessStatusEnum.SUCCESS);
+                    if (CollectionUtils.isNotEmpty(points)) {
+                        StringBuilder builder = new StringBuilder();
+                        for (Point point : points) {
+                            builder.append(point.getX()).append(FsConstants.VERTICAL_LINE)
+                                    .append(point.getY()).append(",");
+                        }
+
+                        builder.delete(builder.length() - 1, builder.length());
+                        fsFile.setProcessMsg(builder.toString());
+                    }
+                }
+            } else {
+                Processor processor = processorFactory.acquireProcessor(fsFile.getProcessor());
+                fsFile = processor.submit(fsFile);
+            }
         } catch (Exception e) {
             fsFile.setProcessMsg(e.getMessage());
             fsFile.setStatus(ProcessStatusEnum.FAILED);
@@ -69,6 +94,42 @@ public class FileController {
         }
 
         responseResult(fsFile, request, response);
+    }
+
+    private boolean validateParams(FsFile fsFile) {
+        Integer cell = fsFile.getCell();
+        Integer canvasWidth = fsFile.getCanvasWidth();
+        Integer canvasHeight = fsFile.getCanvasHeight();
+        if (cell == null || cell <= 0 || canvasWidth == null
+                || canvasWidth <= 0 || canvasHeight == null || canvasHeight <= 0) {
+            LOG.error("The fields[cell:" + cell + ",canvasWidth:" + canvasWidth
+                    + ",canvasHeight:" + canvasHeight + "] of fsFile is illegally!");
+            return false;
+        }
+
+        String tmpFilePath = fsFile.getTmpFilePath();
+        if (StringUtils.isNotEmpty(tmpFilePath)) {
+            String suffix = fsFile.getSuffix();
+            if (!ImageProcessor.validateImage(suffix)) {
+                LOG.error("Uploading file[" + tmpFilePath + ",suffix:" + suffix + "] is not an image!");
+            }
+
+            return true;
+        }
+
+        String text = fsFile.getText();
+        String family = fsFile.getFamily();
+        if (StringUtils.isEmpty(text) && StringUtils.isEmpty(family)) {
+            LOG.error("The fields[text:" + text + ",family:" + family + "] of fsFile is illegally!");
+            return false;
+        }
+
+        Integer style = fsFile.getStyle();
+        if (style == null || style < 0 || style > 2) {
+            fsFile.setStyle(Font.PLAIN);
+        }
+
+        return true;
     }
 
     private boolean breakpointResume(FsFile fsFile) {

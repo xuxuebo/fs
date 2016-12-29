@@ -38,6 +38,8 @@ public class FsFile extends BaseEntity {
     public static final String _sign = "sign";
     public static final String _serverHost = "serverHost";
     public static final String _file = "file";
+    public static final String _points = "points";
+
     /**
      * 上传文件的文件名（源文件名称）
      */
@@ -258,18 +260,6 @@ public class FsFile extends BaseEntity {
     private Integer cell;
 
     /**
-     * 画布宽度
-     */
-    @Transient
-    private Integer canvasWidth;
-
-    /**
-     * 画布高度
-     */
-    @Transient
-    private Integer canvasHeight;
-
-    /**
      * 转化为图片的文本内容
      */
     @Transient
@@ -295,6 +285,12 @@ public class FsFile extends BaseEntity {
      */
     @Transient
     private Boolean extractPoint;
+
+    /**
+     *
+     */
+    @Transient
+    private String points;
 
     public String getStoredFileName() {
         return storedFileName;
@@ -592,22 +588,6 @@ public class FsFile extends BaseEntity {
         this.cell = cell;
     }
 
-    public Integer getCanvasWidth() {
-        return canvasWidth;
-    }
-
-    public void setCanvasWidth(Integer canvasWidth) {
-        this.canvasWidth = canvasWidth;
-    }
-
-    public Integer getCanvasHeight() {
-        return canvasHeight;
-    }
-
-    public void setCanvasHeight(Integer canvasHeight) {
-        this.canvasHeight = canvasHeight;
-    }
-
     public String getText() {
         return text;
     }
@@ -638,6 +618,14 @@ public class FsFile extends BaseEntity {
 
     public void setExtractPoint(Boolean extractPoint) {
         this.extractPoint = extractPoint;
+    }
+
+    public String getPoints() {
+        return points;
+    }
+
+    public void setPoints(String points) {
+        this.points = points;
     }
 
     @Override
@@ -818,6 +806,10 @@ public class FsFile extends BaseEntity {
 
         if (StringUtils.isNotEmpty(fileUrl)) {
             valueMap.put(_fileUrl, fileUrl);
+        }
+
+        if (StringUtils.isNotEmpty(points)) {
+            valueMap.put(_points, points);
         }
 
         return valueMap;

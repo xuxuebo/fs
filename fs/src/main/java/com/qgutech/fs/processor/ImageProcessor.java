@@ -44,8 +44,8 @@ public class ImageProcessor extends AbstractProcessor {
 
             tmpFilePath = fsFile.getTmpFilePath();
             BufferedImage image = ImageIO.read(new File(tmpFilePath));
-            image = getShadowImage(image, fsFile.getCanvasWidth(), fsFile.getCanvasHeight()
-                    , fsFile.getCell(), fsFile.getCell());
+            Integer cell = fsFile.getCell();
+            image = getShadowImage(image, fsFile.getW(), fsFile.getH(), cell, cell);
             int[][] shadow = getShadow(image);
             return getCellStartPoints(shadow, C_WHITE);
         } finally {
@@ -56,8 +56,8 @@ public class ImageProcessor extends AbstractProcessor {
     public static void wordToImage(FsFile fsFile) throws Exception {
         String text = fsFile.getText();
         int cell = fsFile.getCell();
-        int width = fsFile.getCanvasWidth() / cell;
-        int height = fsFile.getCanvasHeight() / cell;
+        int width = fsFile.getW() / cell;
+        int height = fsFile.getH() / cell;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         Graphics g = image.getGraphics();
         g.setColor(Color.WHITE);

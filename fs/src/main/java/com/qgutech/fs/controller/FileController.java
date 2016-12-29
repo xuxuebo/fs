@@ -66,10 +66,7 @@ public class FileController {
         RequestContextHolder.setRequestAttributes(attributes);
         try {
             if (BooleanUtils.isTrue(fsFile.getExtractPoint())) {
-                if (!validateParams(fsFile)) {
-                    fsFile.setStatus(ProcessStatusEnum.FAILED);
-                    fsFile.setProcessMsg("Param Error");
-                } else {
+                if (validateParams(fsFile)) {
                     List<Point> points = ImageProcessor.extractPoints(fsFile);
                     fsFile.setStatus(ProcessStatusEnum.SUCCESS);
                     if (CollectionUtils.isNotEmpty(points)) {
@@ -80,7 +77,7 @@ public class FileController {
                         }
 
                         builder.delete(builder.length() - 1, builder.length());
-                        fsFile.setProcessMsg(builder.toString());
+                        fsFile.setPoints(builder.toString());
                     }
                 }
             } else {
@@ -98,30 +95,44 @@ public class FileController {
 
     private boolean validateParams(FsFile fsFile) {
         Integer cell = fsFile.getCell();
-        Integer canvasWidth = fsFile.getCanvasWidth();
-        Integer canvasHeight = fsFile.getCanvasHeight();
-        if (cell == null || cell <= 0 || canvasWidth == null
-                || canvasWidth <= 0 || canvasHeight == null || canvasHeight <= 0) {
-            LOG.error("The fields[cell:" + cell + ",canvasWidth:" + canvasWidth
-                    + ",canvasHeight:" + canvasHeight + "] of fsFile is illegally!");
-            return false;
+        if (cell == null || cell <= 0) {
+            fsFile.setCell(20);
+        }
+
+        Integer w = fsFile.getW();
+        if (w == null || w <= 0) {
+            fsFile.setW(1200);
+        }
+
+        Integer h = fsFile.getH();
+        if (h == null || h <= 0) {
+            fsFile.setH(650);
         }
 
         String tmpFilePath = fsFile.getTmpFilePath();
         if (StringUtils.isNotEmpty(tmpFilePath)) {
             String suffix = fsFile.getSuffix();
             if (!ImageProcessor.validateImage(suffix)) {
+                fsFile.setProcessMsg("not_image");
+                fsFile.setStatus(ProcessStatusEnum.FAILED);
                 LOG.error("Uploading file[" + tmpFilePath + ",suffix:" + suffix + "] is not an image!");
+                return false;
             }
 
             return true;
         }
 
         String text = fsFile.getText();
-        String family = fsFile.getFamily();
-        if (StringUtils.isEmpty(text) && StringUtils.isEmpty(family)) {
-            LOG.error("The fields[text:" + text + ",family:" + family + "] of fsFile is illegally!");
+        if (StringUtils.isEmpty(text)) {
+            fsFile.setProcessMsg("text_empty");
+            fsFile.setStatus(ProcessStatusEnum.FAILED);
+            LOG.error("The field[text:" + text + "] of fsFile is illegally!");
             return false;
+        }
+
+        String family = fsFile.getFamily();
+        if (StringUtils.isEmpty(family)) {
+            fsFile.setFamily("楷体");
         }
 
         Integer style = fsFile.getStyle();
@@ -822,7 +833,7 @@ public class FileController {
         Integer y = fsFile.getY();
         Integer w = fsFile.getW();
         Integer h = fsFile.getH();
-        if (StringUtils.isEmpty(fsFileId) || StringUtils.isEmpty(session)
+        if (StringUtils.isEmpty(fsFileId)
                 || x == null || y == null || w == null || h == null) {
             LOG.error("One of the param[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
                     + ",w:" + w + ",h:" + h + "] is null or empty when cutting image!");

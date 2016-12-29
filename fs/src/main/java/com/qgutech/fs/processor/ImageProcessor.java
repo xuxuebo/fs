@@ -7,6 +7,7 @@ import com.qgutech.fs.domain.Point;
 import com.qgutech.fs.utils.FsConstants;
 import com.qgutech.fs.utils.FsPathUtils;
 import com.qgutech.fs.utils.FsUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -47,7 +48,7 @@ public class ImageProcessor extends AbstractProcessor {
             Integer cell = fsFile.getCell();
             image = getShadowImage(image, fsFile.getW(), fsFile.getH(), cell, cell);
             int[][] shadow = getShadow(image);
-            return getCellStartPoints(shadow, C_WHITE);
+            return getCellStartPoints(shadow, fsFile.getW() / cell, fsFile.getH() / cell, C_WHITE);
         } finally {
             FsUtils.deleteFile(fsFile.getTmpFilePath());
         }
@@ -197,7 +198,7 @@ public class ImageProcessor extends AbstractProcessor {
         return (red * 30 + green * 60 + blue * 10) / 100;
     }
 
-    public static List<Point> getCellStartPoints(int[][] shadow, int target) {
+    public static List<Point> getCellStartPoints(int[][] shadow, int width, int height, int target) {
         List<Point> points = new ArrayList<Point>();
         for (int y = 0; y < shadow.length; y++) {
             for (int x = 0; x < shadow[y].length; x++) {
@@ -208,6 +209,38 @@ public class ImageProcessor extends AbstractProcessor {
                 Point point = new Point(x, y);
                 points.add(point);
             }
+        }
+
+        if (CollectionUtils.isEmpty(points)) {
+            return points;
+        }
+
+        Point point = points.get(0);
+        int sx = point.getX(), sy = point.getY();
+        int ex = point.getX(), ey = point.getY();
+        for (Point p : points) {
+            if (p.getX() < sx) {
+                sx = p.getX();
+            }
+
+            if (p.getX() > ex) {
+                ex = p.getX();
+            }
+
+            if (p.getY() < sy) {
+                sy = p.getY();
+            }
+
+            if (p.getY() > ey) {
+                ey = p.getY();
+            }
+        }
+
+        int my = (height - (ey - sy)) / 2;
+        int mx = (width - (ex - sx)) / 2;
+        for (Point p : points) {
+            p.setX(p.getX() - sx + mx);
+            p.setY(p.getY() - sy + my);
         }
 
         return points;

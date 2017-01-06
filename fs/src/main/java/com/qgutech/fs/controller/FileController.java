@@ -897,11 +897,13 @@ public class FileController {
     @RequestMapping("/reprocessFile")
     public void reprocessFile(String id, HttpServletRequest request
             , HttpServletResponse response) throws Exception {
+        String responseFormat = request.getParameter(FsFile._responseFormat);
         if (StringUtils.isEmpty(id)) {
             LOG.error("Param[id:" + id + "] is illegally!");
             FsFile fsFile = new FsFile();
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Param is illegally!");
+            fsFile.setResponseFormat(responseFormat);
             responseResult(fsFile, request, response);
             return;
         }
@@ -912,6 +914,7 @@ public class FileController {
             fsFile = new FsFile();
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("File not exist!");
+            fsFile.setResponseFormat(responseFormat);
             responseResult(fsFile, request, response);
             return;
         }
@@ -925,6 +928,7 @@ public class FileController {
             LOG.error("Exception occurred when reprocessing the fsFile[" + fsFile + "]!", e);
         }
 
+        fsFile.setResponseFormat(responseFormat);
         responseResult(fsFile, request, response);
     }
 

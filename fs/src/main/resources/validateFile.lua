@@ -15,7 +15,7 @@ end
 local url = ngx.var.request_uri
 local action = string.match(url, ".+/file/(%w+)/.+")
 --只有获取文件和下载文件需要校验权限
-if action ~= "getFile" and action ~= "download" then
+if action ~= "getFile" and action ~= "downloadFile" then
     ngx.exit(ngx.OK)
 end
 

@@ -287,7 +287,7 @@ public class FsFile extends BaseEntity {
     private Boolean extractPoint;
 
     /**
-     *
+     * 坐标点集合
      */
     @Transient
     private String points;

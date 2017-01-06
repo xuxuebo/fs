@@ -129,3 +129,31 @@ status表示状态，SUCCESS表示正确处理完成，FAILED表示处理失败�
 "suffix":"docx"
 }
 
+六、文件服务器配置说明
+一个文件服务器为一台服务器（单独的一台物理机），可以包含多个fs服务。（包含一个nginx）
+
+改变文件服务器的校验级别：
+文件服务器的校验级别参考fs-parent/fs-api/src/main/java/com/qgutech/fs/domain/SignLevelEnum.java
+1、修改文件服务器在t_fs_server表中记录的字段sign_level；
+2、修改文件服务器所有fs服务的配置文件env.properties的配置项fs.signLevel；
+3、修改文件服务器的nginx的配置参数set $signLevel 校验级别。
+
+改变文件服务器的秘钥：
+1、修改文件服务器在t_fs_server表中记录的字段secret；
+2、修改文件服务器所有fs服务的配置文件env.properties的配置项fs.serverSecret；
+3、修改文件服务器的nginx的配置参数set $secret 秘钥。
+
+改变文档服务器的域名（或者ip）：
+1、修改文件服务器在t_fs_server表中记录的字段host；
+2、修改文件服务器所有fs服务的配置文件env.properties的配置项fs.serverHost；
+3、修改文件服务器的nginx的配置参数set $serverHost 域名。
+
+改变文件url的过期时间：
+1、修改文件服务器所有fs服务的配置文件env.properties的配置项fs.urlExpireTime，单位为毫秒；
+2、修改文件服务器的nginx的配置参数set $urlExpireTime 时间;（单位为分钟）
+
+整个文件服务器系统由存储位置是否一致（还可以根据文件的校验级别）划分为若干子文件系统，每个子文件系统的编号均不一致。
+档服务器的编号：
+1、一个文件服务器系统包含一个默认的子文件系统，默认为0000（也就是dedault公司）；
+2、内部文档服务器的文件不存储到编号为0000的分布式文件系统中，编号不可以为0000；
+

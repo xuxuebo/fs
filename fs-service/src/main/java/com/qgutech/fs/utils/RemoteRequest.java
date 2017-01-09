@@ -5,6 +5,7 @@ import org.springframework.web.context.ContextLoaderListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class RemoteRequest {
@@ -17,7 +18,7 @@ public class RemoteRequest {
 
     private Class<?>[] parameterTypes;
 
-    private Object[] arguments;
+    private List<String> arguments;
 
     private Map<String, String> attributes;
 
@@ -49,11 +50,11 @@ public class RemoteRequest {
         this.parameterTypes = parameterTypes;
     }
 
-    public Object[] getArguments() {
+    public List<String> getArguments() {
         return arguments;
     }
 
-    public void setArguments(Object[] arguments) {
+    public void setArguments(List<String> arguments) {
         this.arguments = arguments;
     }
 
@@ -63,17 +64,6 @@ public class RemoteRequest {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
-    }
-
-    public void mergeAttributes(Map<String, String> attributes) {
-        if (this.attributes == null) {
-            this.attributes = new TreeMap<String, String>();
-        }
-
-        if (attributes != null) {
-            this.attributes.putAll(attributes);
-        }
-
     }
 
     public Long getTimestamp() {
@@ -117,13 +107,12 @@ public class RemoteRequest {
 
         try {
             ExecutionContext.setContextMap(getAttributes());
-            Class classType = Class.forName(getInterfaceName());
-            Object targetService = ContextLoaderListener.getCurrentWebApplicationContext().getBean(classType);
+            Class clazz = Class.forName(getInterfaceName());
+            Object targetService = ContextLoaderListener.getCurrentWebApplicationContext().getBean(clazz);
             Class<?>[] parameterTypes = getParameterTypes();
             Method method = targetService.getClass().getMethod(getMethodName(), parameterTypes);
-            Object[] arguments = getArguments();
-            prepareArguments(parameterTypes, arguments);
-            Object result = method.invoke(targetService, arguments);
+            Object[] args = prepareArguments(method.getGenericParameterTypes(), getArguments());
+            Object result = method.invoke(targetService, args);
             remoteResponse.setContent(result);
         } catch (Exception ex) {
             remoteResponse.setExceptionOccurs(true);
@@ -145,150 +134,17 @@ public class RemoteRequest {
         return remoteResponse;
     }
 
-    protected void prepareArguments(Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        if (parameterTypes == null) {
-            return;
+    protected Object[] prepareArguments(Type[] types, List<String> arguments) throws Exception {
+        if (types == null || types.length == 0) {
+            return null;
         }
 
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> clazz = parameterTypes[i];
-            if (clazz == null) {
-                continue;
-            }
-
-            processArray(clazz, arguments, i);
-            processSet(clazz, arguments, i);
-            processEnum(clazz, arguments, i);
-            processDate(clazz, arguments, i);
-            processLong(clazz, arguments, i);
-        }
-    }
-
-
-    @SuppressWarnings("unchecked")
-    protected void processEnum(Class<?> clazz, Object[] arguments, int i) {
-        if (!clazz.isEnum()) {
-            return;
+        Object[] args = new Object[parameterTypes.length];
+        for (int i = 0; i < types.length; i++) {
+            Type type = types[i];
+            args[i] = gson.fromJson(arguments.get(i), type);
         }
 
-        Object argument = arguments[i];
-        if (argument == null) {
-            return;
-        }
-
-        if (!(argument instanceof String)) {
-            return;
-        }
-
-        arguments[i] = Enum.valueOf((Class<Enum>) clazz, (String) argument);
-    }
-
-    protected void processDate(Class<?> clazz, Object[] arguments, int i) {
-        if (!(Date.class.equals(clazz))) {
-            return;
-        }
-
-        Object argument = arguments[i];
-        if (argument == null) {
-            return;
-        }
-
-        if (!(argument instanceof Long)) {
-            return;
-        }
-
-        arguments[i] = new Date((Long) argument);
-    }
-
-    protected void processLong(Class<?> clazz, Object[] arguments, int i) {
-        if (!(Long.class.equals(clazz) || Long.TYPE.equals(clazz))) {
-            return;
-        }
-
-        Object argument = arguments[i];
-        if (argument == null) {
-            return;
-        }
-
-        if (!(argument instanceof Integer)) {
-            return;
-        }
-
-        arguments[i] = ((Integer) argument).longValue();
-    }
-
-
-    protected void processArray(Class clazz, Object[] arguments, int i) {
-        if (!clazz.isArray()) {
-            return;
-        }
-
-        Object argument = arguments[i];
-        if (argument == null) {
-            return;
-        }
-
-        if (!(argument instanceof List)) {
-            return;
-        }
-
-        List list = ((List) argument);
-        int size = list.size();
-        Class<?> componentType = clazz.getComponentType();
-        if (String.class.equals(componentType)) {
-            String[] stringArray = new String[size];
-            for (int j = 0; j < size; j++) {
-                stringArray[j] = (String) list.get(j);
-            }
-
-            arguments[i] = stringArray;
-
-        } else if (Class.class.equals(clazz.getComponentType())) {
-            Class[] classArray = new Class[size];
-            for (int j = 0; j < size; j++) {
-                classArray[j] = (Class) list.get(j);
-            }
-
-            arguments[i] = classArray;
-
-        } else if (Object.class.equals(clazz.getComponentType())) {
-            Object[] objectArray = new Object[size];
-            for (int j = 0; j < size; j++) {
-                objectArray[j] = list.get(j);
-            }
-
-            arguments[i] = objectArray;
-        }
-    }
-
-    protected void processSet(Class clazz, Object[] arguments, int i)
-            throws InstantiationException, IllegalAccessException {
-        if (!(Set.class.isAssignableFrom(clazz))) {
-            return;
-        }
-
-        Object argument = arguments[i];
-        if (argument == null) {
-            return;
-        }
-
-        if (!(argument instanceof List)) {
-            return;
-        }
-
-        List list = (List) argument;
-        int size = list.size();
-        Set set;
-        if (clazz.isInterface()) {
-            set = (TreeSet.class.isAssignableFrom(clazz)) ? new TreeSet() : new HashSet();
-        } else {
-            set = (Set) clazz.newInstance();
-        }
-
-        for (int j = 0; j < size; j++) {
-            set.add(list.get(j));
-        }
-
-        arguments[i] = set;
+        return args;
     }
 }

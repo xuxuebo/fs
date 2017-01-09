@@ -45,13 +45,6 @@ public class FileServerController {
         response.getWriter().write(gson.toJson(remoteResponse));
     }
 
-    public static void main(String[] args) {
-        Audio audio = new Audio();
-        audio.setDuration("111");
-        audio.setBitRate(10);
-        System.out.println(gson.toJson(audio));
-    }
-
     @RequestMapping("/getFile")
     public void getFile(FsFile fsFile, HttpServletResponse response) throws Exception {
         PrintWriter writer = response.getWriter();

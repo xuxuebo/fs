@@ -139,7 +139,7 @@ public class RemoteRequest {
             return null;
         }
 
-        Object[] args = new Object[parameterTypes.length];
+        Object[] args = new Object[types.length];
         for (int i = 0; i < types.length; i++) {
             Type type = types[i];
             args[i] = gson.fromJson(arguments.get(i), type);

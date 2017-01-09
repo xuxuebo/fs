@@ -5,9 +5,7 @@ import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.service.FsFileService;
 import com.qgutech.fs.service.FsServerService;
-import com.qgutech.fs.utils.FsConstants;
-import com.qgutech.fs.utils.PropertiesUtils;
-import com.qgutech.fs.utils.Signer;
+import com.qgutech.fs.utils.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -30,6 +28,29 @@ public class FileServerController {
     private FsFileService fsFileService;
     @Resource
     private FsServerService fsServerService;
+
+    @RequestMapping("/remoteMethod")
+    public void handleRemoteRequest(RemoteRequest remoteRequest
+            , HttpServletResponse response) throws Exception {
+        RemoteResponse remoteResponse;
+        try {
+            remoteResponse = remoteRequest.invoke();
+        } catch (Throwable e) {
+            remoteResponse = new RemoteResponse();
+            remoteResponse.setExceptionOccurs(true);
+            remoteResponse.setContent(e);
+        }
+
+        response.setContentType("application/json;charset=utf-8");
+        response.getWriter().write(gson.toJson(remoteResponse));
+    }
+
+    public static void main(String[] args) {
+        Audio audio = new Audio();
+        audio.setDuration("111");
+        audio.setBitRate(10);
+        System.out.println(gson.toJson(audio));
+    }
 
     @RequestMapping("/getFile")
     public void getFile(FsFile fsFile, HttpServletResponse response) throws Exception {

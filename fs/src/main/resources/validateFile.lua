@@ -4,7 +4,7 @@ if ngx.var.enableValidateSwitch == "false" then
 end
 
 local url = ngx.var.request_uri
-local action = string.match(url, ".+/file/(%w+)/.+")
+local action = string.match(url, "^/[^%/]+/file/(%w+)/.+$")
 --只有获取文件和下载文件需要校验权限
 if action ~= "getFile" and action ~= "downloadFile" then
     ngx.exit(ngx.OK)
@@ -19,7 +19,7 @@ if serverHost ~= host then
     ngx.exit(ngx.HTTP_FORBIDDEN)
 end
 
-local signLevel = string.match(url, ".+/file/%w+/(%w+)/.+")
+local signLevel = string.match(url, "^/[^%/]+/file/%w+/(%w+)/.+$")
 --文档服务器的校验级别
 local serverSignLevel = ngx.var.signLevel
 --url中的权限校验级别和当前文档服务器的校验级别不一致，校验不通过
@@ -33,7 +33,7 @@ if signLevel == "nn" then
 end
 
 --公司编号
-local corpCode = string.match(url, ".+/file/%w+/%w+/[%w._-]+/([%w._-]+)/.+")
+local corpCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/([%w._-]+)/.+$")
 --没有corpCode不能通过权限校验
 if corpCode == "" or corpCode == nil then
     ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -60,13 +60,13 @@ if excludeCorpCodes ~= "" and excludeCorpCodes ~= nil then
 end
 
 --应用编号
-local appCode = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/(%w+)/.+")
+local appCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/(%w+)/.+$")
 --没有appCode不能通过权限校验
 if appCode == "" or appCode == nil then
     ngx.exit(ngx.HTTP_FORBIDDEN)
 end
 
-local fileType = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/(%w+)/.+")
+local fileType = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/(%w+)/.+$")
 --gen表示生成文件，src表示源文件，不是生成文件又不是源文件的请求不能通过验权
 if fileType ~= "gen" and fileType ~= "src" then
     ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -75,9 +75,9 @@ end
 --文件在文件系统中的主键
 local fileId;
 if fileType == "gen" then
-    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+")
+    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+$")
 else
-    fileId = string.match(url, ".+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+")
+    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+$")
 end
 
 --文件在文件系统中的主键不存在不能通过验权
@@ -145,7 +145,7 @@ if signLevel == "st" then
         ngx.exit(ngx.OK)
     end
 
-    local sign = string.match(url, ".+/file/%w+/%w+/(%w+)/.+")
+    local sign = string.match(url, "^/[^%/]+/file/%w+/%w+/(%w+)/.+$")
     --当前url的签名为空，验证不通过
     if sign == "" or sign == nil then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -168,8 +168,8 @@ elseif signLevel == "stt" then
         ngx.exit(ngx.OK)
     end
 
-    local sign = string.match(url, ".+/file/%w+/%w+/(%w+)_%d+/.+")
-    local timestamp = string.match(url, ".+/file/%w+/%w+/%w+_(%d+)/.+")
+    local sign = string.match(url, "^/[^%/]+/file/%w+/%w+/(%w+)_%d+/.+$")
+    local timestamp = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_(%d+)/.+$")
     --时间戳不存在或者签名不存在，验证不通过
     if sign == "" or sign == nil or timestamp == "" or timestamp == nil or timestamp == 0 then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -205,7 +205,7 @@ elseif signLevel == "sn" then
         ngx.exit(ngx.OK)
     end
 
-    sid = string.match(url, ".+/file/%w+/%w+/([%w.]+)/.+")
+    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/([%w.]+)/.+$")
     --登录session为空，验证不通过
     if sid == "" or sid == nil then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -217,9 +217,9 @@ elseif signLevel == "sts" then
         ngx.exit(ngx.OK)
     end
 
-    local sign = string.match(url, ".+/file/%w+/%w+/(%w+)_%d+_[%w.]+/.+")
-    local timestamp = string.match(url, ".+/file/%w+/%w+/%w+_(%d+)_[%w.]+/.+")
-    sid = string.match(url, ".+/file/%w+/%w+/%w+_%d+_([%w.]+)/.+")
+    local sign = string.match(url, "^/[^%/]+/file/%w+/%w+/(%w+)_%d+_[%w.]+/.+$")
+    local timestamp = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_(%d+)_[%w.]+/.+$")
+    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_%d+_([%w.]+)/.+$")
     --时间戳不存在或者签名不存在或者session不存在，验证不通过
     if sign == "" or sign == nil or timestamp == ""
             or timestamp == nil or timestamp == 0

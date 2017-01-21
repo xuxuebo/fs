@@ -3,6 +3,13 @@ if ngx.var.enableValidateSwitch == "false" then
     ngx.exit(ngx.OK)
 end
 
+local url = ngx.var.request_uri
+local action = string.match(url, ".+/file/(%w+)/.+")
+--只有获取文件和下载文件需要校验权限
+if action ~= "getFile" and action ~= "downloadFile" then
+    ngx.exit(ngx.OK)
+end
+
 --当前请求的域名或者ip
 local host = ngx.var.host
 --文档服务器的域名或者ip(可以包含端口)
@@ -10,13 +17,6 @@ local serverHost = ngx.var.serverHost
 --当当前请求的域名(或者ip)和文档服务器的域名(或者ip)不相同时，不通过
 if serverHost ~= host then
     ngx.exit(ngx.HTTP_FORBIDDEN)
-end
-
-local url = ngx.var.request_uri
-local action = string.match(url, ".+/file/(%w+)/.+")
---只有获取文件和下载文件需要校验权限
-if action ~= "getFile" and action ~= "downloadFile" then
-    ngx.exit(ngx.OK)
 end
 
 local signLevel = string.match(url, ".+/file/%w+/(%w+)/.+")

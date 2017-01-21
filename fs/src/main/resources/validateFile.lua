@@ -33,7 +33,7 @@ if signLevel == "nn" then
 end
 
 --公司编号
-local corpCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/([%w._-]+)/.+$")
+local corpCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/([%w._-]+)/.+$")
 --没有corpCode不能通过权限校验
 if corpCode == "" or corpCode == nil then
     ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -60,13 +60,13 @@ if excludeCorpCodes ~= "" and excludeCorpCodes ~= nil then
 end
 
 --应用编号
-local appCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/(%w+)/.+$")
+local appCode = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/(%w+)/.+$")
 --没有appCode不能通过权限校验
 if appCode == "" or appCode == nil then
     ngx.exit(ngx.HTTP_FORBIDDEN)
 end
 
-local fileType = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/(%w+)/.+$")
+local fileType = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/(%w+)/.+$")
 --gen表示生成文件，src表示源文件，不是生成文件又不是源文件的请求不能通过验权
 if fileType ~= "gen" and fileType ~= "src" then
     ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -75,9 +75,9 @@ end
 --文件在文件系统中的主键
 local fileId;
 if fileType == "gen" then
-    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+$")
+    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+$")
 else
-    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[%w._-]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+$")
+    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+$")
 end
 
 --文件在文件系统中的主键不存在不能通过验权
@@ -205,7 +205,7 @@ elseif signLevel == "sn" then
         ngx.exit(ngx.OK)
     end
 
-    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/([%w.]+)/.+$")
+    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/([^%/]+)/.+$")
     --登录session为空，验证不通过
     if sid == "" or sid == nil then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -217,9 +217,9 @@ elseif signLevel == "sts" then
         ngx.exit(ngx.OK)
     end
 
-    local sign = string.match(url, "^/[^%/]+/file/%w+/%w+/(%w+)_%d+_[%w.]+/.+$")
-    local timestamp = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_(%d+)_[%w.]+/.+$")
-    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_%d+_([%w.]+)/.+$")
+    local sign = string.match(url, "^/[^%/]+/file/%w+/%w+/(%w+)_%d+_[^%/]+/.+$")
+    local timestamp = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_(%d+)_[^%/]+/.+$")
+    sid = string.match(url, "^/[^%/]+/file/%w+/%w+/%w+_%d+_([^%/]+)/.+$")
     --时间戳不存在或者签名不存在或者session不存在，验证不通过
     if sign == "" or sign == nil or timestamp == ""
             or timestamp == nil or timestamp == 0
@@ -263,7 +263,13 @@ local nowTime = ngx.now() * 1000
 --session验证结果缓存时间（单位为秒）
 local sessionValidCacheTime = ngx.var.sessionValidCacheTime
 --校验url，每个环境的host都不一样
-local checkurl = ngx.var.checkSidUrl
+--local checkurl = ngx.var.checkSidUrl
+local checkurl
+if appCode == 'live' then
+    checkurl = 'http://' .. ngx.var.remote_addr .. ':3013/checkSid'
+else
+    checkurl = ngx.var.checkSidUrl
+end
 --验证session的签名秘钥，默认为sf。
 local sessionSignSecret = ngx.var.sessionSignSecret
 local check = store.get(sid)

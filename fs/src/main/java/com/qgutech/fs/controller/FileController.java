@@ -730,20 +730,25 @@ public class FileController {
                 break;
             case sn:
                 session = auth;
-                return checkSession(session, HttpUtils.getRealRemoteAddress(request));
+                return checkSession(session);
             case sts:
-                String[] split = auth.split(FsConstants.UNDERLINE);
-                if (split.length < 3) {
+                int first = auth.indexOf(FsConstants.UNDERLINE);
+                if (first <= 0 || first == auth.length() - 1) {
                     return false;
                 }
 
-                timestamp = Long.parseLong(split[1]);
+                int second = auth.indexOf(FsConstants.UNDERLINE, first + 1);
+                if (second <= 0 || second <= first || second == auth.length() - 1) {
+                    return false;
+                }
+
+                timestamp = Long.parseLong(auth.substring(first + 1, second));
                 if (System.currentTimeMillis() - timestamp >= PropertiesUtils.getUrlExpireTime()) {
                     return false;
                 }
 
                 fsFile.setTimestamp(timestamp);
-                session = split[2];
+                session = auth.substring(second + 1);
                 if (!checkSession(session)) {
                     return false;
                 }

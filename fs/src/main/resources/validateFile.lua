@@ -265,8 +265,11 @@ local sessionValidCacheTime = ngx.var.sessionValidCacheTime
 --校验url，每个环境的host都不一样
 --local checkurl = ngx.var.checkSidUrl
 local checkurl
-if appCode == 'live' then
+local referer = string.match(tostring(ngx.var.http_referer), "^http://([%w%.]+)/.*$")
+if appCode == 'live' and referer ~= 'live.test.qgutech.com' then
     checkurl = 'http://' .. ngx.var.remote_addr .. ':3013/checkSid'
+elseif appCode == 'live' then
+    checkurl = 'http://192.168.1.186:3013/checkSid'
 else
     checkurl = ngx.var.checkSidUrl
 end

@@ -1,4 +1,4 @@
-#文档服务器使用手册
+# 文档服务器使用手册
 
 ## 一、上传图片抽取坐标
 ### url：
@@ -100,16 +100,16 @@ http://文件服务器域名或者ip/fs/file/uploadFile
                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proxy_pass http://文件服务器域名或者ip;    
                         &nbsp;&nbsp;&nbsp;&nbsp;}<br>
                    }
-###必填项：
+### 必填项：
 1. id表示文件在文件服务器中的编号。
 2. x表示剪切图片的起始点的x轴。
 3. y表示剪切图片的起始点的y轴。
 4. w表示剪切图片的宽度。
 5. h表示剪切图片的高度。
 6. session表示人员的登录session，如果当前文件服务器验证session，为必填项，如果当前文件服务器不验证session，可以不填写。
-###选填项：
+### 选填项：
 1. responseFormat表示返回结果格式，支持json，xml，jsonp，html。
-###结果获取：
+### 结果获取：
 status表示状态，SUCCESS表示正确，FAILED表示失败，
 当结果正确时，storedFileName表示剪切图片的名称，fileUrl表示剪切的图片url。当失败时，processMsg表示失败原因。
 json格式如下：

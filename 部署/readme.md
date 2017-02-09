@@ -1,7 +1,7 @@
-#文档服务器搭建手册
+# 文档服务器搭建手册
 
-##一、部署Nginx+Lua
-###下载相关软件
+## 一、部署Nginx+Lua
+### 下载相关软件
 1. [下载Nginx](http://nginx.org/)(手册使用的版本为1.9.13，位置：fs-parent/工具/nginx-1.9.13.tar.gz);
 2. [下载Lua](http://www.lua.org/)(手册使用的版本为5.1.5，位置：fs-parent/工具/lua-5.1.5.tar.gz);
 3. [下载LuaJIT](http://luajit.org/)(手册使用的版本为2.0.4，位置：fs-parent/工具/LuaJIT-2.0.4.tar.gz);
@@ -12,11 +12,11 @@
 8. [下载Nginx的misc模块](https://github.com/openresty/set-misc-nginx-module)(手册使用的版本为set-misc-nginx-module-0.30，位置：fs-parent/工具/set-misc-nginx-module-0.30.tar.gz);
 
 **注意：需要其他的nginx模块请自行去[gitHub](https://github.com/)上下载。**
-###安装Lua
+### 安装Lua
 1. 解压lua-5.1.5.tar.gz(tar -zvxf lua-5.1.5.tar.gz)；
 2. 进入lua源码文件夹(cd lua-5.1.5)；
 3. 编译并且安装(make &amp;&amp; make install)。
-###安装LuaJIT
+### 安装LuaJIT
 1. 解压LuaJIT-2.0.4.tar.gz(tar -zvxf LuaJIT-2.0.4.tar.gz)；
 2. 进入LuaJIT源码文件夹(cd LuaJIT-2.0.4)；
 3. 编译并且安装(make &amp;&amp; make install)；
@@ -25,7 +25,7 @@
 5. 设置lua的环境变量。<br>
 export LUAJIT_LIB=/usr/local/lib<br>
 export LUAJIT_INC=/usr/local/include/luajit-2.0
-###安装Nginx
+### 安装Nginx
 1. 解压nginx-1.9.13.tar.gz(tar -zvxf nginx-1.9.13.tar.gz)；
 2.  进入nginx源码文件夹(cd nginx-1.9.13)；
 3. 建立文件夹3rdModule，用于存放第三方模块的源码(mkdir 3rdModule)；

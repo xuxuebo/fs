@@ -16,7 +16,8 @@
 1. 解压lua-5.1.5.tar.gz(tar -zvxf lua-5.1.5.tar.gz)；
 2. 进入lua源码文件夹(cd lua-5.1.5)；
 3. 编译并且安装(make &amp;&amp; make install)。
-**  **
+<br>
+
 ### 安装LuaJIT
 1. 解压LuaJIT-2.0.4.tar.gz(tar -zvxf LuaJIT-2.0.4.tar.gz)；
 2. 进入LuaJIT源码文件夹(cd LuaJIT-2.0.4)；
@@ -26,7 +27,8 @@
 5. 设置lua的环境变量。<br>
 export LUAJIT_LIB=/usr/local/lib<br>
 export LUAJIT_INC=/usr/local/include/luajit-2.0
-**  **
+<br>
+
 ### 安装Nginx
 1. 解压nginx-1.9.13.tar.gz(tar -zvxf nginx-1.9.13.tar.gz)；
 2.  进入nginx源码文件夹(cd nginx-1.9.13)；

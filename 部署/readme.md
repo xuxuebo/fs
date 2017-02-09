@@ -170,7 +170,7 @@ upstream  fs-service  {<br>
 5. 将文件权限验证脚本validateFile.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/validateFile.lua
 6. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/部署/lua下);
 
-## 二、安装ffmpeg<br>
+## 二、部署ffmpeg<br>
 
 **注意：只有有图片压缩，图片剪切，视频转换，音频转换的文件服务器才需要安装ffmpeg。**<br>
 
@@ -181,7 +181,7 @@ upstream  fs-service  {<br>
 ### 下载相关软件
 1. [下载ffmpeg](http://ffmpeg.org/)(手册使用的版本为3.0.2，位置：fs-parent/部署/ffmpeg/ffmpeg-3.0.2.tar.bz2);
 
-**注意：需要其他的音频和视频转码器请自行下载。**
+**注意：需要其他的音频和视频转码器请参考fs-parent/部署/ffmpeg/目录下面的，没有的请自行下载。**
 ### 安装ffmpeg
 1. 解压ffmpeg-3.0.2.tar.bz2(tar -jvxf ffmpeg-3.0.2.tar.bz2)；
 2. 进入ffmpeg源码文件夹(cd ffmpeg-3.0.2)；

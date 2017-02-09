@@ -170,7 +170,7 @@ upstream  fs-service  {<br>
 5. 将文件权限验证脚本validateFile.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/validateFile.lua
 6. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/部署/lua下);
 
-## 二、部署ffmpeg<br>
+## 二、部署ffmpeg(Linux)<br>
 
 **注意：只有有图片压缩，图片剪切，视频转换，音频转换的文件服务器才需要安装ffmpeg。**<br>
 
@@ -191,7 +191,18 @@ ffmpeg模块选择参考./configure --help<br>
 4. 编译并且安装(make &amp;&amp; make install)。
 <br>
 
-
+## 三、部署文件转化服务器
+1. 安装Microsoft Office 2010及其以上;
+2. 安装.NET framework 4.0；
+3. 安装JDK1.6+，如果JDK为64位的，请将fs-parent/部署/JACOB/jacob-1.14.3-x64.dll放在JDK的bin目录下
+，如果JDK为32位的，请将fs-parent/部署/JACOB/jacob-1.14.3-x86.dll放在JDK的bin目录下；
+4. 配置好tomcat的配置项（端口，jdk，启动位置等），将fs的war包放置webapps中，配置好env.properties文件；
+5. 参考env的配置项fs.officeTrustDir，设置office（word，ppt，excel）的信任目录
+             （如果不设置信任目录，可能有一些受保护的office文件jacob不能打开）;
+6. 根据env的配置项fs.doc2Pdf.convertToolPath，将fs-parent/部署/DocToPDF/OfficeToPDF.exe放置到配置目录下；
+7. 参考env的配置项fs.pdfToImage.convertToolPath,将fs-parent/部署/PDFToImage/Release.rar解压后，放置到配置目录下；
+8. 下载windows版的ffmpeg，解压后将ffmpeg的bin目录配置到classpath下（参考：fs-parent/部署/ffmpeg/ffmpeg-20170208-3aae1ef-win64-static.zip）；
+9. 启动tomcat，运行文件转化服务。
 
 
 

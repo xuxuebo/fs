@@ -204,5 +204,11 @@ ffmpeg模块选择参考./configure --help<br>
 8. 下载windows版的ffmpeg，解压后将ffmpeg的bin目录配置到classpath下（参考：fs-parent/部署/ffmpeg/ffmpeg-20170208-3aae1ef-win64-static.zip）；
 9. 启动tomcat，运行文件转化服务。
 
+## 四、部署文件服务器
+
+
+## 五、部署ceph分布式文件服务器
+参考[ceph官网](http://ceph.com/)
+
 
 

@@ -208,7 +208,11 @@ ffmpeg模块选择参考./configure --help<br>
 
 
 ## 五、部署ceph分布式文件服务器
-参考[ceph官网](http://ceph.com/)
+
+**对于简单需求可以不用部署**<br>
+参考资料：<br>
+[ceph官网](http://ceph.com/)<br>
+[ceph中文社区](http://ceph.org.cn/)<br>
 
 
 

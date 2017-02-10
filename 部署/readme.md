@@ -2,14 +2,14 @@
 
 ## 一、部署Nginx+Lua
 ### 下载相关软件
-1. [下载Nginx](http://nginx.org/)(手册使用的版本为1.9.13，位置：fs-parent/部署/nginx-1.9.13.tar.gz);
-2. [下载Lua](http://www.lua.org/)(手册使用的版本为5.1.5，位置：fs-parent/部署/lua-5.1.5.tar.gz);
-3. [下载LuaJIT](http://luajit.org/)(手册使用的版本为2.0.4，位置：fs-parent/部署/LuaJIT-2.0.4.tar.gz);
-4. [下载Nginx的echo模块](https://github.com/openresty/echo-nginx-module/tags)(手册使用的版本为echo-nginx-module-0.59,位置：fs-parent/部署/v0.59.tar.gz);
-5. [下载Nginx的lua模块](https://github.com/openresty/lua-nginx-module/tags)(手册使用的版本为lua-nginx-module-0.10.5，位置：fs-parent/部署/v0.10.5.tar.gz);
-6. [下载Nginx的开发工具模块](https://github.com/simpl/ngx_devel_kit/)(手册使用的版本为ngx_devel_kit-0.3.0，位置：fs-parent/部署/v0.3.0.tar.gz);
-7. [下载Nginx的redis模块](https://github.com/openresty/redis2-nginx-module)(手册使用的版本为redis2-nginx-module-0.13，位置：fs-parent/部署/v0.13.tar.gz);
-8. [下载Nginx的misc模块](https://github.com/openresty/set-misc-nginx-module)(手册使用的版本为set-misc-nginx-module-0.30，位置：fs-parent/部署/set-misc-nginx-module-0.30.tar.gz)。
+1. [下载Nginx](http://nginx.org/)(手册使用的版本为1.9.13，位置：fs-parent/部署/nginx/nginx-1.9.13.tar.gz);
+2. [下载Lua](http://www.lua.org/)(手册使用的版本为5.1.5，位置：fs-parent/部署/nginx/lua-5.1.5.tar.gz);
+3. [下载LuaJIT](http://luajit.org/)(手册使用的版本为2.0.4，位置：fs-parent/部署/nginx/LuaJIT-2.0.4.tar.gz);
+4. [下载Nginx的echo模块](https://github.com/openresty/echo-nginx-module/tags)(手册使用的版本为echo-nginx-module-0.59,位置：fs-parent/部署/nginx/v0.59.tar.gz);
+5. [下载Nginx的lua模块](https://github.com/openresty/lua-nginx-module/tags)(手册使用的版本为lua-nginx-module-0.10.5，位置：fs-parent/部署/nginx/v0.10.5.tar.gz);
+6. [下载Nginx的开发工具模块](https://github.com/simpl/ngx_devel_kit/)(手册使用的版本为ngx_devel_kit-0.3.0，位置：fs-parent/部署/nginx/v0.3.0.tar.gz);
+7. [下载Nginx的redis模块](https://github.com/openresty/redis2-nginx-module)(手册使用的版本为redis2-nginx-module-0.13，位置：fs-parent/部署/nginx/v0.13.tar.gz);
+8. [下载Nginx的misc模块](https://github.com/openresty/set-misc-nginx-module)(手册使用的版本为set-misc-nginx-module-0.30，位置：fs-parent/部署/nginx/set-misc-nginx-module-0.30.tar.gz)。
 
 **注意：需要其他的nginx模块请自行去[gitHub](https://github.com/)上下载。**
 ### 安装Lua

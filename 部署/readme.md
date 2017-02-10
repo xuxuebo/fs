@@ -205,7 +205,10 @@ ffmpeg模块选择参考./configure --help<br>
 9. 启动tomcat，运行文件转化服务。
 
 ## 四、部署文件服务器
-
+1. 创建fs的数据库，执行fs.sql脚本，脚本位置fs-parent/fs/src/main/resources/fs.sql(如果数据库不存在)；
+2. 部署fs服务(可以部署多个tomcat)；
+3. 将当前文件服务器的插入表t_fs_server中（字段参考fs的配置文件env.properties）；
+4. 部署fs-service服务(可以部署多个tomcat)；
 
 ## 五、部署ceph分布式文件服务器
 

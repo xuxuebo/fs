@@ -216,7 +216,8 @@ upstream  fs-service  {<br>
         
 5. 将文件权限验证脚本validateFile.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/validateFile.lua
 6. 将图片剪切和压缩脚本image.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/image.lua
-7. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/deploy/lua下);
+7. 将原图剪切和压缩脚本originImage.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/originImage.lua
+8. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/deploy/lua下);
 
 ## 二、部署ffmpeg(Linux)<br>
 

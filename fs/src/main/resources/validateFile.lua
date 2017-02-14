@@ -257,7 +257,7 @@ if sessionFlag == false then
 end
 
 --共享内存
-local store = require'store'
+local store = require 'store'
 --当前时间毫秒数
 local nowTime = ngx.now() * 1000
 --session验证结果缓存时间（单位为秒）
@@ -265,7 +265,7 @@ local sessionValidCacheTime = ngx.var.sessionValidCacheTime
 --校验url，每个环境的host都不一样
 --local checkurl = ngx.var.checkSidUrl
 local checkurl
-local referer = string.match(tostring(ngx.var.http_referer), "^http://([%w%.]+)/.*$")
+local referer = string.match(tostring(ngx.var.http_referer), "^http://([%w%.]+).*$")
 if appCode == 'live' and referer ~= 'live.test.qgutech.com' then
     checkurl = 'http://' .. ngx.var.remote_addr .. ':3013/checkSid'
 elseif appCode == 'live' then
@@ -277,7 +277,7 @@ end
 local sessionSignSecret = ngx.var.sessionSignSecret
 local check = store.get(sid)
 if (check == nil) then
-    local http = require"http"
+    local http = require "http"
     local httpc = http.new()
     httpc:set_timeout(3000)
     local sign = ngx.md5(sid .. '|' .. sessionSignSecret)
@@ -303,7 +303,7 @@ elseif check < 0 and nowTime + check < sessionValidCacheTime * 1000 then
     ngx.exit(ngx.HTTP_FORBIDDEN)
 elseif check < 0 or nowTime - check >= sessionValidCacheTime * 1000 then
     store.remove(sid)
-    local http = require"http"
+    local http = require "http"
     local httpc = http.new()
     httpc:set_timeout(3000)
     local sign = ngx.md5(sid .. '|' .. sessionSignSecret)

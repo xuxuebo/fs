@@ -86,15 +86,17 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
 
                  }
 
-                #repository为文件服务器存放文件的目录,/..的数量由root（一般是nginx的html目录）决定。
-                set $repository '/../../..'$fsRepo;
+                #/..的数量由root（一般是nginx的html目录）决定。
+                set $prefix '/../../..';
+                #repository为文件服务器存放文件的目录
+                set $repository $prefix$fsRepo;
                 location ~ ^/fs/file/getFile/nn/(.*/\d+_\d+[\d_]*(\.)+png)$ {
                         open_file_cache off;
                         if_modified_since off;
                         add_header Cache-Control no-cache;
                         access_by_lua_file conf/validateFile.lua;
 
-                        set $file_path $repository/$1;
+                        set $file_path $repository$1;
                         if (-f $file_path) {
                               rewrite ^(.*)$ $file_path break;
                         }
@@ -133,7 +135,7 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                         if_modified_since off;
                         add_header Cache-Control no-cache;
                         access_by_lua_file conf/validateFile.lua;
-                        set $file_path $repository/$1;
+                        set $file_path $repository$1;
                         if (-f $file_path) {
                               rewrite ^(.*)$ $file_path break;
                         }

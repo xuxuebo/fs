@@ -55,6 +55,9 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
         set $checkSidUrl 用于检验session是否正确的url，有环境决定;<br>
         set $sessionValidCacheTime session验证结果缓存时间（单位为秒），默认180;<br>
         set $sessionSignSecret 验证session的签名秘钥，默认为sf;<br>
+        set $ffmpeg ffmpeg命令的绝对路径;<br>
+        set $fsRepo 文件存储目录，参考配置项fs.fileStoreDir,**最后的分隔符要带**;<br>
+ **如果需要图片自动剪切和压缩功能，nginx的启动用户必须和$fsRepo的权限用户一致。**
 3. 在nginx的server(fs所在的server)模块加入以下location：<br>
 
 
@@ -83,8 +86,8 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
 
                  }
 
-                #repository为文件服务器存放文件的目录
-                set $repository '/../../../web/fs/fs';
+                #repository为文件服务器存放文件的目录,/..的数量由root（一般是nginx的html目录）决定。
+                set $repository '/../../..'$fsRepo;
                 location ~ ^/fs/file/getFile/nn/(.*/\d+_\d+[\d_]*(\.)+png)$ {
                         open_file_cache off;
                         if_modified_since off;
@@ -97,7 +100,10 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                         }
 
                         if (!-f $file_path) {
-                              proxy_pass http://fs;
+                              set $imagePath $fsRepo$1;
+                              access_by_lua_file conf/image.lua;
+                              rewrite ^(.*)$ $file_path break;
+                              #proxy_pass http://fs;
                         }
                 }
 
@@ -107,8 +113,8 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                        add_header Cache-Control no-cache;
                        access_by_lua_file conf/validateFile.lua;
                        #文件服务器存放文件的目录
-                       root /web/fs/fs;
-                       rewrite ^/fs/file/getFile/nn/(.*/[^/]*(\.)+[^/]*)$ /$1 break;
+                       root $fsRepo;
+                       rewrite ^/fs/file/getFile/nn/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                  }
 
                 location ~ ^/fs/file/downloadFile/nn/(.*/[^/]*(\.)+[^/]*)$ {
@@ -117,8 +123,8 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                        add_header Cache-Control no-cache;
                        access_by_lua_file conf/validateFile.lua;
                        #文件服务器存放文件的目录
-                       root /web/fs/fs;
-                       rewrite ^/fs/file/downloadFile/nn/(.*/[^/]*(\.)+[^/]*)$ /$1 break;
+                       root $fsRepo;
+                       rewrite ^/fs/file/downloadFile/nn/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                 }
 
 
@@ -133,7 +139,10 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                         }
 
                         if (!-f $file_path) {
-                              proxy_pass http://fs;
+                              set $imagePath $fsRepo$1;
+                              access_by_lua_file conf/image.lua;
+                              rewrite ^(.*)$ $file_path break;
+                              #proxy_pass http://fs;
                         }
                 }
 
@@ -143,8 +152,8 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                         add_header Cache-Control no-cache;
                         access_by_lua_file conf/validateFile.lua;
                         #文件服务器存放文件的目录
-                        root /web/fs/fs;
-                        rewrite ^/fs/file/getFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ /$1 break;
+                        root $fsRepo;
+                        rewrite ^/fs/file/getFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                 }
 
                 location ~ ^/fs/file/downloadFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ {
@@ -153,8 +162,8 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                         add_header Cache-Control no-cache;
                         access_by_lua_file conf/validateFile.lua;
                         #文件服务器存放文件的目录
-                        root /web/fs/fs;
-                        rewrite ^/fs/file/downloadFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ /$1 break;
+                        root $fsRepo;
+                        rewrite ^/fs/file/downloadFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                 }
 4. 在nginx的http模块加入以下upstream：<br>
 
@@ -168,7 +177,8 @@ upstream  fs-service  {<br>
         }<br>
         
 5. 将文件权限验证脚本validateFile.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/validateFile.lua
-6. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/deploy/lua下);
+6. 将图片剪切和压缩脚本image.lua放到nginx的conf目录下，文件路径fs-parent/fs/src/main/resources/image.lua
+7. 将权限验证脚本validateFile.lua依赖的lua第三方插件store.lua，shim.lua，json.lua，http_headers.lua，http.lua，cjson.so放到/opt/lualib/目录下面(脚本文件在目录fs-parent/deploy/lua下);
 
 ## 二、部署ffmpeg(Linux)<br>
 

@@ -77,7 +77,7 @@ local fileId;
 if fileType == "gen" then
     fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/gen/%w+/%d+/(%w+)/.+$")
 else
-    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+$")
+    fileId = string.match(url, "^/[^%/]+/file/%w+/%w+/[^%/]+/[%w._-]+/%w+/src/.+/%d+/%w+/(%w+)%.%w+.*$")
 end
 
 --文件在文件系统中的主键不存在不能通过验权

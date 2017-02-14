@@ -108,6 +108,24 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                               #proxy_pass http://fs;
                         }
                 }
+                
+                location ~ ^/fs/file/getFile/nn/[^/]+/([^/]+/\w+/src.*/img/\d+/.+)$ {
+                        open_file_cache off;
+                        if_modified_since off;
+                        add_header Cache-Control no-cache;
+                        access_by_lua_file conf/validateFile.lua;
+                        set $file_path $repository$1;
+                        if (-f $file_path) {
+                               rewrite ^(.*)$ $file_path break;
+                        }
+                                
+                        if (!-f $file_path) {
+                               set $imagePath $fsRepo$1;
+                               access_by_lua_file conf/originImage.lua;
+                               rewrite ^(.*)$ $file_path break;
+                               #proxy_pass http://fs;
+                        }
+                }
 
                  location ~ ^/fs/file/getFile/nn/(.*/[^/]*(\.)+[^/]*)$ {
                        open_file_cache off;
@@ -145,6 +163,24 @@ export LUAJIT_INC=/usr/local/include/luajit-2.0
                               access_by_lua_file conf/image.lua;
                               rewrite ^(.*)$ $file_path break;
                               #proxy_pass http://fs;
+                        }
+                }
+                
+                location ~ ^/fs/file/getFile/\w+/[^/]+/([^/]+/\w+/src.*/img/\d+/.+)$ {
+                        open_file_cache off;
+                        if_modified_since off;
+                        add_header Cache-Control no-cache;
+                        access_by_lua_file conf/validateFile.lua;
+                        set $file_path $repository$1;
+                        if (-f $file_path) {
+                               rewrite ^(.*)$ $file_path break;
+                        }
+                
+                        if (!-f $file_path) {
+                               set $imagePath $fsRepo$1;
+                               access_by_lua_file conf/originImage.lua;
+                               rewrite ^(.*)$ $file_path break;
+                               #proxy_pass http://fs;
                         }
                 }
 

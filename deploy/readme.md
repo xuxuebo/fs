@@ -15,7 +15,7 @@
 ### 安装Lua
 1. 解压lua-5.1.5.tar.gz(tar -zvxf lua-5.1.5.tar.gz)；
 2. 进入lua源码文件夹(cd lua-5.1.5)；
-3. 编译并且安装(make &amp;&amp; make install)。
+3. 编译并且安装(make linux &amp;&amp; make install)。
 <br>
 
 ### 安装LuaJIT

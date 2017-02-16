@@ -25,8 +25,10 @@
 4. 如果是64位系统，还需要将/usr/local/lib/libluajit-5.1.so.2建立软连接到/lib64/libluajit-5.1.so.2
 (ln -s  /usr/local/lib/libluajit-5.1.so.2.0.2 /lib64/libluajit-5.1.so.2)；
 5. 设置lua的环境变量。<br>
-export LUAJIT_LIB=/usr/local/lib<br>
-export LUAJIT_INC=/usr/local/include/luajit-2.0
+在/etc/profile文件中加入以下配置项：
+export LUAJIT_LIB=/usr/local/lib    #这个很有可能不一样<br>
+export LUAJIT_INC=/usr/local/include/luajit-2.0  #这个很有可能不一样<br>
+export LUA_PATH="/opt/lualib/?.lua;;"<br>
 <br>
 
 ### 安装Nginx
@@ -239,6 +241,9 @@ ffmpeg模块选择参考./configure --help<br>
 如果安装过程出现错误，请参考参考资料，下载相应的音频或者视频转码器并安装，而后再执行此步骤；
 4. 编译并且安装(make &amp;&amp; make install)。
 <br>
+5. 在/etc/profile文件中加入以下配置项（需要退出登录，tomcat的服务引用了ffmepg需要重启才生效）：<br>
+FFMPEG=/opt/ffmpeg<br>
+export PATH=$FFMPEG/bin:$PATH<br>
 
 ## 三、部署文件转化服务器
 1. 安装Microsoft Office 2010及其以上;

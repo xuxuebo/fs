@@ -245,7 +245,13 @@ ffmpeg模块选择参考./configure --help<br>
 2. 安装.NET framework 4.0；
 3. 安装JDK1.6+，如果JDK为64位的，请将fs-parent/deploy/JACOB/jacob-1.14.3-x64.dll放在JDK的bin目录下
 ，如果JDK为32位的，请将fs-parent/deploy/JACOB/jacob-1.14.3-x86.dll放在JDK的bin目录下；
-4. 配置好tomcat的配置项（端口，jdk，启动位置等），将fs的war包放置webapps中，配置好env.properties文件；
+4. 配置好tomcat的配置项（端口，启动位置，tomcat标题，调试端口等），将fs的war包放置webapps中，配置好env.properties文件；
+<br>
+以下以tomcat6位例子：<br>
+配置端口：修改tomcat目录/conf/server.xml文件中的端口；<br>
+配置启动位置：在tomcat目录/bin/startup.bat文件中写入set CATALINA_HOME=tomcat目录 (40L)<br>
+配置tomcat标题：在tomcat目录/bin/catalina.bat文件中写入 if "%TITLE%" == "" set TITLE=需要填写的tomcat标题 (240L)<br>
+配置调试端口：在tomcat目录/bin/catalina.bat文件中写入set JPDA_ADDRESS=tomcat调试端口，一般为端口+200 (189L)<br>
 5. 参考env的配置项fs.officeTrustDir，设置office（word，ppt，excel）的信任目录
              （如果不设置信任目录，可能有一些受保护的office文件jacob不能打开）;
 6. 根据env的配置项fs.doc2Pdf.convertToolPath，将fs-parent/deploy/DocToPDF/OfficeToPDF.exe放置到配置目录下；

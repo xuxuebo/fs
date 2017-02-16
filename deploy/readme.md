@@ -59,7 +59,8 @@ export LUA_PATH="/opt/lualib/?.lua;;"<br>
         set $sessionSignSecret 验证session的签名秘钥，默认为sf;<br>
         set $ffmpeg ffmpeg命令的绝对路径;<br>
         set $fsRepo 文件存储目录，参考配置项fs.fileStoreDir,**最后的分隔符要带**;<br>
- **如果需要图片自动剪切和压缩功能，nginx的启动用户必须和$fsRepo的权限用户一致。**
+ **如果需要图片自动剪切和压缩功能，nginx的启动用户必须和$fsRepo的所有者一致(假设为web)。
+ nginx的目录(/web/nginx_lua)所有者需要执行以下命令： chown -Rh web:web /web/nginx_lua/**
 3. 在nginx的server(fs所在的server)模块加入以下location：<br>
 
 

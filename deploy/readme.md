@@ -247,7 +247,7 @@ ffmpeg模块选择参考./configure --help<br>
 ，如果JDK为32位的，请将fs-parent/deploy/JACOB/jacob-1.14.3-x86.dll放在JDK的bin目录下；
 4. 配置好tomcat的配置项（端口，启动位置，tomcat标题，调试端口等），将fs的war包放置webapps中，配置好env.properties文件；
 <br>
-以下以tomcat6位例子：<br>
+以下以tomcat6为例(windows)：<br>
 配置端口：修改tomcat目录/conf/server.xml文件中的端口；<br>
 配置启动位置：在tomcat目录/bin/startup.bat文件中写入set CATALINA_HOME=tomcat目录 (40L)<br>
 配置tomcat标题：在tomcat目录/bin/catalina.bat文件中写入 if "%TITLE%" == "" set TITLE=需要填写的tomcat标题 (240L)<br>
@@ -264,6 +264,16 @@ ffmpeg模块选择参考./configure --help<br>
 2. 部署fs服务(可以部署多个tomcat)；
 3. 将当前文件服务器的插入表t_fs_server中（字段参考fs的配置文件env.properties）；
 4. 部署fs-service服务(可以部署多个tomcat)；
+<br>
+tomcat6配置(linux):<br>
+配置端口：修改tomcat目录/conf/server.xml文件中的端口；<br>
+配置调试端口：在tomcat目录/bin/catalina.sh文件中写入JPDA_ADDRESS=tomcat调试端口，一般为端口+200 (89L)<br>
+如果tomcat引用外部的代码：<br>
+在tomcat目录/conf/Catalina/localhost/ 目录下添加fs.xml(或者fs-service.xml)<br>
+`<Context path="/fs" docBase="/web/eln4share/fs" >`<br>
+`</Context>`<br>
+/web/eln4share/fs 为fs的代码目录<br>
+
 
 ## 五、部署ceph分布式文件服务器
 

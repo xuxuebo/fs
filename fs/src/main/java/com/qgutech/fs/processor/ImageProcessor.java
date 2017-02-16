@@ -279,12 +279,12 @@ public class ImageProcessor extends AbstractProcessor {
             commands.add("-i");
             commands.add(tmpFilePath);
             if (w > 0 && h > 0) {
-                if (w > width) {
+                if (w >= width || h >= height) {
                     w = width;
-                }
-
-                if (h > height) {
                     h = height;
+                } else {
+                    w = width <= height ? w : (width * h / height);
+                    h = width >= height ? h : (height * w / width);
                 }
 
                 commands.add("-s");

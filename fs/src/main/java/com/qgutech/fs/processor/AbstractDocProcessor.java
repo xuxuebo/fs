@@ -82,12 +82,12 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
                             int h = value.getH();
                             String resolution;
                             if (w > 0 && h > 0) {
-                                if (w > width) {
+                                if (w >= width || h >= height) {
                                     w = width;
-                                }
-
-                                if (h > height) {
                                     h = height;
+                                } else {
+                                    w = width <= height ? w : (width * h / height);
+                                    h = width >= height ? h : (height * w / width);
                                 }
 
                                 resolution = w + "*" + h;

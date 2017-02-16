@@ -134,7 +134,7 @@ public class FsUtils {
             throw new RuntimeException("File[" + filePath + "] not exist or is not an image!");
         }
 
-        Matcher matcher = Pattern.compile("[^0-9]+([0-9]+x[0-9]+)[^0-9]+").matcher(result);
+        Matcher matcher = Pattern.compile("Stream.*[^0-9]+([0-9]+x[0-9]+)[^0-9]+").matcher(result);
         if (matcher.find()) {
             return matcher.group(1);
         } else {

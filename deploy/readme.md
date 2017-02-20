@@ -150,7 +150,7 @@ export LUA_PATH="/opt/lualib/?.lua;;"<br>
                        rewrite ^/fs/file/downloadFile/nn/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                 }
 
-
+                #剪切和压缩处理以后的图片
                 location ~ ^/fs/file/getFile/\w+/[^/]+/(.*/\d+_\d+[\d_]*(\.)+png)$ {
                         open_file_cache off;
                         if_modified_since off;
@@ -169,6 +169,7 @@ export LUA_PATH="/opt/lualib/?.lua;;"<br>
                         }
                 }
                 
+                #剪切和压缩处理原图片
                 location ~ ^/fs/file/getFile/\w+/[^/]+/([^/]+/\w+/src.*/img/\d+/.+)$ {
                         open_file_cache off;
                         if_modified_since off;
@@ -187,6 +188,7 @@ export LUA_PATH="/opt/lualib/?.lua;;"<br>
                         }
                 }
 
+                #非图片文件的获取
                 location ~ ^/fs/file/getFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ {
                         open_file_cache off;
                         if_modified_since off;
@@ -197,6 +199,7 @@ export LUA_PATH="/opt/lualib/?.lua;;"<br>
                         rewrite ^/fs/file/getFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ $1 break;
                 }
 
+                #文件的下载
                 location ~ ^/fs/file/downloadFile/\w+/[^/]+/(.*/[^/]*(\.)+[^/]*)$ {
                         open_file_cache off;
                         if_modified_since off;

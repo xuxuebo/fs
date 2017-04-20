@@ -117,7 +117,7 @@ public class HttpUtils {
     public static String uploadFile(String httpUrl, Map<String, String> paramValueMap,MultipartFile storedFile) {
         FormFile formFile = new FormFile();
         formFile.setContentType("application/octet-stream");
-        formFile.setFileName(storedFile.getName());
+        formFile.setFileName(storedFile.getOriginalFilename());
         formFile.setFormName("file");
 
         try {

@@ -114,7 +114,7 @@ public class HttpUtils {
         }
     }
 
-    public String uploadFile(String httpUrl, Map<String, String> paramValueMap,MultipartFile storedFile) {
+    public static String uploadFile(String httpUrl, Map<String, String> paramValueMap,MultipartFile storedFile) {
         FormFile formFile = new FormFile();
         formFile.setContentType("application/octet-stream");
         formFile.setFileName(storedFile.getName());
@@ -144,8 +144,7 @@ public class HttpUtils {
 
     }
 
-    public static byte[] sendMultipartRequest(String url,
-                                              Map<String, String> parameters, FormFile formFile) throws Exception {
+    public static byte[] sendMultipartRequest(String url,Map<String, String> parameters, FormFile formFile) throws Exception {
         if (formFile == null) {
             return send(url, parameters, null);
         } else {

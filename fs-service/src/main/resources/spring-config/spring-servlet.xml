@@ -38,4 +38,22 @@
     </bean>
 
     <mvc:resources mapping="/pages/**" location="/pages/"/>
+
+    <context:component-scan base-package="com.qgutech.fs"/>
+    <bean id="fileServerServiceExp" class="com.tbc.soa.remote.impl.HttpRemoteServiceExporter" lazy-init="false">
+        <property name="targetService" ref="fileServerService"/>
+    </bean>
+
+    <bean id="publicUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <!-- Different interface use same implementation -->
+            <value>
+                /service/com.qgutech.fs.service.FileServerService=fileServerServiceExp
+            </value>
+        </property>
+        <property name="alwaysUseFullPath">
+            <value>false</value>
+        </property>
+        <property name="order" value="10"/>
+    </bean>
 </beans>

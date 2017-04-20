@@ -179,28 +179,5 @@
         </dependency>
         <!-- 单元测试结束-->
 
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jsp-api</artifactId>
-            <version>2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.tbc.framework.soa</groupId>
-            <artifactId>soa-remote-api</artifactId>
-            <version>4.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.tbc.framework.soa</groupId>
-            <artifactId>soa-remote-impl</artifactId>
-            <version>4.1.0-SNAPSHOT</version>
-        </dependency>
-
     </dependencies>
-
-
 </project>

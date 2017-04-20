@@ -54,4 +54,20 @@ public class FsFileManagerUtil {
         String fileUrl = getFileUrl("402881175b895a5e015b895c705d0001", "123456","http://localhost");
         System.out.println(fileUrl);
     }
+
+    public static String uploadFile(String fileId, String session,String fileServer){
+        String postUrl = "";
+        String remoteUrl = "/fs-service/fileServer/remoteMethod";
+        if (!fileServer.contains("http")) {
+            postUrl = "http://" + fileServer;
+        }else{
+            postUrl += fileServer;
+        }
+
+        postUrl += remoteUrl;
+        Map<String,String> paramsMap = getParamMap(fileId, session);
+        String content = HttpUtils.doPost(postUrl, paramsMap);
+        Map resMap = gson.fromJson(content,Map.class);
+        return (String) resMap.get("content");
+    }
 }

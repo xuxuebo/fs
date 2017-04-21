@@ -40,7 +40,7 @@ public class ZipVideoProcessor extends AbstractProcessor {
                     + "] is empty or contains directory or contains not video file!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("视频集为空或者包含文件夹或者包含非视频文件");
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -50,7 +50,7 @@ public class ZipVideoProcessor extends AbstractProcessor {
             LOG.error("Video collection[" + fsFile.getTmpFilePath() + "] is empty!");
             fsFile.setProcessMsg("视频集为空");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 

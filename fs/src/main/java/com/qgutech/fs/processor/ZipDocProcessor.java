@@ -28,7 +28,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
                     + "] is empty or contains directory or contains not document file!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("文档集为空或者包含文件夹或者包含非文档文件");
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -38,7 +38,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             LOG.error("Document collection[" + fsFile.getTmpFilePath() + "] is empty!");
             fsFile.setProcessMsg("文档集为空");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -76,7 +76,7 @@ public class ZipDocProcessor extends AbstractDocProcessor {
             if (docPage <= 0) {
                 FsUtils.deleteFile(getGenFilePath(fsFile));
                 fsFile.setStatus(ProcessStatusEnum.FAILED);
-                HttpUtils.updateFsFile(fsFile);
+                FsFileHttpUtils.updateFsFile(fsFile);
                 return;
             }
 

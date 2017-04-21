@@ -71,7 +71,7 @@ public abstract class AbstractProcessor implements Processor {
             }
 
             fsFile.setStatus(ProcessStatusEnum.PROCESSING);
-            fsFileId = HttpUtils.saveFsFile(fsFile);
+            fsFileId = FsFileHttpUtils.saveFsFile(fsFile);
             fsFile.setId(fsFileId);
             inputStream = new FileInputStream(tmpFilePath);
             originFilePath = getOriginFilePath(fsFile);
@@ -101,7 +101,7 @@ public abstract class AbstractProcessor implements Processor {
             IOUtils.closeQuietly(outputStream);
             FsUtils.deleteFile(originFilePath);
             FsUtils.deleteFile(getGenFilePath(fsFile));
-            HttpUtils.deleteFsFile(fsFileId);//todo redis
+            FsFileHttpUtils.deleteFsFile(fsFileId);//todo redis
             throw e;
         } finally {
             IOUtils.closeQuietly(inputStream);
@@ -146,7 +146,7 @@ public abstract class AbstractProcessor implements Processor {
         if (StringUtils.isEmpty(fsFile.getId())) {
             fsFile.setCreateTime(new Date());
         } else if (fsFile.getCreateTime() == null) {
-            FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            FsFile dbFsFile = FsFileHttpUtils.getFsFile(fsFile.getId());
             fsFile.setBeforeFsFileJson(gson.toJson(dbFsFile));
             fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
@@ -214,7 +214,7 @@ public abstract class AbstractProcessor implements Processor {
         if (StringUtils.isEmpty(fsFile.getId())) {
             fsFile.setCreateTime(new Date());
         } else if (fsFile.getCreateTime() == null) {
-            FsFile dbFsFile = HttpUtils.getFsFile(fsFile.getId());
+            FsFile dbFsFile = FsFileHttpUtils.getFsFile(fsFile.getId());
             fsFile.setBeforeFsFileJson(gson.toJson(dbFsFile));
             fsFile.setCreateTime(dbFsFile == null ? new Date() : dbFsFile.getCreateTime());
         }
@@ -407,7 +407,7 @@ public abstract class AbstractProcessor implements Processor {
     public void afterFailProcess(FsFile fsFile) {
         FsUtils.deleteFile(getGenFilePath(fsFile));
         fsFile.setStatus(ProcessStatusEnum.FAILED);
-        HttpUtils.updateFsFile(fsFile);
+        FsFileHttpUtils.updateFsFile(fsFile);
     }
 
     public void clear(FsFile fsFile) {
@@ -420,7 +420,7 @@ public abstract class AbstractProcessor implements Processor {
 
     protected void afterProcess(FsFile fsFile) throws Exception {
         fsFile.setStatus(ProcessStatusEnum.SUCCESS);
-        HttpUtils.updateFsFile(fsFile);
+        FsFileHttpUtils.updateFsFile(fsFile);
 
         String beforeFsFileJson = fsFile.getBeforeFsFileJson();
         if (StringUtils.isNotEmpty(beforeFsFileJson)) {

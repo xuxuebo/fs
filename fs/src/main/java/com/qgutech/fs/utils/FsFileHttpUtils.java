@@ -26,7 +26,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpUtils {
+public class FsFileHttpUtils {
 
     public static final Gson gson = new Gson();
 
@@ -126,7 +126,7 @@ public class HttpUtils {
 
         String fsFileJson;
         try {
-            fsFileJson = HttpUtils.doPost(PropertiesUtils.getGetFileUrl(), paramMap);
+            fsFileJson = FsFileHttpUtils.doPost(PropertiesUtils.getGetFileUrl(), paramMap);
         } catch (Exception e) {
             if (executeCnt >= PropertiesUtils.getGetFileMaxExecuteCnt()) {
                 throw (RuntimeException) e;
@@ -182,7 +182,7 @@ public class HttpUtils {
 
         String fsFileId;
         try {
-            fsFileId = HttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
+            fsFileId = FsFileHttpUtils.doPost(PropertiesUtils.getSaveFileUrl(), fsFile.toMap());
         } catch (Exception e) {
             if (executeCnt >= PropertiesUtils.getSaveFileMaxExecuteCnt()) {
                 throw (RuntimeException) e;
@@ -237,7 +237,7 @@ public class HttpUtils {
 
         String receive;
         try {
-            receive = HttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
+            receive = FsFileHttpUtils.doPost(PropertiesUtils.getDeleteFileUrl(), paramMap);
         } catch (Exception e) {
             if (executeCnt >= PropertiesUtils.getDeleteFileMaxExecuteCnt()) {
                 throw (RuntimeException) e;
@@ -285,7 +285,7 @@ public class HttpUtils {
                 , PropertiesUtils.getServerSecret(), timestamp));
         String receive;
         try {
-            receive = HttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
+            receive = FsFileHttpUtils.doPost(PropertiesUtils.getUpdateFileUrl(), fsFile.toMap());
         } catch (Exception e) {
             if (executeCnt >= PropertiesUtils.getUpdateFileMaxExecuteCnt()) {
                 throw (RuntimeException) e;

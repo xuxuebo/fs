@@ -2,7 +2,7 @@ package com.qgutech.fs;
 
 
 import com.qgutech.fs.domain.FsFile;
-import com.qgutech.fs.utils.HttpUtils;
+import com.qgutech.fs.utils.FsFileHttpUtils;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
@@ -20,7 +20,7 @@ public class BaseServiceTest extends AbstractTransactionalJUnit4SpringContextTes
 
     @Test
     public void test() {
-        FsFile fsFile = HttpUtils.getFsFile("402881d65828f018015828f01ae40000");
+        FsFile fsFile = FsFileHttpUtils.getFsFile("402881d65828f018015828f01ae40000");
     }
 
     public static void main(String[] args) {

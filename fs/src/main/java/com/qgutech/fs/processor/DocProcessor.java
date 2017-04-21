@@ -41,7 +41,7 @@ public class DocProcessor extends AbstractDocProcessor {
             FsUtils.deleteFile(getGenFilePath(fsFile));
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("Doc converting to images failed!");
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
         } else {
             fsFile.setSubFileCount(docPage);
             afterProcess(fsFile);

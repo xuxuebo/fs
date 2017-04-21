@@ -39,7 +39,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
                     + "] is empty or contains directory or contains not audio file!");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
             fsFile.setProcessMsg("音频集为空或者包含文件夹或者包含非音频文件");
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 
@@ -49,7 +49,7 @@ public class ZipAudioProcessor extends AbstractProcessor {
             LOG.error("Audio collection[" + fsFile.getTmpFilePath() + "] is empty!");
             fsFile.setProcessMsg("音频集为空");
             fsFile.setStatus(ProcessStatusEnum.FAILED);
-            HttpUtils.updateFsFile(fsFile);
+            FsFileHttpUtils.updateFsFile(fsFile);
             return;
         }
 

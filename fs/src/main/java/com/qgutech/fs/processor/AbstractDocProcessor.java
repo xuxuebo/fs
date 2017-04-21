@@ -29,7 +29,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
             String backUrl = PropertiesUtils.getHttpProtocol() + FsConstants.HTTP_COLON
                     + PropertiesUtils.getServerHost() + PropertiesUtils.getBackUri();
             fsFile.setBackUrl(backUrl);
-            HttpUtils.doPost(PropertiesUtils.getAsyncUrl(), fsFile.toMap()
+            FsFileHttpUtils.doPost(PropertiesUtils.getAsyncUrl(), fsFile.toMap()
                     , fsFile.getTmpFilePath(), fsFile.getStoredFileName());
             //转发到文档转化服务器后，删除临时文件
             FsUtils.deleteFile(new File(fsFile.getTmpFilePath()).getParentFile());
@@ -123,7 +123,7 @@ public abstract class AbstractDocProcessor extends AbstractProcessor {
                     + FsConstants.POINT + FsConstants.COMPRESS_FILE_SUFFIX_ZIP);
             FsUtils.compress(genFilePath, compressFile.getAbsolutePath());
             fsFile.setSign(Signer.sign(fsFile));
-            HttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
+            FsFileHttpUtils.doPost(backUrl, fsFile.toMap(), compressFile.getAbsolutePath(), null);//todo 容错
         }
 
         super.afterProcess(fsFile);

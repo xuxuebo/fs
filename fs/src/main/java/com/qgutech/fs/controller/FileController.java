@@ -575,7 +575,7 @@ public class FileController {
                     + FsConstants.PATH_SEPARATOR;
             String filename = file.getName();
             if (path.contains(srcFile)) {
-                FsFile originFsFile = HttpUtils.getFsFile(fsFile.getId());
+                FsFile originFsFile = FsFileHttpUtils.getFsFile(fsFile.getId());
                 if (originFsFile == null) {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     return;
@@ -782,7 +782,7 @@ public class FileController {
         paramMap.put("sign", sign);
         boolean checkSessionResult = false;
         try {
-            String result = HttpUtils.doPost(PropertiesUtils.getCheckSessionUrl(), paramMap);
+            String result = FsFileHttpUtils.doPost(PropertiesUtils.getCheckSessionUrl(), paramMap);
             checkSessionResult = PropertiesUtils.getCheckSessionCorrectResult().equals(result);
             commonJedis.setex(key, PropertiesUtils.getCheckSessionCacheTime()
                     , Boolean.toString(checkSessionResult));
@@ -811,7 +811,7 @@ public class FileController {
         paramMap.put("sign", sign);
         boolean checkSessionResult = false;
         try {
-            String result = HttpUtils.doPost(PropertiesUtils.getCheckSessionUrl(), paramMap);
+            String result = FsFileHttpUtils.doPost(PropertiesUtils.getCheckSessionUrl(), paramMap);
             checkSessionResult = PropertiesUtils.getCheckSessionCorrectResult().equals(result);
             commonJedis.setex(key, PropertiesUtils.getCheckSessionCacheTime()
                     , Boolean.toString(checkSessionResult));
@@ -848,7 +848,7 @@ public class FileController {
             return;
         }
 
-        FsFile dbFsFile = HttpUtils.getFsFile(fsFileId);
+        FsFile dbFsFile = FsFileHttpUtils.getFsFile(fsFileId);
         if (dbFsFile == null) {
             LOG.error("File[id:" + fsFileId + ",session:" + session + ",x:" + x + ",y:" + y
                     + ",w:" + w + ",h:" + h + "] not exist when cutting image!");
@@ -913,7 +913,7 @@ public class FileController {
             return;
         }
 
-        FsFile fsFile = HttpUtils.getFsFile(id);
+        FsFile fsFile = FsFileHttpUtils.getFsFile(id);
         if (fsFile == null) {
             LOG.error("FsFile[id:" + id + "] not exist!");
             fsFile = new FsFile();

@@ -123,7 +123,6 @@ public class HttpUtils {
         try {
             formFile.setData(storedFile.getInputStream());
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException("Failed to get multipartFile inputStream", e);
         }
 
@@ -137,7 +136,6 @@ public class HttpUtils {
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("向文档转换服务器提交的过程中出错");
         }
 
         return responseText;
@@ -157,17 +155,9 @@ public class HttpUtils {
 
     /**
      * 直接通过HTTP协议提交数据到服务器,实现表单提交功能
-     *
-     * @param url
-     *            上传路径
-     * @param parameters
-     *            请求参数 key为参数名,value为参数值
-     * @param files
-     *            上传文件
-     * @throws Exception
      */
 
-    public static byte[] send(String url, Map<String, String> parameters,
+    private static byte[] send(String url, Map<String, String> parameters,
                               List<FormFile> files) throws Exception {
         if (url == null) {
             return null;
@@ -229,15 +219,12 @@ public class HttpUtils {
         }
 
         for (FormFile file : files) {
-            StringBuilder split = new StringBuilder();
-            split.append("--");
-            split.append(BOUNDARY);
-            split.append("\r\n");
-            split.append("Content-Disposition: form-data;name=\""
+            String split = "--" +  BOUNDARY + "\r\n"
+                    + "Content-Disposition: form-data;name=\""
                     + file.formName + "\";filename=\"" + file.fileName
-                    + "\"\r\n");
-            split.append("Content-Type: " + file.contentType + "\r\n\r\n");
-            outputStream.write(split.toString().getBytes(UTF_8));
+                    + "\"\r\n"
+                    + "Content-Type: " + file.contentType + "\r\n\r\n";
+            outputStream.write(split.getBytes(UTF_8));
 
             if (file.data instanceof byte[]) {
                 byte[] byteData = (byte[]) file.data;
@@ -271,8 +258,8 @@ public class HttpUtils {
             sb.append("--");
             sb.append(BOUNDARY);
             sb.append("\r\n");
-            sb.append("Content-Disposition: form-data; name=\""
-                    + entry.getKey() + "\"\r\n\r\n");
+            sb.append("Content-Disposition: form-data; name=\"");
+            sb.append(entry.getKey()).append("\"\r\n\r\n");
             sb.append(entry.getValue());
             sb.append("\r\n");
         }
@@ -344,13 +331,13 @@ public class HttpUtils {
             this.contentType = contentType;
         }
 
-        public static final FormFile getFileForm() {
+        public static FormFile getFileForm() {
             FormFile formFile = new FormFile();
             formFile.contentType = FILE_TYPE;
             return formFile;
         }
 
-        public static final FormFile getImageForm() {
+        public static FormFile getImageForm() {
             FormFile formFile = new FormFile();
             formFile.contentType = IMAGE_TYPE;
             return formFile;

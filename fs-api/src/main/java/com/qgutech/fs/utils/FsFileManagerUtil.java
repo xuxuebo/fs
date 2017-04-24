@@ -44,16 +44,20 @@ public class FsFileManagerUtil {
      *
      * @param fileServer 文件服务器主机地址,hf.21tb.com or http://hf.21tb.com
      * @param fileId     文件id
-     * @param w 必须存在,压缩或裁剪的图片宽度
-     * @param h 必须存在,压缩或裁剪的图片高度
-     * @param x 裁剪的图片x坐标,为null时做压缩处理
-     * @param y 裁剪的图片y坐标,为null时做压缩处理
+     * @param width      必须存在,压缩或裁剪的图片宽度
+     * @param height     必须存在,压缩或裁剪的图片高度
+     * @param x          裁剪的图片x坐标,为null时做压缩处理
+     * @param y          裁剪的图片y坐标,为null时做压缩处理
      */
     public static String handleFileInternal(String fileServer, String fileId, String session
-    ,String w,String h,String x,String y) {
+            , Integer width, Integer height, Integer x, Integer y) {
         String fileUrl = getFileUrl(fileServer, fileId, session);
         if (StringUtils.isBlank(fileUrl)) {
             return null;
+        }
+
+        if (width == null || height == null) {
+            return fileUrl;
         }
 
         File file = new File(fileUrl);
@@ -64,16 +68,13 @@ public class FsFileManagerUtil {
         }
 
         String baseName = "";
-        if(StringUtils.isNotBlank(x) && StringUtils.isNotBlank(y)){
+        if (x != null && y != null) {
             baseName = x + "_" + y + "_";
         }
 
-        if(StringUtils.isNotBlank(w) && StringUtils.isNotBlank(h)){
-            baseName += (w + "_" + h +"." + FsConstants.DEFAULT_IMAGE_TYPE);
-        }
-
+        baseName += (width + "_" + height + "." + FsConstants.DEFAULT_IMAGE_TYPE);
         int splitIndex = fileUrl.lastIndexOf(SPLIT);
-        fileUrl = fileUrl.substring(0,splitIndex + 1) + baseName;
+        fileUrl = fileUrl.substring(0, splitIndex + 1) + baseName;
 
         return fileUrl;
     }
@@ -150,8 +151,8 @@ public class FsFileManagerUtil {
 
     public static void main(String[] args) {
 //        String fileUrl = getFileUrl("http://localhost", "402881175b9dca60015b9dd818770005", "123456");
-        String fileUrls = handleFileInternal("http://localhost", "402881175b9ddf39015b9e260e5e0000", "123456","300"
-                ,"400","100","200");
-        System.out.println(fileUrls);
+//        String fileUrls = handleFileInternal("http://localhost", "402881175b9ddf39015b9e260e5e0000", "123456", "300"
+//                , "400", "100", "200");
+//        System.out.println(fileUrls);
     }
 }

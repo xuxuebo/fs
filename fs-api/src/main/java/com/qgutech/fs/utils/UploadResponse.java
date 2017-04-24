@@ -28,6 +28,17 @@ public class UploadResponse {
 
     private String suffix;
 
+    //视频时长
+    private String durations;
+
+    public String getDurations() {
+        return durations;
+    }
+
+    public void setDurations(String durations) {
+        this.durations = durations;
+    }
+
     public String getAppCode() {
         return appCode;
     }

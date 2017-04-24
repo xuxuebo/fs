@@ -1,10 +1,12 @@
 package com.qgutech.fs.utils;
 
 import com.google.gson.Gson;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -12,6 +14,7 @@ import java.util.*;
  */
 public class FsFileManagerUtil {
 
+    public static final String SPLIT = "/";
     private static Gson gson = new Gson();
 
     /**
@@ -34,6 +37,45 @@ public class FsFileManagerUtil {
         String content = HttpUtils.doPost(remoteUrl, paramsMap);
         Map resMap = gson.fromJson(content, Map.class);
         return (String) resMap.get("content");
+    }
+
+    /**
+     * 处理裁剪或压缩图片
+     *
+     * @param fileServer 文件服务器主机地址,hf.21tb.com or http://hf.21tb.com
+     * @param fileId     文件id
+     * @param w 必须存在,压缩或裁剪的图片宽度
+     * @param h 必须存在,压缩或裁剪的图片高度
+     * @param x 裁剪的图片x坐标,为null时做压缩处理
+     * @param y 裁剪的图片y坐标,为null时做压缩处理
+     */
+    public static String handleFileInternal(String fileServer, String fileId, String session
+    ,String w,String h,String x,String y) {
+        String fileUrl = getFileUrl(fileServer, fileId, session);
+        if (StringUtils.isBlank(fileUrl)) {
+            return null;
+        }
+
+        File file = new File(fileUrl);
+        String extension = FilenameUtils.getExtension(file.getName());
+
+        if (!FsConstants.DEFAULT_IMAGE_TYPE.equals(extension)) {
+            return null;
+        }
+
+        String baseName = "";
+        if(StringUtils.isNotBlank(x) && StringUtils.isNotBlank(y)){
+            baseName = x + "_" + y + "_";
+        }
+
+        if(StringUtils.isNotBlank(w) && StringUtils.isNotBlank(h)){
+            baseName += (w + "_" + h +"." + FsConstants.DEFAULT_IMAGE_TYPE);
+        }
+
+        int splitIndex = fileUrl.lastIndexOf(SPLIT);
+        fileUrl = fileUrl.substring(0,splitIndex + 1) + baseName;
+
+        return fileUrl;
     }
 
     /**
@@ -107,13 +149,9 @@ public class FsFileManagerUtil {
     }
 
     public static void main(String[] args) {
-        String fileUrl = getFileUrl("http://localhost", "402881175b895a5e015b895c705d0001", "123456");
-        List<String> fileIds = new ArrayList<String>();
-        fileIds.add("402881175b895a5e015b895c705d0001");
-        fileIds.add("402881175b8e30ec015b8e3520330001");
-        fileIds.add("402881175b8e30ec015b8e35a4010002");
-        String content = getBatchFileUrl("http://localhost", fileIds, "123456");
-        System.out.println(fileUrl);
-        System.out.println(content);
+//        String fileUrl = getFileUrl("http://localhost", "402881175b9dca60015b9dd818770005", "123456");
+        String fileUrls = handleFileInternal("http://localhost", "402881175b9ddf39015b9e260e5e0000", "123456","300"
+                ,"400","100","200");
+        System.out.println(fileUrls);
     }
 }

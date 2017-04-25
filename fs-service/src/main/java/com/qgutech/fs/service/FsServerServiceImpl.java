@@ -61,5 +61,16 @@ public class FsServerServiceImpl extends BaseServiceImpl<FsServer> implements Fs
                 .add(Restrictions.eq(_serverCode, serverCode)));
     }
 
+    @Override
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
+    public FsServer getFsServerByServerHostAndServerCode(String corpCode, String serverHost, String serverCode) {
+        Assert.hasText(corpCode, "CorpCode is empty!");
+        Assert.hasText(serverHost, "ServerHost is empty!");
+        Assert.hasText(serverCode, "ServerCode is empty!");
 
+        return getByCriterion(Restrictions.conjunction()
+                .add(Restrictions.eq(_corpCode, corpCode))
+                .add(Restrictions.eq(_host, serverHost))
+                .add(Restrictions.eq(_serverCode, serverCode)));
+    }
 }

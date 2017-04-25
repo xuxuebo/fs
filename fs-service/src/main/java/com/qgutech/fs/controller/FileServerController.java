@@ -131,6 +131,7 @@ public class FileServerController {
     private boolean validate(FsFile fsFile, PrintWriter writer, boolean checkFsFileId) {
         String sign = fsFile.getSign();
         String serverHost = fsFile.getServerHost();
+        String corpCode = fsFile.getCorpCode();
         Long timestamp = fsFile.getTimestamp();
         String fsFileId = fsFile.getId();
         String serverCode = fsFile.getServerCode();
@@ -154,9 +155,9 @@ public class FileServerController {
             return false;
         }
 
-        FsServer fsServer = fsServerService.getFsServerByServerHostAndServerCode(serverHost, serverCode);
+        FsServer fsServer = fsServerService.getFsServerByServerHostAndServerCode(corpCode, serverHost, serverCode);
         if (fsServer == null) {
-            LOG.error("Can not find a fs server which  host is "
+            LOG.error("Can not find a fs server which corpCode is " + corpCode + " and host is "
                     + serverHost + " and serverCode is " + serverCode + " !");
             writer.write(FsConstants.RESPONSE_RESULT_SERVER_NOT_EXIST);
             return false;

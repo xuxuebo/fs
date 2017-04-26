@@ -148,11 +148,4 @@ public class FsFileManagerUtil {
         String uploadUrl = getFileServer(fileServer, uploadFileUrl);
         return HttpUtils.uploadFile(uploadUrl, paramValueMap, multipartFile);
     }
-
-    public static void main(String[] args) {
-//        String fileUrl = getFileUrl("http://localhost", "402881175b9dca60015b9dd818770005", "123456");
-//        String fileUrls = handleFileInternal("http://localhost", "402881175b9ddf39015b9e260e5e0000", "123456", "300"
-//                , "400", "100", "200");
-//        System.out.println(fileUrls);
-    }
 }

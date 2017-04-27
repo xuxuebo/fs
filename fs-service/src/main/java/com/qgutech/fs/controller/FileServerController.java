@@ -155,7 +155,7 @@ public class FileServerController {
             return false;
         }
 
-        FsServer fsServer = fsServerService.getFsServerByServerHostAndServerCode(corpCode, serverHost, serverCode);
+        FsServer fsServer = fsServerService.getFsServerByServerHostAndServerCode(serverHost, serverCode);
         if (fsServer == null) {
             LOG.error("Can not find a fs server which corpCode is " + corpCode + " and host is "
                     + serverHost + " and serverCode is " + serverCode + " !");

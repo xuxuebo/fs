@@ -43,7 +43,7 @@ public class FileController {
 
     private static final Log LOG = LogFactory.getLog(FileController.class);
     private static final URLCodec URL_CODEC = new URLCodec();
-    private static final String originPattern = "/(.+)/(.+)/src/.+/\\d{4}/\\w+/(\\w+)\\.\\w+";
+    private static final String originPattern = "/(.+)/(.+)/src/.+/\\d{4}/.+/(\\w+)\\.\\w+";
     private static final String genPattern = "/(.+)/(.+)/gen/\\w+/\\d{4}/(\\w+)/.+";
 
     @Resource

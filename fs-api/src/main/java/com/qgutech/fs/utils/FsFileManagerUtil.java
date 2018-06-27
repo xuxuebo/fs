@@ -1,6 +1,7 @@
 package com.qgutech.fs.utils;
 
 import com.google.gson.Gson;
+import org.apache.commons.compress.archivers.zip.ZipUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
@@ -148,4 +149,38 @@ public class FsFileManagerUtil {
         String uploadUrl = getFileServer(fileServer, uploadFileUrl);
         return HttpUtils.uploadFile(uploadUrl, paramValueMap, multipartFile);
     }
+
+    /**
+     * 压缩文件地址
+     * @param fileServer
+     * @param fileIdList http://192.168.0.35/fs/file/getFile/stt/51b5c39da2ced5b224d7045036e40343_1530084619386/lbox/km/src/file/1806/1530006136328/402880a3643479ba01643b7e30460026.doc
+     * @param session
+     * @return  /web/fs/fs/lbox/km/src/file/1806/1530006136328/402880a3643479ba01643b7e30460026.doc
+     */
+    public static String getCompressFileUrl(String fileServer, List<String> fileIdList, String session){
+        String fileStoreDir1 = "/web/fs/fs/";
+        String fileStoreDir = "/web/fs/fs/lbox/km/src/file/zip/";
+        String zipName = UUID.randomUUID().toString().replace("-","")+".zip";
+        String zipPath = fileStoreDir1+zipName;
+        List<String> fileUrls = new ArrayList<String>(fileIdList.size());
+        for(String s : fileIdList){
+            String fileUrl = getFileUrl(fileServer,s,session);
+            if(fileUrl.indexOf("lbox")>-1){
+                fileUrl = fileStoreDir + fileUrl.substring(fileUrl.indexOf("lbox"),fileUrl.length());
+                fileUrl.replace("\\\\","/");
+                fileUrls.add(fileUrl);
+            }
+        }
+        //得到文件路径 fileUrls 压缩文件
+        ZipUtils.zipFiles(fileUrls,zipPath);
+        String base ="http://192.168.0.35/fs/file/getFile/stt/"+UUID.randomUUID().toString().replace("-","");
+        String dd = zipPath.substring(zipPath.lastIndexOf("lbox"),zipPath.length());
+        return base+"/"+dd;
+    }
+
+    public static void main(String[] args) {
+        String f = "/web/fs/fs/lbox/km/src/file/1806/1530006136328/402880a3643479ba01643b7e30460026.doc";
+        System.out.println(f.substring(f.lastIndexOf("lbox"),f.length()));
+    }
+
 }

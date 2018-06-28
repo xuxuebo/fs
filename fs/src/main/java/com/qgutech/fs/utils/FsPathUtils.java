@@ -98,7 +98,13 @@ public class FsPathUtils extends PathUtils {
      * @return
      */
     public static String compressFile(List<String> pathUrl,String corpCode,String fileName){
-        String zipPath = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+fileName+".zip";
+        String dateStr = FsUtils.formatDateToYYMM(new Date());
+        String path = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+dateStr+"/";
+        String zipPath = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+dateStr+"/"+fileName+".zip";
+        File file = new File(path);
+        if(!file.exists()){
+            file.mkdirs();
+        }
         //压缩文件
         zipFiles(pathUrl,zipPath);
 

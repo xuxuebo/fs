@@ -1031,9 +1031,20 @@ public class FileController {
         }
     }
 
-
-    @RequestMapping("testDownLoad")
+    /**
+     * 下载文件 若为多个文件则打包成一个压缩包进行下载
+     * @param request
+     * @param response
+     * @param fileIds
+     * @param fileName
+     * @param corpCode
+     * @throws IOException
+     */
+    @RequestMapping("downLoadFiles")
     public void downLoad(HttpServletRequest request,HttpServletResponse response,String fileIds,String fileName,String corpCode) throws IOException {
+        if(StringUtils.isEmpty(corpCode)){
+            return;
+        }
         response.reset();
         response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
         response.setHeader("Connection", "close");
@@ -1043,11 +1054,13 @@ public class FileController {
             return;
         }
         List<String> fileList =Arrays.asList(fileIds.split(","));
+        if(CollectionUtils.isEmpty(fileList)){
+            return;
+        }
         //处理文件路径 需要文件的绝对路径
         fileList = FsPathUtils.absolutePath(fileList,corpCode);
         String path = "";
-        if(fileList.size()<=1){
-            //单个文件
+        if(fileList.size()==1){
             path = fileList.get(0);
         }else{
             //多个文件进行压缩成 fileName.zip  返回压缩文件的地址

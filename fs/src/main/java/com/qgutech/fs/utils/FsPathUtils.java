@@ -7,7 +7,14 @@ import com.qgutech.fs.domain.SignLevelEnum;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class FsPathUtils extends PathUtils {
 
@@ -65,5 +72,70 @@ public class FsPathUtils extends PathUtils {
         }
     }
 
+    /**
+     *
+     * @param pathUrl
+     * @return
+     */
+    public static List<String> absolutePath(List<String> pathUrl,String corpCode){
+        List<String> paths = new ArrayList<String>();
+        String fileStoreDir = "/web/fs/fs/";
+        for(String s : pathUrl){
+            if(s.indexOf(corpCode)>-1){
+                s = fileStoreDir + s.substring(s.indexOf(corpCode),s.length());
+                s.replace("\\\\","/");
+                paths.add(s);
+            }
+        }
+        return paths;
+    }
+
+    /**
+     *
+     * @param pathUrl
+     * @param corpCode
+     * @param fileName
+     * @return
+     */
+    public static String compressFile(List<String> pathUrl,String corpCode,String fileName){
+        String zipPath = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+fileName+".zip";
+        //压缩文件
+        zipFiles(pathUrl,zipPath);
+
+        return zipPath;
+    }
+
+    public static void zipFiles(List<String> srcFileUrls, String zipFileUrl){
+        File zipFile = new File(zipFileUrl);
+        List<File> srcFile = new ArrayList<File>(srcFileUrls.size());
+        File file ;
+        for(String path : srcFileUrls){
+            file = new File(path);
+            srcFile.add(file);
+        }
+        byte[] buf=new byte[1024];
+        try {
+            //ZipOutputStream类：完成文件或文件夹的压缩
+            if(!zipFile.exists()){
+
+                zipFile.createNewFile();
+
+            }
+            ZipOutputStream out=new ZipOutputStream(new FileOutputStream(zipFile));
+            for(int i=0;i<srcFile.size();i++){
+                FileInputStream in=new FileInputStream(srcFile.get(i));
+                out.putNextEntry(new ZipEntry(srcFile.get(i).getName()));
+                int len;
+                while((len=in.read(buf))>0){
+                    out.write(buf,0,len);
+                }
+                out.closeEntry();
+                in.close();
+            }
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

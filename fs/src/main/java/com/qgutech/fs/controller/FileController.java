@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.List;
@@ -1029,4 +1030,64 @@ public class FileController {
             FsUtils.deleteFile(tmpDirPath);
         }
     }
+
+
+    @RequestMapping("testDownLoad")
+    public void downLoad(HttpServletRequest request,HttpServletResponse response,String fileIds,String fileName,String corpCode) throws IOException {
+        response.reset();
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+        response.setHeader("Connection", "close");
+        response.setHeader("Content-Type", "application/octet-stream");
+
+        if(StringUtils.isEmpty(fileIds)){
+            return;
+        }
+        List<String> fileList =Arrays.asList(fileIds.split(","));
+        //处理文件路径 需要文件的绝对路径
+        fileList = FsPathUtils.absolutePath(fileList,corpCode);
+        String path = "";
+        if(fileList.size()<=1){
+            //单个文件
+            path = fileList.get(0);
+        }else{
+            //多个文件进行压缩成 fileName.zip  返回压缩文件的地址
+            path = FsPathUtils.compressFile(fileList,corpCode,fileName);
+        }
+
+        OutputStream ops = null;
+        FileInputStream fis = null;
+        byte[] buffer = new byte[8192];
+        int bytesRead = 0;
+
+        try {
+            ops = response.getOutputStream();
+            fis = new FileInputStream(path);
+            while ((bytesRead = fis.read(buffer, 0, 8192)) != -1) {
+                ops.write(buffer, 0, bytesRead);
+            }
+            ops.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+                if (ops != null) {
+                    ops.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
 }

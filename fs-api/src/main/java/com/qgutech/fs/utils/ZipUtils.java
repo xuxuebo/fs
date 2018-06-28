@@ -103,7 +103,7 @@ public class ZipUtils {
             }
             ZipOutputStream out=new ZipOutputStream(new FileOutputStream(zipFile));
             for(int i=0;i<srcFile.size();i++){
-                FileInputStream in=new FileInputStream(srcFile.get(i));
+                FileInputStream in=new FileInputStream("//web//fs//fs//lbox//km//src//file//1806//1530006136328//402880a3643479ba01643b7e30460026.doc");
                 out.putNextEntry(new ZipEntry(srcFile.get(i).getName()));
                 int len;
                 while((len=in.read(buf))>0){

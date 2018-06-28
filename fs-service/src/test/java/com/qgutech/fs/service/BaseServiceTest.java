@@ -12,8 +12,8 @@ public class BaseServiceTest extends AbstractTransactionalJUnit4SpringContextTes
 
     @Before
     public void init(){
-        ExecutionContext.setCorpCode("zhaojie");
-        ExecutionContext.setAppCode("els");
+        ExecutionContext.setCorpCode("default");
+        ExecutionContext.setAppCode("km");
         ExecutionContext.setSession("session");
     }
 

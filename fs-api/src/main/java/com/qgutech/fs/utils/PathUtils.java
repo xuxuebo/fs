@@ -81,9 +81,7 @@ public class PathUtils implements UriUtils, FsConstants {
         return batchOriginFileUrlMap.get(fsFile.getId());
     }
 
-    public static Map<String, String> getBatchOriginFileUrlMap(List<FsFile> fsFiles
-            , Map<String, FsServer> fileIdFsServerMap, String action
-            , String httpProtocol, String session) {
+    public static Map<String, String> getBatchOriginFileUrlMap(List<FsFile> fsFiles, Map<String, FsServer> fileIdFsServerMap, String action, String httpProtocol, String session) {
         Map<String, String> batchOriginFilePathMap = getBatchOriginFilePathMap(fsFiles);
         if (MapUtils.isEmpty(batchOriginFilePathMap)) {
             return new HashMap<String, String>(0);
@@ -242,8 +240,7 @@ public class PathUtils implements UriUtils, FsConstants {
         return batchZipUrlMap.get(fsFile.getId());
     }
 
-    public static Map<String, String> getBatchZipUrlMap(List<FsFile> fsFiles
-            , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
+    public static Map<String, String> getBatchZipUrlMap(List<FsFile> fsFiles , Map<String, FsServer> fileIdFsServerMap, String httpProtocol, String session) {
         Map<String, String> batchZipPathMap = getBatchZipPathMap(fsFiles);
         if (MapUtils.isEmpty(batchZipPathMap)) {
             return new HashMap<String, String>(0);
@@ -262,8 +259,7 @@ public class PathUtils implements UriUtils, FsConstants {
                 continue;
             }
 
-            String zipUrl = httpProtocol + HTTP_COLON + fsServer.getHost()
-                    + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + zipPath;
+            String zipUrl = httpProtocol + HTTP_COLON + fsServer.getHost() + GET_FILE_URI + Signer.sign(fsServer, fsFile, session) + zipPath;
             batchZipUrlMap.put(fsFileId, zipUrl);
         }
 

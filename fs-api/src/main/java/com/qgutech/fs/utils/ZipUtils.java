@@ -4,10 +4,9 @@ package com.qgutech.fs.utils;
  * Created by Administrator on 2018/6/27.
  */
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import com.qgutech.fs.domain.FsFile;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -114,6 +113,40 @@ public class ZipUtils {
             }
             out.close();
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void  zipFiles(String zipPath, String fileName, List<String> filePaths){
+        //压缩文件初始设置
+        String fileZip = fileName + ".zip"; // 拼接zip文件
+        String filePath = zipPath + "\\" + fileZip;//之后用来生成zip文件
+
+        List<File> fileList = new ArrayList<File>(filePaths.size());
+        File file ;
+        for(String path : filePaths){
+            file = new File(path.replace("\\\\","/"));
+            fileList.add(file);
+        }
+
+        // 创建临时压缩文件
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
+            ZipOutputStream zos = new ZipOutputStream(bos);
+            ZipEntry ze = null;
+            for (int i = 0; i < fileList.size(); i++) {//将所有需要下载的pdf文件都写入临时zip文件
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileList.get(i)));
+                ze = new ZipEntry(fileList.get(i).getName());
+                zos.putNextEntry(ze);
+                int s = -1;
+                while ((s = bis.read()) != -1) {
+                    zos.write(s);
+                }
+                bis.close();
+            }
+            zos.flush();
+            zos.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

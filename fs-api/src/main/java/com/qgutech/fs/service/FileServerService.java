@@ -278,6 +278,14 @@ public interface FileServerService {
     String getFileUrl(String fsFileId, String session);
 
     /**
+     * 批量压缩文件，并返回zip文件路径
+     *
+     * @param fsFileIdList
+     * @return
+     */
+    String zipFiles(List<String> fsFileIdList, String session);
+
+    /**
      * 根据文件在文件系统中的主键列表获取文件主键和文件url路径的映射。
      * <br/>
      * <b>此方法适用于所有类型的文件,key为文件主键，value为文件url路径，如下：

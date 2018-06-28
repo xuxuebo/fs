@@ -1,9 +1,9 @@
 package com.qgutech.fs.service;
 
 
+import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.FsServer;
 import com.qgutech.fs.domain.ProcessorTypeEnum;
-import com.qgutech.fs.domain.FsFile;
 import com.qgutech.fs.domain.VideoTypeEnum;
 import com.qgutech.fs.utils.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -306,6 +306,27 @@ public class FileServerServiceImpl implements FileServerService {
     }
 
     @Override
+    public String zipFiles(List<String> fsFileIdList, String session) {
+        Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
+        Assert.hasText(session, "Session is empty!");
+
+        List<FsFile> fsFiles = fsFileService.listByIds(fsFileIdList);
+        if (CollectionUtils.isEmpty(fsFiles)) {
+            return null;
+        }
+
+        Map<String, String> batchOriginFilePathMap = PathUtils.getBatchOriginFilePathMap(fsFiles);
+        String zipName = FsUtils.formatDateToYYMM(new Date());
+        ZipUtils.zipFiles("/web/zipfile/", zipName, (List<String>) batchOriginFilePathMap.values());
+        Map<String, FsServer> fileIdFsServerMap = getFileIdFsServerMap(fsFiles);
+        FsFile fsFile = fsFiles.get(0);
+        FsServer fsServer = fileIdFsServerMap.get(fsFile.getId());
+        String originFileUrl = PropertiesUtils.getHttpProtocol() + "://" + fsServer.getHost()
+                + UriUtils.DOWNLOAD_FILE_URI + Signer.sign(fsServer, fsFile, session) + "/web/zipfile/" + zipName;
+        return originFileUrl;
+    }
+
+    @Override
     public Map<String, String> getBatchFileUrlMap(List<String> fsFileIdList, String session) {
         Assert.notEmpty(fsFileIdList, "FsFileIdList is empty!");
         Assert.hasText(session, "Session is empty!");
@@ -366,8 +387,7 @@ public class FileServerServiceImpl implements FileServerService {
         }
 
         if (CollectionUtils.isNotEmpty(zips)) {
-            Map<String, String> batchZipUrlMap = PathUtils.getBatchZipUrlMap(zips
-                    , fileIdFsServerMap, httpProtocol, session);
+            Map<String, String> batchZipUrlMap = PathUtils.getBatchZipUrlMap(zips, fileIdFsServerMap, httpProtocol, session);
             if (MapUtils.isNotEmpty(batchZipUrlMap)) {
                 batchFileUrlMap.putAll(batchZipUrlMap);
             }

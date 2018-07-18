@@ -79,7 +79,8 @@ public class FsPathUtils extends PathUtils {
      */
     public static List<String> absolutePath(List<String> pathUrl,String corpCode){
         List<String> paths = new ArrayList<String>();
-        String fileStoreDir = "/web/fs/fs/";
+        String fileStoreDir = PropertiesUtils.getFileStoreDir();
+
         for(String s : pathUrl){
             if(s.indexOf(corpCode)>-1){
                 s = fileStoreDir + s.substring(s.indexOf(corpCode),s.length());
@@ -99,8 +100,11 @@ public class FsPathUtils extends PathUtils {
      */
     public static String compressFile(List<String> pathUrl,String corpCode,String fileName){
         String dateStr = FsUtils.formatDateToYYMM(new Date());
-        String path = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+dateStr+"/";
-        String zipPath = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+dateStr+"/"+fileName+".zip";
+//        String path = "/web/fs/fs/"+corpCode+"/km/src/file/zip/"+dateStr+"/";
+        String zipPath = PropertiesUtils.getFileStoreDir()+corpCode+"/km/src/file/zip/"+dateStr+"/"+fileName+".zip";
+
+        String path = PropertiesUtils.getFileStoreDir()+corpCode+"/km/src/file/zip/"+dateStr+"/";
+
         File file = new File(path);
         if(!file.exists()){
             file.mkdirs();

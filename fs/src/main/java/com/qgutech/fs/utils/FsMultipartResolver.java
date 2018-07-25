@@ -16,10 +16,7 @@ import org.springframework.web.util.WebUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FsMultipartResolver implements MultipartResolver {
 
@@ -37,7 +34,7 @@ public class FsMultipartResolver implements MultipartResolver {
         }
 
         String contentType = request.getContentType();
-        return contentType != null && contentType.toLowerCase().startsWith("multipart/");
+        return contentType != null && contentType.toLowerCase(Locale.CHINESE).startsWith("multipart/");
     }
 
     @Override

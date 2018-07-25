@@ -295,14 +295,11 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
     protected DataSource determineTargetDataSource() {
         Assert.notNull(this.resolvedDataSources, "DataSource router not initialized");
         if (isEnableAutoUpdate()) {
-            long fileLastModifiedTime = getFileLastModifiedTime();
-            if (fileLastModifiedTime != lastModifiedTime) {
-                synchronized (lookupDatabaseMap) {
-                    fileLastModifiedTime = getFileLastModifiedTime();
-                    if (fileLastModifiedTime != lastModifiedTime) {
-                        updateDataSources();
-                        lastModifiedTime = fileLastModifiedTime;
-                    }
+            synchronized (lookupDatabaseMap) {
+                long fileLastModifiedTime = getFileLastModifiedTime();
+                if (fileLastModifiedTime != lastModifiedTime) {
+                    updateDataSources();
+                    lastModifiedTime = fileLastModifiedTime;
                 }
             }
         }
@@ -314,7 +311,7 @@ public class RoutingDataSource extends AbstractRoutingDataSource {
         }
 
         if (dataSource == null) {
-            throw new IllegalStateException("Cannot determine target DataSource for lookup key [" + lookupKey + "]");
+            throw new IllegalStateException("Cannot determine target");
         }
 
         return dataSource;

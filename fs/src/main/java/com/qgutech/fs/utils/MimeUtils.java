@@ -1,5 +1,6 @@
 package com.qgutech.fs.utils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.InputStream;
@@ -21,6 +22,8 @@ public class MimeUtils {
             properties.load(resourceAsStream);
         } catch (Exception e) {
             throw new RuntimeException("Exception occurred when load content from mime.properties!", e);
+        } finally {
+            IOUtils.closeQuietly(resourceAsStream);
         }
     }
 

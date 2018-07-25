@@ -54,8 +54,16 @@
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="driverClass" value="${jdbc.driverClassName}"/>
         <property name="jdbcUrl" value="${jdbc.url}"/>
-        <property name="user" value="${jdbc.username}"/>
-        <property name="password" value="${jdbc.password}"/>
+        <property name="properties" ref="dataSourceProperties"/>
+    </bean>
+
+    <bean id="dataSourceProperties" class="com.qgutech.fs.utils.PropertiesEncryptFactoryBean">
+        <property name="properties">
+            <props>
+                <prop key="user">${jdbc.username}</prop>
+                <prop key="password">${jdbc.password}</prop>
+            </props>
+        </property>
     </bean>
 
     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">

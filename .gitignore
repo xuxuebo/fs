@@ -7,3 +7,4 @@
 **/.classpath/*
 **/.project/*
 **/*.log*
+deploy/ffmpeg/gcc-4.8.2.tar.gz

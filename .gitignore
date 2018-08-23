@@ -8,3 +8,4 @@
 **/.project/*
 **/*.log*
 deploy/ffmpeg/gcc-4.8.2.tar.gz
+部署/ffmpeg/gcc-4.8.2.tar.gz
